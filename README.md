@@ -10,12 +10,12 @@ Library for parsing a fluentbit configuration file according to the specs presen
         "github.com/calyptia/go-fluent-bit-config"
     )
 
-    cfg, err := fluentbit_config.NewConfigFromBytes([]byte(`[INPUT] ....`))
+    cfg, err := fluentbit_config.NewFromBytes([]byte(`[INPUT] ....`))
     if err != nil {
     }
 
     for name, filters := range cfg.Filters {
 	    for name, property := range filters {
-        }
+            }
     }   	
 ```
