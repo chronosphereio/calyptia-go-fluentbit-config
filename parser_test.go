@@ -10,13 +10,13 @@ func stringPtr(s string) *string {
 
 func TestNewConfigFromBytes(t *testing.T) {
 	tt := []struct {
-		name string
-		config []byte
-		expected Config
+		name          string
+		config        []byte
+		expected      Config
 		expectedError bool
 	}{
 		{
-			name: "test invalid configuration",
+			name:   "test invalid configuration",
 			config: []byte("invalid"),
 			expected: struct {
 				Inputs  map[string][]Field
@@ -176,7 +176,7 @@ func TestNewConfigFromBytes(t *testing.T) {
 				return
 			}
 
-			for idx, input := range  tc.expected.Inputs {
+			for idx, input := range tc.expected.Inputs {
 				if want, got := len(input), len(cfg.Inputs[idx]); want != got {
 					t.Errorf("wants %v != got %v", want, got)
 					return
@@ -188,7 +188,7 @@ func TestNewConfigFromBytes(t *testing.T) {
 				return
 			}
 
-			for idx, filter := range  tc.expected.Filters {
+			for idx, filter := range tc.expected.Filters {
 				if want, got := len(filter), len(cfg.Filters[idx]); want != got {
 					t.Errorf("wants %v != got %v", want, got)
 					return
@@ -200,7 +200,7 @@ func TestNewConfigFromBytes(t *testing.T) {
 				return
 			}
 
-			for idx, output := range  tc.expected.Outputs {
+			for idx, output := range tc.expected.Outputs {
 				if want, got := len(output), len(cfg.Outputs[idx]); want != got {
 					t.Errorf("wants %v != got %v", want, got)
 					return
@@ -212,7 +212,7 @@ func TestNewConfigFromBytes(t *testing.T) {
 				return
 			}
 
-			for idx, custom := range  tc.expected.Customs {
+			for idx, custom := range tc.expected.Customs {
 				if want, got := len(custom), len(cfg.Customs[idx]); want != got {
 					t.Errorf("wants %v != got %v", want, got)
 					return

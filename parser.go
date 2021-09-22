@@ -23,7 +23,7 @@ var (
 )
 
 type ConfigGrammar struct {
-	Pos lexer.Position
+	Pos     lexer.Position
 	Entries []*Entry `@@*`
 }
 
@@ -43,18 +43,18 @@ type Field struct {
 }
 
 type Value struct {
-	String  *string ` @Ident`
+	String   *string  ` @Ident`
 	DateTime *string  `| @DateTime`
 	Date     *string  `| @Date`
 	Time     *string  `| @Time`
 	Bool     *bool    `| (@"true" | "false")`
 	Number   *float64 `| @Number`
-	Float *float64 `| @Float`
+	Float    *float64 `| @Float`
 	List     []*Value `| "[" ( @@ ( "," @@ )* )? "]"`
 }
 
 type Config struct {
-	Inputs map[string][]Field
+	Inputs  map[string][]Field
 	Filters map[string][]Field
 	Customs map[string][]Field
 	Outputs map[string][]Field
@@ -75,25 +75,27 @@ func addFields(e *Entry, m *map[string][]Field) {
 	for _, field := range e.Section.Fields {
 		q[name] = append(q[name], *field)
 	}
-
-	m = &q
 }
 
 func (c *Config) loadSectionsFromGrammar(grammar *ConfigGrammar) error {
 	for _, entry := range grammar.Entries {
 		switch entry.Section.Name {
-		case "INPUT": {
-			addFields(entry, &c.Inputs)
-		}
-		case "FILTER": {
-			addFields(entry, &c.Filters)
-		}
-		case "OUTPUT": {
-			addFields(entry, &c.Outputs)
-		}
-		case "CUSTOM":{
-			addFields(entry, &c.Customs)
-		}
+		case "INPUT":
+			{
+				addFields(entry, &c.Inputs)
+			}
+		case "FILTER":
+			{
+				addFields(entry, &c.Filters)
+			}
+		case "OUTPUT":
+			{
+				addFields(entry, &c.Outputs)
+			}
+		case "CUSTOM":
+			{
+				addFields(entry, &c.Customs)
+			}
 		}
 	}
 	return nil
@@ -108,7 +110,7 @@ func NewFromBytes(data []byte) (*Config, error) {
 		return nil, err
 	}
 
-	parser :=  participle.MustBuild(
+	parser := participle.MustBuild(
 		grammar,
 		participle.Lexer(
 			lexer.Must(statefulDefinition, err),
