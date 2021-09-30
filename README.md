@@ -7,7 +7,7 @@ Library for parsing a fluentbit configuration file according to the specs presen
 ## example usage
 ```go
     import (
-        "github.com/calyptia/go-fluent-bit-config"
+        "github.com/calyptia/go-fluentbit-config"
     )
 
     cfg, err := fluentbit_config.NewFromBytes([]byte(`[INPUT] ....`))
