@@ -16,8 +16,22 @@ func TestNewConfigFromBytes(t *testing.T) {
 		expectedError bool
 	}{
 		{
+			name: "test invalid configuration",
+			config: []byte(`
+				asdasdasdasdasd
+				"@@"
+			`),
+			expected: struct {
+				Inputs  map[string][]Field
+				Filters map[string][]Field
+				Customs map[string][]Field
+				Outputs map[string][]Field
+			}{Inputs: map[string][]Field{}, Filters: map[string][]Field{}, Customs: map[string][]Field{}, Outputs: map[string][]Field{}},
+			expectedError: true,
+		},
+		{
 			name:   "test invalid configuration",
-			config: []byte("invalid"),
+			config: []byte(""),
 			expected: struct {
 				Inputs  map[string][]Field
 				Filters map[string][]Field

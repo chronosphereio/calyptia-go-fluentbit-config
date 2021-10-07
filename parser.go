@@ -1,6 +1,7 @@
 package fluentbit_config
 
 import (
+	"fmt"
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
 	"strings"
@@ -102,7 +103,9 @@ func (c *Config) loadSectionsFromGrammar(grammar *ConfigGrammar) error {
 }
 
 func NewFromBytes(data []byte) (*Config, error) {
-	var grammar = &ConfigGrammar{}
+	var grammar = &ConfigGrammar{
+		Entries: []*Entry{},
+	}
 	var config Config
 
 	statefulDefinition, err := lexer.NewSimple(DefaultLexerRules)
@@ -120,6 +123,10 @@ func NewFromBytes(data []byte) (*Config, error) {
 	err = parser.ParseBytes("", data, grammar)
 	if err != nil {
 		return nil, err
+	}
+
+	if len(grammar.Entries) == 0 {
+		return nil, fmt.Errorf("no configuration entries found in provided grammar")
 	}
 
 	err = config.loadSectionsFromGrammar(grammar)
