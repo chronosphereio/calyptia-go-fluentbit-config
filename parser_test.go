@@ -16,7 +16,7 @@ func TestNewConfigFromBytes(t *testing.T) {
 		expectedError bool
 	}{
 		{
-			name:   "test invalid configuration",
+			name: "test invalid configuration",
 			config: []byte(`
 				asdasdasdasdasd
 				"@@"
