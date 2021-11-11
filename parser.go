@@ -12,7 +12,7 @@ var (
 		{"DateTime", `\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(-\d\d:\d\d)?`, nil},
 		{"Date", `\d\d\d\d-\d\d-\d\d`, nil},
 		{"Time", `\d\d:\d\d:\d\d(\.\d+)?`, nil},
-		{"Ident", `[a-zA-Z_\.\*\-0-9\/]+`, nil},
+		{"Ident", `[a-zA-Z_\.\*\-0-9\/\{\}]+`, nil},
 		{"String", `[a-zA-Z0-9_\.\/\*\-]+`, nil},
 		{"Number", `[-+]?[.0-9]+\b`, nil},
 		{`Float`, `(\d*)(\.)*(\d+)+`, nil},
