@@ -47,6 +47,7 @@ func TestNewConfigFromBytes(t *testing.T) {
 					name tail
 					tag kube.*
 					mem_buf_limit 4.8M
+					mem_buf_limit {{secrets.name}}
 			`),
 			expected: struct {
 				Inputs  map[string][]Field
@@ -76,6 +77,16 @@ func TestNewConfigFromBytes(t *testing.T) {
 				}},
 				{Key: "mem_buf_limit", Value: &Value{
 					String:   stringPtr("4.8M"),
+					DateTime: nil,
+					Date:     nil,
+					Time:     nil,
+					Bool:     nil,
+					Number:   nil,
+					Float:    nil,
+					List:     nil,
+				}},
+				{Key: "mem_buf_limit", Value: &Value{
+					String:   stringPtr("{{secrets.name}}"),
 					DateTime: nil,
 					Date:     nil,
 					Time:     nil,
