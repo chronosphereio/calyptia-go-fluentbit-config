@@ -4,10 +4,17 @@ import (
 	"fmt"
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
+	"regexp"
 	"strings"
 )
 
 var (
+	// DefaultPropertiesToskip ignore complex formatted properties
+	DefaultPropertiesToskip = []string{
+		"Regex",
+		"Time",
+	}
+
 	DefaultLexerRules = []lexer.Rule{
 		{"DateTime", `\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(-\d\d:\d\d)?`, nil},
 		{"Date", `\d\d\d\d-\d\d-\d\d`, nil},
@@ -59,6 +66,7 @@ type Config struct {
 	Filters map[string][]Field
 	Customs map[string][]Field
 	Outputs map[string][]Field
+	Parsers map[string][]Field
 }
 
 func addFields(e *Entry, m *map[string][]Field) {
@@ -97,12 +105,27 @@ func (c *Config) loadSectionsFromGrammar(grammar *ConfigGrammar) error {
 			{
 				addFields(entry, &c.Customs)
 			}
+		case "PARSER":
+			{
+				addFields(entry, &c.Parsers)
+			}
 		}
 	}
 	return nil
 }
 
-func NewFromBytes(data []byte) (*Config, error) {
+func removeSkipProperties(cfg *[]byte, props ...string) {
+	re := regexp.MustCompile(fmt.Sprintf("^.*(%s)+.*$", strings.Join(props, "|")))
+	var ret []string
+	for _, line := range strings.Split(string(*cfg), "\n") {
+		if !re.MatchString(line) {
+			ret = append(ret, line)
+		}
+	}
+	*cfg = []byte(strings.Join(ret, "\n"))
+}
+
+func NewFromBytes(data []byte, skipProperties ...string) (*Config, error) {
 	var grammar = &ConfigGrammar{
 		Entries: []*Entry{},
 	}
@@ -120,11 +143,16 @@ func NewFromBytes(data []byte) (*Config, error) {
 		),
 	)
 
+	if len(skipProperties) == 0 {
+		skipProperties = DefaultPropertiesToskip
+	}
+
+	removeSkipProperties(&data, skipProperties...)
+
 	err = parser.ParseBytes("", data, grammar)
 	if err != nil {
 		return nil, err
 	}
-
 	if len(grammar.Entries) == 0 {
 		return nil, fmt.Errorf("no configuration entries found in provided grammar")
 	}
