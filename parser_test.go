@@ -26,7 +26,8 @@ func TestNewConfigFromBytes(t *testing.T) {
 				Filters map[string][]Field
 				Customs map[string][]Field
 				Outputs map[string][]Field
-			}{Inputs: map[string][]Field{}, Filters: map[string][]Field{}, Customs: map[string][]Field{}, Outputs: map[string][]Field{}},
+				Parsers map[string][]Field
+			}{Inputs: map[string][]Field{}, Filters: map[string][]Field{}, Customs: map[string][]Field{}, Outputs: map[string][]Field{}, Parsers: map[string][]Field{}},
 			expectedError: true,
 		},
 		{
@@ -37,7 +38,8 @@ func TestNewConfigFromBytes(t *testing.T) {
 				Filters map[string][]Field
 				Customs map[string][]Field
 				Outputs map[string][]Field
-			}{Inputs: map[string][]Field{}, Filters: map[string][]Field{}, Customs: map[string][]Field{}, Outputs: map[string][]Field{}},
+				Parsers map[string][]Field
+			}{Inputs: map[string][]Field{}, Filters: map[string][]Field{}, Customs: map[string][]Field{}, Outputs: map[string][]Field{}, Parsers: map[string][]Field{}},
 			expectedError: true,
 		},
 		{
@@ -47,57 +49,80 @@ func TestNewConfigFromBytes(t *testing.T) {
 					name tail
 					tag kube.*
 					mem_buf_limit 4.8M
-					mem_buf_limit {{secrets.name}}
-			`),
+				[PARSER]
+					Name   apache2
+					Format regex
+					Regex  ^(?<host>[^ ]*) [^ ]* (?<user>[^ ]*) \[(?<time>[^\]]*)\] "(?<method>\S+)(?: +(?<path>[^ ]*) +\S*)?" (?<code>[^ ]*) (?<size>[^ ]*)(?: "(?<referer>[^\"]*)" "(?<agent>.*)")?$
+					Time_Key time
+					Time_Format %d/%b/%Y:%H:%M:%S %z`),
 			expected: struct {
 				Inputs  map[string][]Field
 				Filters map[string][]Field
 				Customs map[string][]Field
 				Outputs map[string][]Field
-			}{Inputs: map[string][]Field{"tail": []Field{
-				{Key: "name", Value: &Value{
-					String:   stringPtr("tail"),
-					DateTime: nil,
-					Date:     nil,
-					Time:     nil,
-					Bool:     nil,
-					Number:   nil,
-					Float:    nil,
-					List:     nil,
+				Parsers map[string][]Field
+			}{
+				Parsers: map[string][]Field{
+					"apache2": []Field{
+						{
+							Key: "Name", Value: &Value{
+								String:   stringPtr("apache2"),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							},
+						},
+						{
+							Key: "Format", Value: &Value{
+								String:   stringPtr("regexs"),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							},
+						},
+					},
+				},
+				Inputs: map[string][]Field{"tail": []Field{
+					{Key: "name", Value: &Value{
+						String:   stringPtr("tail"),
+						DateTime: nil,
+						Date:     nil,
+						Time:     nil,
+						Bool:     nil,
+						Number:   nil,
+						Float:    nil,
+						List:     nil,
+					}},
+					{Key: "tag", Value: &Value{
+						String:   stringPtr("kube.*"),
+						DateTime: nil,
+						Date:     nil,
+						Time:     nil,
+						Bool:     nil,
+						Number:   nil,
+						Float:    nil,
+						List:     nil,
+					}},
+					{Key: "mem_buf_limit", Value: &Value{
+						String:   stringPtr("4.8M"),
+						DateTime: nil,
+						Date:     nil,
+						Time:     nil,
+						Bool:     nil,
+						Number:   nil,
+						Float:    nil,
+						List:     nil,
+					}},
 				}},
-				{Key: "tag", Value: &Value{
-					String:   stringPtr("kube.*"),
-					DateTime: nil,
-					Date:     nil,
-					Time:     nil,
-					Bool:     nil,
-					Number:   nil,
-					Float:    nil,
-					List:     nil,
-				}},
-				{Key: "mem_buf_limit", Value: &Value{
-					String:   stringPtr("4.8M"),
-					DateTime: nil,
-					Date:     nil,
-					Time:     nil,
-					Bool:     nil,
-					Number:   nil,
-					Float:    nil,
-					List:     nil,
-				}},
-				{Key: "mem_buf_limit", Value: &Value{
-					String:   stringPtr("{{secrets.name}}"),
-					DateTime: nil,
-					Date:     nil,
-					Time:     nil,
-					Bool:     nil,
-					Number:   nil,
-					Float:    nil,
-					List:     nil,
-				}},
-			}}, Filters: map[string][]Field{}, Customs: map[string][]Field{}, Outputs: map[string][]Field{}},
-			expectedError: false,
-		},
+			}},
 		{
 			name: "test valid larger configuration",
 			config: []byte(`
@@ -115,6 +140,7 @@ func TestNewConfigFromBytes(t *testing.T) {
 				Filters map[string][]Field
 				Customs map[string][]Field
 				Outputs map[string][]Field
+				Parsers map[string][]Field
 			}{
 				Inputs: map[string][]Field{"tail": []Field{
 					{Key: "name", Value: &Value{
@@ -182,6 +208,7 @@ func TestNewConfigFromBytes(t *testing.T) {
 						List:     nil,
 					}},
 				}},
+				Parsers: map[string][]Field{},
 			},
 			expectedError: false,
 		},
