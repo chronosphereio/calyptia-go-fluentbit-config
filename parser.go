@@ -83,12 +83,12 @@ func addFields(e *Entry, index int, m *map[string][]Field) {
 	var name string
 	for _, field := range e.Section.Fields {
 		if strings.ToLower(field.Key) == "name" {
-			name = *field.Value.String
+			name = fmt.Sprintf("%s.%d", *field.Value.String, index)
 		}
 	}
 
 	for _, field := range e.Section.Fields {
-		q[fmt.Sprintf("%s.%d", name, index)] = append(q[fmt.Sprintf("%s.%d", name, index)], *field)
+		q[name] = append(q[name], *field)
 	}
 }
 
