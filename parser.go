@@ -2,10 +2,11 @@ package fluentbit_config
 
 import (
 	"fmt"
-	"github.com/alecthomas/participle/v2"
-	"github.com/alecthomas/participle/v2/lexer"
 	"regexp"
 	"strings"
+
+	"github.com/alecthomas/participle/v2"
+	"github.com/alecthomas/participle/v2/lexer"
 )
 
 var (
@@ -62,14 +63,19 @@ type Value struct {
 }
 
 type Config struct {
-	Inputs  map[string][]Field
-	Filters map[string][]Field
-	Customs map[string][]Field
-	Outputs map[string][]Field
-	Parsers map[string][]Field
+	Inputs      map[string][]Field
+	Filters     map[string][]Field
+	Customs     map[string][]Field
+	Outputs     map[string][]Field
+	Parsers     map[string][]Field
+	InputIndex  int
+	FilterIndex int
+	OutputIndex int
+	CustomIndex int
+	ParserIndex int
 }
 
-func addFields(e *Entry, m *map[string][]Field) {
+func addFields(e *Entry, index int, m *map[string][]Field) {
 	if *m == nil {
 		*m = map[string][]Field{}
 	}
@@ -82,7 +88,7 @@ func addFields(e *Entry, m *map[string][]Field) {
 	}
 
 	for _, field := range e.Section.Fields {
-		q[name] = append(q[name], *field)
+		q[fmt.Sprintf("%s.%d", name, index)] = append(q[fmt.Sprintf("%s.%d", name, index)], *field)
 	}
 }
 
@@ -91,23 +97,28 @@ func (c *Config) loadSectionsFromGrammar(grammar *ConfigGrammar) error {
 		switch entry.Section.Name {
 		case "INPUT":
 			{
-				addFields(entry, &c.Inputs)
+				addFields(entry, c.InputIndex, &c.Inputs)
+				c.InputIndex++
 			}
 		case "FILTER":
 			{
-				addFields(entry, &c.Filters)
+				addFields(entry, c.FilterIndex, &c.Filters)
+				c.FilterIndex++
 			}
 		case "OUTPUT":
 			{
-				addFields(entry, &c.Outputs)
+				addFields(entry, c.OutputIndex, &c.Outputs)
+				c.OutputIndex++
 			}
 		case "CUSTOM":
 			{
-				addFields(entry, &c.Customs)
+				addFields(entry, c.CustomIndex, &c.Customs)
+				c.CustomIndex++
 			}
 		case "PARSER":
 			{
-				addFields(entry, &c.Parsers)
+				addFields(entry, c.ParserIndex, &c.Parsers)
+				c.ParserIndex++
 			}
 		}
 	}
