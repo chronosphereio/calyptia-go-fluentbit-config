@@ -8,6 +8,10 @@ func stringPtr(s string) *string {
 	return &s
 }
 
+func numberPtr(n float64) *float64 {
+	return &n
+}
+
 func TestNewConfigFromBytes(t *testing.T) {
 	tt := []struct {
 		name          string
@@ -22,11 +26,16 @@ func TestNewConfigFromBytes(t *testing.T) {
 				"@@"
 			`),
 			expected: struct {
-				Inputs  map[string][]Field
-				Filters map[string][]Field
-				Customs map[string][]Field
-				Outputs map[string][]Field
-				Parsers map[string][]Field
+				Inputs      map[string][]Field
+				Filters     map[string][]Field
+				Customs     map[string][]Field
+				Outputs     map[string][]Field
+				Parsers     map[string][]Field
+				InputIndex  int
+				FilterIndex int
+				OutputIndex int
+				CustomIndex int
+				ParserIndex int
 			}{Inputs: map[string][]Field{}, Filters: map[string][]Field{}, Customs: map[string][]Field{}, Outputs: map[string][]Field{}, Parsers: map[string][]Field{}},
 			expectedError: true,
 		},
@@ -34,11 +43,16 @@ func TestNewConfigFromBytes(t *testing.T) {
 			name:   "test invalid configuration",
 			config: []byte(""),
 			expected: struct {
-				Inputs  map[string][]Field
-				Filters map[string][]Field
-				Customs map[string][]Field
-				Outputs map[string][]Field
-				Parsers map[string][]Field
+				Inputs      map[string][]Field
+				Filters     map[string][]Field
+				Customs     map[string][]Field
+				Outputs     map[string][]Field
+				Parsers     map[string][]Field
+				InputIndex  int
+				FilterIndex int
+				OutputIndex int
+				CustomIndex int
+				ParserIndex int
 			}{Inputs: map[string][]Field{}, Filters: map[string][]Field{}, Customs: map[string][]Field{}, Outputs: map[string][]Field{}, Parsers: map[string][]Field{}},
 			expectedError: true,
 		},
@@ -56,14 +70,19 @@ func TestNewConfigFromBytes(t *testing.T) {
 					Time_Key time
 					Time_Format %d/%b/%Y:%H:%M:%S %z`),
 			expected: struct {
-				Inputs  map[string][]Field
-				Filters map[string][]Field
-				Customs map[string][]Field
-				Outputs map[string][]Field
-				Parsers map[string][]Field
+				Inputs      map[string][]Field
+				Filters     map[string][]Field
+				Customs     map[string][]Field
+				Outputs     map[string][]Field
+				Parsers     map[string][]Field
+				InputIndex  int
+				FilterIndex int
+				OutputIndex int
+				CustomIndex int
+				ParserIndex int
 			}{
 				Parsers: map[string][]Field{
-					"apache2": []Field{
+					"apache2.0": []Field{
 						{
 							Key: "Name", Value: &Value{
 								String:   stringPtr("apache2"),
@@ -90,7 +109,7 @@ func TestNewConfigFromBytes(t *testing.T) {
 						},
 					},
 				},
-				Inputs: map[string][]Field{"tail": []Field{
+				Inputs: map[string][]Field{"tail.0": []Field{
 					{Key: "name", Value: &Value{
 						String:   stringPtr("tail"),
 						DateTime: nil,
@@ -136,13 +155,18 @@ func TestNewConfigFromBytes(t *testing.T) {
 					bucket your-bucket
 			`),
 			expected: struct {
-				Inputs  map[string][]Field
-				Filters map[string][]Field
-				Customs map[string][]Field
-				Outputs map[string][]Field
-				Parsers map[string][]Field
+				Inputs      map[string][]Field
+				Filters     map[string][]Field
+				Customs     map[string][]Field
+				Outputs     map[string][]Field
+				Parsers     map[string][]Field
+				InputIndex  int
+				FilterIndex int
+				OutputIndex int
+				CustomIndex int
+				ParserIndex int
 			}{
-				Inputs: map[string][]Field{"tail": []Field{
+				Inputs: map[string][]Field{"tail.0": []Field{
 					{Key: "name", Value: &Value{
 						String:   stringPtr("tail"),
 						DateTime: nil,
@@ -176,7 +200,7 @@ func TestNewConfigFromBytes(t *testing.T) {
 				}},
 				Filters: map[string][]Field{},
 				Customs: map[string][]Field{},
-				Outputs: map[string][]Field{"s3": []Field{
+				Outputs: map[string][]Field{"s3.0": []Field{
 					{Key: "name", Value: &Value{
 						String:   stringPtr("s3"),
 						DateTime: nil,
@@ -199,6 +223,129 @@ func TestNewConfigFromBytes(t *testing.T) {
 					}},
 					{Key: "bucket", Value: &Value{
 						String:   stringPtr("your-bucket"),
+						DateTime: nil,
+						Date:     nil,
+						Time:     nil,
+						Bool:     nil,
+						Number:   nil,
+						Float:    nil,
+						List:     nil,
+					}},
+				}},
+				Parsers: map[string][]Field{},
+			},
+			expectedError: false,
+		},
+		{
+			name: "test valid larger configuration",
+			config: []byte(`
+				[INPUT]
+					Name tcp
+					Port 5556
+					Tag  foobar
+
+				[INPUT]
+					Name tcp
+					Port 5557
+					Tag  foobat
+
+				[OUTPUT]
+					Name  stdout
+					Match *
+			`),
+			expected: struct {
+				Inputs      map[string][]Field
+				Filters     map[string][]Field
+				Customs     map[string][]Field
+				Outputs     map[string][]Field
+				Parsers     map[string][]Field
+				InputIndex  int
+				FilterIndex int
+				OutputIndex int
+				CustomIndex int
+				ParserIndex int
+			}{
+				Inputs: map[string][]Field{
+					"tcp.0": {
+						{Key: "Name", Value: &Value{
+							String:   stringPtr("tcp"),
+							DateTime: nil,
+							Date:     nil,
+							Time:     nil,
+							Bool:     nil,
+							Number:   nil,
+							Float:    nil,
+							List:     nil,
+						}},
+						{Key: "Port", Value: &Value{
+							String:   nil,
+							DateTime: nil,
+							Date:     nil,
+							Time:     nil,
+							Bool:     nil,
+							Number:   numberPtr(5556),
+							Float:    nil,
+							List:     nil,
+						}},
+						{Key: "Tag", Value: &Value{
+							String:   stringPtr("foobar"),
+							DateTime: nil,
+							Date:     nil,
+							Time:     nil,
+							Bool:     nil,
+							Number:   nil,
+							Float:    nil,
+							List:     nil,
+						}},
+					},
+					"tcp.1": {
+						{Key: "Name", Value: &Value{
+							String:   stringPtr("tcp"),
+							DateTime: nil,
+							Date:     nil,
+							Time:     nil,
+							Bool:     nil,
+							Number:   nil,
+							Float:    nil,
+							List:     nil,
+						}},
+						{Key: "Port", Value: &Value{
+							String:   nil,
+							DateTime: nil,
+							Date:     nil,
+							Time:     nil,
+							Bool:     nil,
+							Number:   numberPtr(5557),
+							Float:    nil,
+							List:     nil,
+						}},
+						{Key: "Tag", Value: &Value{
+							String:   stringPtr("foobat"),
+							DateTime: nil,
+							Date:     nil,
+							Time:     nil,
+							Bool:     nil,
+							Number:   nil,
+							Float:    nil,
+							List:     nil,
+						}},
+					},
+				},
+				Filters: map[string][]Field{},
+				Customs: map[string][]Field{},
+				Outputs: map[string][]Field{"stdout.0": []Field{
+					{Key: "name", Value: &Value{
+						String:   stringPtr("stdout"),
+						DateTime: nil,
+						Date:     nil,
+						Time:     nil,
+						Bool:     nil,
+						Number:   nil,
+						Float:    nil,
+						List:     nil,
+					}},
+					{Key: "Match", Value: &Value{
+						String:   stringPtr("*"),
 						DateTime: nil,
 						Date:     nil,
 						Time:     nil,
