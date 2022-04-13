@@ -2,7 +2,6 @@ package fluentbit_config
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/alecthomas/participle/v2"
@@ -10,12 +9,6 @@ import (
 )
 
 var (
-	// DefaultPropertiesToskip ignore complex formatted properties
-	DefaultPropertiesToskip = []string{
-		"Regex",
-		"Time",
-	}
-
 	DefaultLexerRules = []lexer.Rule{
 		{"DateTime", `\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(-\d\d:\d\d)?`, nil},
 		{"Date", `\d\d\d\d-\d\d-\d\d`, nil},
@@ -125,17 +118,6 @@ func (c *Config) loadSectionsFromGrammar(grammar *ConfigGrammar) error {
 	return nil
 }
 
-func removeSkipProperties(cfg *[]byte, props ...string) {
-	re := regexp.MustCompile(fmt.Sprintf("^.*(%s)+.*$", strings.Join(props, "|")))
-	var ret []string
-	for _, line := range strings.Split(string(*cfg), "\n") {
-		if !re.MatchString(line) {
-			ret = append(ret, line)
-		}
-	}
-	*cfg = []byte(strings.Join(ret, "\n"))
-}
-
 func NewFromBytes(data []byte, skipProperties ...string) (*Config, error) {
 	var grammar = &ConfigGrammar{
 		Entries: []*Entry{},
@@ -153,12 +135,6 @@ func NewFromBytes(data []byte, skipProperties ...string) (*Config, error) {
 			lexer.Must(statefulDefinition, err),
 		),
 	)
-
-	if len(skipProperties) == 0 {
-		skipProperties = DefaultPropertiesToskip
-	}
-
-	removeSkipProperties(&data, skipProperties...)
 
 	err = parser.ParseBytes("", data, grammar)
 	if err != nil {
