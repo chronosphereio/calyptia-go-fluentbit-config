@@ -22,14 +22,16 @@ var (
 		{"Regex", `\^[^\n]+\$`, nil},
 		{"Topic", `\$[a-zA-Z0-9_\.\/\*\-]+`, nil},
 		{"comment", `#[^\n]+`, nil},
-		{"whitespace", `\s+`, nil},
-		{"EOL", "[\n]+", nil},
+		{"whitespace", `[\ \t]+`, nil},
+		{"EOL", "[\r\n]+", nil},
 	}
 )
 
 type ConfigGrammar struct {
 	Pos     lexer.Position
+	Start   string   ` @EOL*`
 	Entries []*Entry `@@*`
+	EOL     string   ` @EOL*`
 }
 
 type Entry struct {
@@ -39,12 +41,14 @@ type Entry struct {
 
 type Section struct {
 	Name   string   `"[" @(Ident ( "." Ident )*) "]"`
+	EOL    string   ` @EOL*`
 	Fields []*Field `@@*`
 }
 
 type Field struct {
-	Key   string `@Ident`
-	Value *Value `@@`
+	Key    string   `@Ident`
+	Values []*Value `@@+`
+	EOL    string   ` @EOL*`
 }
 
 type Value struct {
@@ -82,7 +86,7 @@ func addFields(e *Entry, index int, m *map[string][]Field) {
 	var name string
 	for _, field := range e.Section.Fields {
 		if strings.ToLower(field.Key) == "name" {
-			name = fmt.Sprintf("%s.%d", *field.Value.String, index)
+			name = fmt.Sprintf("%s.%d", *field.Values[0].String, index)
 		}
 	}
 

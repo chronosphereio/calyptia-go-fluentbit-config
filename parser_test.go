@@ -84,7 +84,8 @@ func TestNewConfigFromBytes(t *testing.T) {
 				Parsers: map[string][]Field{
 					"apache2.0": []Field{
 						{
-							Key: "Name", Value: &Value{
+							Key: "Name",
+							Values: []*Value{{
 								String:   stringPtr("apache2"),
 								DateTime: nil,
 								Date:     nil,
@@ -93,10 +94,10 @@ func TestNewConfigFromBytes(t *testing.T) {
 								Number:   nil,
 								Float:    nil,
 								List:     nil,
-							},
+							}},
 						},
 						{
-							Key: "Format", Value: &Value{
+							Key: "Format", Values: []*Value{{
 								String:   stringPtr("regexs"),
 								DateTime: nil,
 								Date:     nil,
@@ -105,12 +106,12 @@ func TestNewConfigFromBytes(t *testing.T) {
 								Number:   nil,
 								Float:    nil,
 								List:     nil,
-							},
+							}},
 						},
 					},
 				},
-				Inputs: map[string][]Field{"tail.0": []Field{
-					{Key: "name", Value: &Value{
+				Inputs: map[string][]Field{"tail.0": {
+					{Key: "name", Values: []*Value{{
 						String:   stringPtr("tail"),
 						DateTime: nil,
 						Date:     nil,
@@ -119,8 +120,8 @@ func TestNewConfigFromBytes(t *testing.T) {
 						Number:   nil,
 						Float:    nil,
 						List:     nil,
-					}},
-					{Key: "tag", Value: &Value{
+					}}},
+					{Key: "tag", Values: []*Value{{
 						String:   stringPtr("kube.*"),
 						DateTime: nil,
 						Date:     nil,
@@ -129,8 +130,8 @@ func TestNewConfigFromBytes(t *testing.T) {
 						Number:   nil,
 						Float:    nil,
 						List:     nil,
-					}},
-					{Key: "mem_buf_limit", Value: &Value{
+					}}},
+					{Key: "mem_buf_limit", Values: []*Value{{
 						String:   stringPtr("4.8M"),
 						DateTime: nil,
 						Date:     nil,
@@ -139,7 +140,178 @@ func TestNewConfigFromBytes(t *testing.T) {
 						Number:   nil,
 						Float:    nil,
 						List:     nil,
-					}},
+					}}},
+				}},
+			}},
+		{
+			name: "test multiple values",
+			config: []byte(`
+					[FILTER]
+						Name rewrite_tag
+						Field 1 2 3
+					`),
+			// Rule  $topic ^tele\/[^\/]+\/SENSOR$ sonoff true
+			expected: struct {
+				Inputs      map[string][]Field
+				Filters     map[string][]Field
+				Customs     map[string][]Field
+				Outputs     map[string][]Field
+				Parsers     map[string][]Field
+				InputIndex  int
+				FilterIndex int
+				OutputIndex int
+				CustomIndex int
+				ParserIndex int
+			}{
+				Filters: map[string][]Field{
+					"rewrite_tag.0": []Field{
+						{
+							Key: "Name",
+							Values: []*Value{{
+								String:   stringPtr("rewrite_tag"),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							}},
+						},
+						{
+							Key: "Field",
+							Values: []*Value{{
+								String:   stringPtr("1"),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							}, {
+								String:   stringPtr("2"),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							}, {
+								String:   stringPtr("3"),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							}},
+						},
+					},
+				},
+				Inputs: map[string][]Field{},
+			}},
+		{
+			name: "test rewrite_tag",
+			config: []byte(`
+					[INPUT]
+						name tail
+						tag kube.*
+						mem_buf_limit 4.8M
+					[FILTER]
+						name rewrite_tag
+						Rule topic tele sonoff true
+						match mqtt
+				`),
+			// Rule  $topic ^tele\/[^\/]+\/SENSOR$ sonoff true
+			expected: struct {
+				Inputs      map[string][]Field
+				Filters     map[string][]Field
+				Customs     map[string][]Field
+				Outputs     map[string][]Field
+				Parsers     map[string][]Field
+				InputIndex  int
+				FilterIndex int
+				OutputIndex int
+				CustomIndex int
+				ParserIndex int
+			}{
+				Filters: map[string][]Field{
+					"rewrite_tag.0": []Field{
+						{
+							Key: "Name",
+							Values: []*Value{{
+								String:   stringPtr("rewrite_tag"),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							}},
+						},
+						{
+							Key: "Match", Values: []*Value{{
+								String:   stringPtr("mqtt"),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							}},
+						},
+						{
+							Key: "Rule", Values: []*Value{
+								{
+									String:   stringPtr("mqtt"),
+									DateTime: nil,
+									Date:     nil,
+									Time:     nil,
+									Bool:     nil,
+									Number:   nil,
+									Float:    nil,
+									List:     nil,
+								},
+							},
+						},
+					},
+				},
+				Inputs: map[string][]Field{"tail.0": []Field{
+					{Key: "name", Values: []*Value{{
+						String:   stringPtr("tail"),
+						DateTime: nil,
+						Date:     nil,
+						Time:     nil,
+						Bool:     nil,
+						Number:   nil,
+						Float:    nil,
+						List:     nil,
+					}}},
+					{Key: "tag", Values: []*Value{{
+						String:   stringPtr("kube.*"),
+						DateTime: nil,
+						Date:     nil,
+						Time:     nil,
+						Bool:     nil,
+						Number:   nil,
+						Float:    nil,
+						List:     nil,
+					}}},
+					{Key: "mem_buf_limit", Values: []*Value{{
+						String:   stringPtr("4.8M"),
+						DateTime: nil,
+						Date:     nil,
+						Time:     nil,
+						Bool:     nil,
+						Number:   nil,
+						Float:    nil,
+						List:     nil,
+					}}},
 				}},
 			}},
 		{
@@ -167,7 +339,7 @@ func TestNewConfigFromBytes(t *testing.T) {
 				ParserIndex int
 			}{
 				Inputs: map[string][]Field{"tail.0": []Field{
-					{Key: "name", Value: &Value{
+					{Key: "name", Values: []*Value{{
 						String:   stringPtr("tail"),
 						DateTime: nil,
 						Date:     nil,
@@ -176,8 +348,8 @@ func TestNewConfigFromBytes(t *testing.T) {
 						Number:   nil,
 						Float:    nil,
 						List:     nil,
-					}},
-					{Key: "tag", Value: &Value{
+					}}},
+					{Key: "tag", Values: []*Value{{
 						String:   stringPtr("tail.01"),
 						DateTime: nil,
 						Date:     nil,
@@ -186,8 +358,8 @@ func TestNewConfigFromBytes(t *testing.T) {
 						Number:   nil,
 						Float:    nil,
 						List:     nil,
-					}},
-					{Key: "Path", Value: &Value{
+					}}},
+					{Key: "Path", Values: []*Value{{
 						String:   stringPtr("/var/log/system.log"),
 						DateTime: nil,
 						Date:     nil,
@@ -196,12 +368,12 @@ func TestNewConfigFromBytes(t *testing.T) {
 						Number:   nil,
 						Float:    nil,
 						List:     nil,
-					}},
+					}}},
 				}},
 				Filters: map[string][]Field{},
 				Customs: map[string][]Field{},
 				Outputs: map[string][]Field{"s3.0": []Field{
-					{Key: "name", Value: &Value{
+					{Key: "name", Values: []*Value{{
 						String:   stringPtr("s3"),
 						DateTime: nil,
 						Date:     nil,
@@ -210,8 +382,8 @@ func TestNewConfigFromBytes(t *testing.T) {
 						Number:   nil,
 						Float:    nil,
 						List:     nil,
-					}},
-					{Key: "Match", Value: &Value{
+					}}},
+					{Key: "Match", Values: []*Value{{
 						String:   stringPtr("*"),
 						DateTime: nil,
 						Date:     nil,
@@ -220,8 +392,8 @@ func TestNewConfigFromBytes(t *testing.T) {
 						Number:   nil,
 						Float:    nil,
 						List:     nil,
-					}},
-					{Key: "bucket", Value: &Value{
+					}}},
+					{Key: "bucket", Values: []*Value{{
 						String:   stringPtr("your-bucket"),
 						DateTime: nil,
 						Date:     nil,
@@ -230,7 +402,7 @@ func TestNewConfigFromBytes(t *testing.T) {
 						Number:   nil,
 						Float:    nil,
 						List:     nil,
-					}},
+					}}},
 				}},
 				Parsers: map[string][]Field{},
 			},
@@ -267,7 +439,7 @@ func TestNewConfigFromBytes(t *testing.T) {
 			}{
 				Inputs: map[string][]Field{
 					"tcp.0": {
-						{Key: "Name", Value: &Value{
+						{Key: "Name", Values: []*Value{{
 							String:   stringPtr("tcp"),
 							DateTime: nil,
 							Date:     nil,
@@ -276,8 +448,8 @@ func TestNewConfigFromBytes(t *testing.T) {
 							Number:   nil,
 							Float:    nil,
 							List:     nil,
-						}},
-						{Key: "Port", Value: &Value{
+						}}},
+						{Key: "Port", Values: []*Value{{
 							String:   nil,
 							DateTime: nil,
 							Date:     nil,
@@ -286,8 +458,8 @@ func TestNewConfigFromBytes(t *testing.T) {
 							Number:   numberPtr(5556),
 							Float:    nil,
 							List:     nil,
-						}},
-						{Key: "Tag", Value: &Value{
+						}}},
+						{Key: "Tag", Values: []*Value{{
 							String:   stringPtr("foobar"),
 							DateTime: nil,
 							Date:     nil,
@@ -296,10 +468,10 @@ func TestNewConfigFromBytes(t *testing.T) {
 							Number:   nil,
 							Float:    nil,
 							List:     nil,
-						}},
+						}}},
 					},
 					"tcp.1": {
-						{Key: "Name", Value: &Value{
+						{Key: "Name", Values: []*Value{{
 							String:   stringPtr("tcp"),
 							DateTime: nil,
 							Date:     nil,
@@ -308,8 +480,8 @@ func TestNewConfigFromBytes(t *testing.T) {
 							Number:   nil,
 							Float:    nil,
 							List:     nil,
-						}},
-						{Key: "Port", Value: &Value{
+						}}},
+						{Key: "Port", Values: []*Value{{
 							String:   nil,
 							DateTime: nil,
 							Date:     nil,
@@ -318,8 +490,8 @@ func TestNewConfigFromBytes(t *testing.T) {
 							Number:   numberPtr(5557),
 							Float:    nil,
 							List:     nil,
-						}},
-						{Key: "Tag", Value: &Value{
+						}}},
+						{Key: "Tag", Values: []*Value{{
 							String:   stringPtr("foobat"),
 							DateTime: nil,
 							Date:     nil,
@@ -328,13 +500,13 @@ func TestNewConfigFromBytes(t *testing.T) {
 							Number:   nil,
 							Float:    nil,
 							List:     nil,
-						}},
+						}}},
 					},
 				},
 				Filters: map[string][]Field{},
 				Customs: map[string][]Field{},
 				Outputs: map[string][]Field{"stdout.0": []Field{
-					{Key: "name", Value: &Value{
+					{Key: "name", Values: []*Value{{
 						String:   stringPtr("stdout"),
 						DateTime: nil,
 						Date:     nil,
@@ -343,8 +515,8 @@ func TestNewConfigFromBytes(t *testing.T) {
 						Number:   nil,
 						Float:    nil,
 						List:     nil,
-					}},
-					{Key: "Match", Value: &Value{
+					}}},
+					{Key: "Match", Values: []*Value{{
 						String:   stringPtr("*"),
 						DateTime: nil,
 						Date:     nil,
@@ -353,7 +525,7 @@ func TestNewConfigFromBytes(t *testing.T) {
 						Number:   nil,
 						Float:    nil,
 						List:     nil,
-					}},
+					}}},
 				}},
 				Parsers: map[string][]Field{},
 			},
@@ -367,7 +539,11 @@ func TestNewConfigFromBytes(t *testing.T) {
 				t.Errorf("%s expected error", tc.name)
 				return
 			}
-			if err != nil {
+			if tc.expectedError && err != nil {
+				return
+			}
+			if !tc.expectedError && err != nil {
+				t.Error(err)
 				return
 			}
 			if want, got := len(tc.expected.Inputs), len(cfg.Inputs); want != got {
