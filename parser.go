@@ -13,11 +13,14 @@ var (
 		{"DateTime", `\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(-\d\d:\d\d)?`, nil},
 		{"Date", `\d\d\d\d-\d\d-\d\d`, nil},
 		{"Time", `\d\d:\d\d:\d\d(\.\d+)?`, nil},
+		{"TimeFormat", `^((%[dbYHMSz])(\:|\/|\ |))+$`, nil},
 		{"Ident", `[a-zA-Z_\.\*\-0-9\/\{\}]+`, nil},
 		{"String", `[a-zA-Z0-9_\.\/\*\-]+`, nil},
 		{"Number", `[-+]?[.0-9]+\b`, nil},
 		{`Float`, `(\d*)(\.)*(\d+)+`, nil},
 		{"Punct", `\[|]|[-!()+/*=,]`, nil},
+		{"Regex", `\^[^\n]+\$`, nil},
+		{"Topic", `\$[a-zA-Z0-9_\.\/\*\-]+`, nil},
 		{"comment", `#[^\n]+`, nil},
 		{"whitespace", `\s+`, nil},
 		{"EOL", "[\n]+", nil},
@@ -45,14 +48,17 @@ type Field struct {
 }
 
 type Value struct {
-	String   *string  ` @Ident`
-	DateTime *string  `| @DateTime`
-	Date     *string  `| @Date`
-	Time     *string  `| @Time`
-	Bool     *bool    `| (@"true" | "false")`
-	Number   *float64 `| @Number`
-	Float    *float64 `| @Float`
-	List     []*Value `| "[" ( @@ ( "," @@ )* )? "]"`
+	String     *string  ` @Ident`
+	DateTime   *string  `| @DateTime`
+	Date       *string  `| @Date`
+	Time       *string  `| @Time`
+	TimeFormat *string  `| @TimeFormat`
+	Topic      *string  `| @Topic`
+	Regex      *string  `| @Regex`
+	Bool       *bool    `| (@"true" | "false")`
+	Number     *float64 `| @Number`
+	Float      *float64 `| @Float`
+	List       []*Value `| "[" ( @@ ( "," @@ )* )? "]"`
 }
 
 type Config struct {
