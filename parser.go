@@ -2,7 +2,6 @@ package fluentbit_config
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/alecthomas/participle/v2"
@@ -10,30 +9,29 @@ import (
 )
 
 var (
-	// DefaultPropertiesToskip ignore complex formatted properties
-	DefaultPropertiesToskip = []string{
-		"Regex",
-		"Time",
-	}
-
 	DefaultLexerRules = []lexer.Rule{
 		{"DateTime", `\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(-\d\d:\d\d)?`, nil},
 		{"Date", `\d\d\d\d-\d\d-\d\d`, nil},
 		{"Time", `\d\d:\d\d:\d\d(\.\d+)?`, nil},
+		{"TimeFormat", `^((%[dbYHMSz])(\:|\/|\ |))+$`, nil},
 		{"Ident", `[a-zA-Z_\.\*\-0-9\/\{\}]+`, nil},
 		{"String", `[a-zA-Z0-9_\.\/\*\-]+`, nil},
 		{"Number", `[-+]?[.0-9]+\b`, nil},
 		{`Float`, `(\d*)(\.)*(\d+)+`, nil},
 		{"Punct", `\[|]|[-!()+/*=,]`, nil},
+		{"Regex", `\^[^\n]+\$`, nil},
+		{"Topic", `\$[a-zA-Z0-9_\.\/\*\-]+`, nil},
 		{"comment", `#[^\n]+`, nil},
-		{"whitespace", `\s+`, nil},
-		{"EOL", "[\n]+", nil},
+		{"whitespace", `[\ \t]+`, nil},
+		{"EOL", "[\r\n]+", nil},
 	}
 )
 
 type ConfigGrammar struct {
 	Pos     lexer.Position
+	Start   string   ` @EOL*`
 	Entries []*Entry `@@*`
+	EOL     string   ` @EOL*`
 }
 
 type Entry struct {
@@ -43,23 +41,28 @@ type Entry struct {
 
 type Section struct {
 	Name   string   `"[" @(Ident ( "." Ident )*) "]"`
+	EOL    string   ` @EOL*`
 	Fields []*Field `@@*`
 }
 
 type Field struct {
-	Key   string `@Ident`
-	Value *Value `@@`
+	Key    string   `@Ident`
+	Values []*Value `@@+`
+	EOL    string   ` @EOL*`
 }
 
 type Value struct {
-	String   *string  ` @Ident`
-	DateTime *string  `| @DateTime`
-	Date     *string  `| @Date`
-	Time     *string  `| @Time`
-	Bool     *bool    `| (@"true" | "false")`
-	Number   *float64 `| @Number`
-	Float    *float64 `| @Float`
-	List     []*Value `| "[" ( @@ ( "," @@ )* )? "]"`
+	String     *string  ` @Ident`
+	DateTime   *string  `| @DateTime`
+	Date       *string  `| @Date`
+	Time       *string  `| @Time`
+	TimeFormat *string  `| @TimeFormat`
+	Topic      *string  `| @Topic`
+	Regex      *string  `| @Regex`
+	Bool       *bool    `| (@"true" | "false")`
+	Number     *float64 `| @Number`
+	Float      *float64 `| @Float`
+	List       []*Value `| "[" ( @@ ( "," @@ )* )? "]"`
 }
 
 type Config struct {
@@ -83,7 +86,7 @@ func addFields(e *Entry, index int, m *map[string][]Field) {
 	var name string
 	for _, field := range e.Section.Fields {
 		if strings.ToLower(field.Key) == "name" {
-			name = fmt.Sprintf("%s.%d", *field.Value.String, index)
+			name = fmt.Sprintf("%s.%d", *field.Values[0].String, index)
 		}
 	}
 
@@ -125,17 +128,6 @@ func (c *Config) loadSectionsFromGrammar(grammar *ConfigGrammar) error {
 	return nil
 }
 
-func removeSkipProperties(cfg *[]byte, props ...string) {
-	re := regexp.MustCompile(fmt.Sprintf("^.*(%s)+.*$", strings.Join(props, "|")))
-	var ret []string
-	for _, line := range strings.Split(string(*cfg), "\n") {
-		if !re.MatchString(line) {
-			ret = append(ret, line)
-		}
-	}
-	*cfg = []byte(strings.Join(ret, "\n"))
-}
-
 func NewFromBytes(data []byte, skipProperties ...string) (*Config, error) {
 	var grammar = &ConfigGrammar{
 		Entries: []*Entry{},
@@ -153,12 +145,6 @@ func NewFromBytes(data []byte, skipProperties ...string) (*Config, error) {
 			lexer.Must(statefulDefinition, err),
 		),
 	)
-
-	if len(skipProperties) == 0 {
-		skipProperties = DefaultPropertiesToskip
-	}
-
-	removeSkipProperties(&data, skipProperties...)
 
 	err = parser.ParseBytes("", data, grammar)
 	if err != nil {
