@@ -1,6 +1,9 @@
 package fluentbit_config
 
 import (
+	"bytes"
+	"fmt"
+	"regexp"
 	"testing"
 )
 
@@ -10,6 +13,297 @@ func stringPtr(s string) *string {
 
 func numberPtr(n float64) *float64 {
 	return &n
+}
+
+func TestParseYAML(t *testing.T) {
+	tt := []struct {
+		name          string
+		config        []byte
+		expected      Config
+		expectedError bool
+	}{
+		{
+			name: "basic configuration",
+			config: []byte(`service:
+  flush_interval: 1
+  log_level: error
+pipeline:
+  inputs:
+  - dummy:
+      name: dummy
+      rate: 5
+  - dummy:
+      dummy: '{"FOO": "BAR"}'
+      name: dummy
+      rate: 1
+  filters:
+  - record_modifier:
+      match: '*'
+      name: record_modifier
+      record: powered_by calyptia
+  outputs:
+  - stdout:
+      match: '*'
+      name: stdout
+  - exit:
+      flush_count: 10
+      match: '*'
+      name: exit
+`),
+			expected: Config{
+				Inputs: map[string][]Field{
+					"dummy.0": []Field{
+						{
+							Key: "name", Values: []*Value{{
+								String:   stringPtr("dummy"),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							}},
+						},
+						{
+							Key: "rate", Values: []*Value{{
+								String:   nil,
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   numberPtr(5),
+								Float:    nil,
+								List:     nil,
+							}},
+						},
+					},
+					"dummy.1": []Field{
+						{
+							Key: "name", Values: []*Value{{
+								String:   stringPtr("dummy"),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							}},
+						},
+						{
+							Key: "dummy", Values: []*Value{{
+								String:   stringPtr(`{"FOO": "BAR"}`),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							}},
+						},
+						{
+							Key: "rate", Values: []*Value{{
+								String:   nil,
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   numberPtr(1),
+								Float:    nil,
+								List:     nil,
+							}},
+						},
+					},
+				},
+				Filters: map[string][]Field{
+					"record_modifier.0": []Field{
+						{
+							Key: "name", Values: []*Value{{
+								String:   stringPtr("record_modifier"),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							}},
+						},
+						{
+							Key: "match", Values: []*Value{{
+								String:   stringPtr("*"),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							}},
+						},
+						{
+							Key: "record", Values: []*Value{{
+								String:   stringPtr("powered_by calyptia"),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							}},
+						},
+					},
+				},
+				Outputs: map[string][]Field{
+					"stdout.0": []Field{
+						{
+							Key: "name", Values: []*Value{{
+								String:   stringPtr("stdout"),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							}},
+						},
+						{
+							Key: "match", Values: []*Value{{
+								String:   stringPtr("*"),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							}},
+						},
+					},
+					"exit.1": []Field{
+						{
+							Key: "name", Values: []*Value{{
+								String:   stringPtr("exit"),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							}},
+						},
+						{
+							Key: "match", Values: []*Value{{
+								String:   stringPtr("*"),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							}},
+						},
+						{
+							Key: "flush_count", Values: []*Value{{
+								String:   nil,
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   numberPtr(10),
+								Float:    nil,
+								List:     nil,
+							}},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg, err := ParseYAML(tc.config)
+			if tc.expectedError && err == nil {
+				t.Errorf("%s expected error", tc.name)
+				return
+			}
+			if tc.expectedError && err != nil {
+				return
+			}
+			if !tc.expectedError && err != nil {
+				t.Error(err)
+				return
+			}
+
+			if want, got := len(tc.expected.Inputs), len(cfg.Inputs); want != got {
+				t.Errorf("wants %v != got %v", want, got)
+				return
+			}
+
+			for idx, input := range tc.expected.Inputs {
+				if want, got := len(input), len(cfg.Inputs[idx]); want != got {
+					t.Errorf("input[%s] wants %v != got %v", idx, want, got)
+					fmt.Printf("GOT=%+v\n", cfg.Inputs[idx])
+					return
+				}
+			}
+
+			if want, got := len(tc.expected.Filters), len(cfg.Filters); want != got {
+				t.Errorf("wants %v != got %v", want, got)
+				return
+			}
+
+			for idx, filter := range tc.expected.Filters {
+				if want, got := len(filter), len(cfg.Filters[idx]); want != got {
+					t.Errorf("wants %v != got %v", want, got)
+					return
+				}
+			}
+
+			if want, got := len(tc.expected.Outputs), len(cfg.Outputs); want != got {
+				t.Errorf("wants %v != got %v", want, got)
+				return
+			}
+
+			for idx, output := range tc.expected.Outputs {
+				if want, got := len(output), len(cfg.Outputs[idx]); want != got {
+					t.Errorf("wants %v != got %v", want, got)
+					return
+				}
+			}
+
+			if want, got := len(tc.expected.Customs), len(cfg.Customs); want != got {
+				t.Errorf("wants %v != got %v", want, got)
+				return
+			}
+
+			for idx, custom := range tc.expected.Customs {
+				if want, got := len(custom), len(cfg.Customs[idx]); want != got {
+					t.Errorf("wants %v != got %v", want, got)
+					return
+				}
+			}
+
+			y, err := DumpYAML(cfg)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			if !bytes.Equal(y, tc.config) {
+				fmt.Printf("\n'%s'\n!=\n'%s'\n", string(y), string(tc.config))
+				t.Errorf("yaml is not reversible")
+				return
+			}
+		})
+	}
 }
 
 func TestNewConfigFromBytes(t *testing.T) {
@@ -25,35 +319,25 @@ func TestNewConfigFromBytes(t *testing.T) {
 				asdasdasdasdasd
 				"@@"
 			`),
-			expected: struct {
-				Inputs      map[string][]Field
-				Filters     map[string][]Field
-				Customs     map[string][]Field
-				Outputs     map[string][]Field
-				Parsers     map[string][]Field
-				InputIndex  int
-				FilterIndex int
-				OutputIndex int
-				CustomIndex int
-				ParserIndex int
-			}{Inputs: map[string][]Field{}, Filters: map[string][]Field{}, Customs: map[string][]Field{}, Outputs: map[string][]Field{}, Parsers: map[string][]Field{}},
+			expected: Config{
+				Inputs:  map[string][]Field{},
+				Filters: map[string][]Field{},
+				Customs: map[string][]Field{},
+				Outputs: map[string][]Field{},
+				Parsers: map[string][]Field{},
+			},
 			expectedError: true,
 		},
 		{
 			name:   "test invalid configuration",
 			config: []byte(""),
-			expected: struct {
-				Inputs      map[string][]Field
-				Filters     map[string][]Field
-				Customs     map[string][]Field
-				Outputs     map[string][]Field
-				Parsers     map[string][]Field
-				InputIndex  int
-				FilterIndex int
-				OutputIndex int
-				CustomIndex int
-				ParserIndex int
-			}{Inputs: map[string][]Field{}, Filters: map[string][]Field{}, Customs: map[string][]Field{}, Outputs: map[string][]Field{}, Parsers: map[string][]Field{}},
+			expected: Config{
+				Inputs:  map[string][]Field{},
+				Filters: map[string][]Field{},
+				Customs: map[string][]Field{},
+				Outputs: map[string][]Field{},
+				Parsers: map[string][]Field{},
+			},
 			expectedError: true,
 		},
 		{
@@ -69,18 +353,7 @@ func TestNewConfigFromBytes(t *testing.T) {
 					Regex  ^(?<host>[^ ]*) [^ ]* (?<user>[^ ]*) \[(?<time>[^\]]*)\] "(?<method>\S+)(?: +(?<path>[^ ]*) +\S*)?" (?<code>[^ ]*) (?<size>[^ ]*)(?: "(?<referer>[^\"]*)" "(?<agent>.*)")?$
 					Time_Key time
 					Time_Format %d/%b/%Y:%H:%M:%S %z`),
-			expected: struct {
-				Inputs      map[string][]Field
-				Filters     map[string][]Field
-				Customs     map[string][]Field
-				Outputs     map[string][]Field
-				Parsers     map[string][]Field
-				InputIndex  int
-				FilterIndex int
-				OutputIndex int
-				CustomIndex int
-				ParserIndex int
-			}{
+			expected: Config{
 				Parsers: map[string][]Field{
 					"apache2.0": []Field{
 						{
@@ -151,18 +424,7 @@ func TestNewConfigFromBytes(t *testing.T) {
 						Field 1 2 3
 					`),
 			// Rule  $topic ^tele\/[^\/]+\/SENSOR$ sonoff true
-			expected: struct {
-				Inputs      map[string][]Field
-				Filters     map[string][]Field
-				Customs     map[string][]Field
-				Outputs     map[string][]Field
-				Parsers     map[string][]Field
-				InputIndex  int
-				FilterIndex int
-				OutputIndex int
-				CustomIndex int
-				ParserIndex int
-			}{
+			expected: Config{
 				Filters: map[string][]Field{
 					"rewrite_tag.0": []Field{
 						{
@@ -226,18 +488,7 @@ func TestNewConfigFromBytes(t *testing.T) {
 						match mqtt
 				`),
 			// Rule  $topic ^tele\/[^\/]+\/SENSOR$ sonoff true
-			expected: struct {
-				Inputs      map[string][]Field
-				Filters     map[string][]Field
-				Customs     map[string][]Field
-				Outputs     map[string][]Field
-				Parsers     map[string][]Field
-				InputIndex  int
-				FilterIndex int
-				OutputIndex int
-				CustomIndex int
-				ParserIndex int
-			}{
+			expected: Config{
 				Filters: map[string][]Field{
 					"rewrite_tag.0": []Field{
 						{
@@ -326,18 +577,7 @@ func TestNewConfigFromBytes(t *testing.T) {
 					Match *
 					bucket your-bucket
 			`),
-			expected: struct {
-				Inputs      map[string][]Field
-				Filters     map[string][]Field
-				Customs     map[string][]Field
-				Outputs     map[string][]Field
-				Parsers     map[string][]Field
-				InputIndex  int
-				FilterIndex int
-				OutputIndex int
-				CustomIndex int
-				ParserIndex int
-			}{
+			expected: Config{
 				Inputs: map[string][]Field{"tail.0": []Field{
 					{Key: "name", Values: []*Value{{
 						String:   stringPtr("tail"),
@@ -425,18 +665,7 @@ func TestNewConfigFromBytes(t *testing.T) {
 					Name  stdout
 					Match *
 			`),
-			expected: struct {
-				Inputs      map[string][]Field
-				Filters     map[string][]Field
-				Customs     map[string][]Field
-				Outputs     map[string][]Field
-				Parsers     map[string][]Field
-				InputIndex  int
-				FilterIndex int
-				OutputIndex int
-				CustomIndex int
-				ParserIndex int
-			}{
+			expected: Config{
 				Inputs: map[string][]Field{
 					"tcp.0": {
 						{Key: "Name", Values: []*Value{{
@@ -532,6 +761,10 @@ func TestNewConfigFromBytes(t *testing.T) {
 			expectedError: false,
 		},
 	}
+
+	stripIndentation := regexp.MustCompile("\n[\t]+")
+	stripMultipleSpaces := regexp.MustCompile(`[\ ]{2,}`)
+
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			cfg, err := NewFromBytes(tc.config)
@@ -592,6 +825,18 @@ func TestNewConfigFromBytes(t *testing.T) {
 					t.Errorf("wants %v != got %v", want, got)
 					return
 				}
+			}
+
+			config := stripIndentation.ReplaceAll(tc.config, []byte("\n"))
+			config = stripMultipleSpaces.ReplaceAll(config, []byte(" "))
+
+			if ini, err := cfg.DumpINI(); err != nil {
+				t.Error(err)
+				return
+			} else if !bytes.Equal(ini, config) {
+				fmt.Printf("\n'%s'\n != \n'%s'\n", string(config), string(ini))
+				t.Errorf("unable to reconstitute INI")
+				return
 			}
 		})
 	}
