@@ -7,14 +7,6 @@ import (
 	"testing"
 )
 
-func stringPtr(s string) *string {
-	return &s
-}
-
-func numberPtr(n float64) *float64 {
-	return &n
-}
-
 func TestParseYAML(t *testing.T) {
 	tt := []struct {
 		name          string
@@ -51,60 +43,11 @@ pipeline:
       name: exit
 `),
 			expected: Config{
-				Inputs: map[string][]Field{
-					"dummy.0": []Field{
-						{
-							Key: "name", Values: []*Value{{
-								String:   stringPtr("dummy"),
-								DateTime: nil,
-								Date:     nil,
-								Time:     nil,
-								Bool:     nil,
-								Number:   nil,
-								Float:    nil,
-								List:     nil,
-							}},
-						},
-						{
-							Key: "rate", Values: []*Value{{
-								String:   nil,
-								DateTime: nil,
-								Date:     nil,
-								Time:     nil,
-								Bool:     nil,
-								Number:   numberPtr(5),
-								Float:    nil,
-								List:     nil,
-							}},
-						},
-					},
-					"dummy.1": []Field{
-						{
-							Key: "name", Values: []*Value{{
-								String:   stringPtr("dummy"),
-								DateTime: nil,
-								Date:     nil,
-								Time:     nil,
-								Bool:     nil,
-								Number:   nil,
-								Float:    nil,
-								List:     nil,
-							}},
-						},
-						{
-							Key: "dummy", Values: []*Value{{
-								String:   stringPtr(`{"FOO": "BAR"}`),
-								DateTime: nil,
-								Date:     nil,
-								Time:     nil,
-								Bool:     nil,
-								Number:   nil,
-								Float:    nil,
-								List:     nil,
-							}},
-						},
-						{
-							Key: "rate", Values: []*Value{{
+				Sections: []ConfigSection{
+					{
+						Type: ServiceSection,
+						Fields: []Field{
+							{Key: "flush_interval", Values: []*Value{{
 								String:   nil,
 								DateTime: nil,
 								Date:     nil,
@@ -113,13 +56,93 @@ pipeline:
 								Number:   numberPtr(1),
 								Float:    nil,
 								List:     nil,
-							}},
+							}}},
+							{Key: "log_level", Values: []*Value{{
+								String:   stringPtr("error"),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							}}},
 						},
 					},
-				},
-				Filters: map[string][]Field{
-					"record_modifier.0": []Field{
-						{
+					{
+						Type: InputSection,
+						ID:   "dummy.0",
+						Fields: []Field{{
+							Key: "name", Values: []*Value{{
+								String:   stringPtr("dummy"),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							}},
+						},
+							{
+								Key: "rate", Values: []*Value{{
+									String:   nil,
+									DateTime: nil,
+									Date:     nil,
+									Time:     nil,
+									Bool:     nil,
+									Number:   numberPtr(5),
+									Float:    nil,
+									List:     nil,
+								}},
+							},
+						},
+					},
+					{
+						Type: InputSection,
+						ID:   "dummy.1",
+						Fields: []Field{{
+							Key: "name", Values: []*Value{{
+								String:   stringPtr("dummy"),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							}},
+						},
+							{
+								Key: "dummy", Values: []*Value{{
+									String:   stringPtr(`{"FOO": "BAR"}`),
+									DateTime: nil,
+									Date:     nil,
+									Time:     nil,
+									Bool:     nil,
+									Number:   nil,
+									Float:    nil,
+									List:     nil,
+								}},
+							},
+							{
+								Key: "rate", Values: []*Value{{
+									String:   nil,
+									DateTime: nil,
+									Date:     nil,
+									Time:     nil,
+									Bool:     nil,
+									Number:   numberPtr(1),
+									Float:    nil,
+									List:     nil,
+								}},
+							},
+						},
+					},
+					{
+						Type: FilterSection,
+						ID:   "record_modifier.0",
+						Fields: []Field{{
 							Key: "name", Values: []*Value{{
 								String:   stringPtr("record_modifier"),
 								DateTime: nil,
@@ -131,35 +154,36 @@ pipeline:
 								List:     nil,
 							}},
 						},
-						{
-							Key: "match", Values: []*Value{{
-								String:   stringPtr("*"),
-								DateTime: nil,
-								Date:     nil,
-								Time:     nil,
-								Bool:     nil,
-								Number:   nil,
-								Float:    nil,
-								List:     nil,
-							}},
-						},
-						{
-							Key: "record", Values: []*Value{{
-								String:   stringPtr("powered_by calyptia"),
-								DateTime: nil,
-								Date:     nil,
-								Time:     nil,
-								Bool:     nil,
-								Number:   nil,
-								Float:    nil,
-								List:     nil,
-							}},
+							{
+								Key: "match", Values: []*Value{{
+									String:   stringPtr("*"),
+									DateTime: nil,
+									Date:     nil,
+									Time:     nil,
+									Bool:     nil,
+									Number:   nil,
+									Float:    nil,
+									List:     nil,
+								}},
+							},
+							{
+								Key: "record", Values: []*Value{{
+									String:   stringPtr("powered_by calyptia"),
+									DateTime: nil,
+									Date:     nil,
+									Time:     nil,
+									Bool:     nil,
+									Number:   nil,
+									Float:    nil,
+									List:     nil,
+								}},
+							},
 						},
 					},
-				},
-				Outputs: map[string][]Field{
-					"stdout.0": []Field{
-						{
+					{
+						Type: OutputSection,
+						ID:   "stdout.0",
+						Fields: []Field{{
 							Key: "name", Values: []*Value{{
 								String:   stringPtr("stdout"),
 								DateTime: nil,
@@ -171,55 +195,60 @@ pipeline:
 								List:     nil,
 							}},
 						},
-						{
-							Key: "match", Values: []*Value{{
-								String:   stringPtr("*"),
-								DateTime: nil,
-								Date:     nil,
-								Time:     nil,
-								Bool:     nil,
-								Number:   nil,
-								Float:    nil,
-								List:     nil,
-							}},
+							{
+								Key: "match", Values: []*Value{{
+									String:   stringPtr("*"),
+									DateTime: nil,
+									Date:     nil,
+									Time:     nil,
+									Bool:     nil,
+									Number:   nil,
+									Float:    nil,
+									List:     nil,
+								}},
+							},
 						},
 					},
-					"exit.1": []Field{
-						{
-							Key: "name", Values: []*Value{{
-								String:   stringPtr("exit"),
-								DateTime: nil,
-								Date:     nil,
-								Time:     nil,
-								Bool:     nil,
-								Number:   nil,
-								Float:    nil,
-								List:     nil,
-							}},
-						},
-						{
-							Key: "match", Values: []*Value{{
-								String:   stringPtr("*"),
-								DateTime: nil,
-								Date:     nil,
-								Time:     nil,
-								Bool:     nil,
-								Number:   nil,
-								Float:    nil,
-								List:     nil,
-							}},
-						},
-						{
-							Key: "flush_count", Values: []*Value{{
-								String:   nil,
-								DateTime: nil,
-								Date:     nil,
-								Time:     nil,
-								Bool:     nil,
-								Number:   numberPtr(10),
-								Float:    nil,
-								List:     nil,
-							}},
+					{
+						Type: OutputSection,
+						ID:   "exit.1",
+						Fields: []Field{
+							{
+								Key: "name", Values: []*Value{{
+									String:   stringPtr("exit"),
+									DateTime: nil,
+									Date:     nil,
+									Time:     nil,
+									Bool:     nil,
+									Number:   nil,
+									Float:    nil,
+									List:     nil,
+								}},
+							},
+							{
+								Key: "match", Values: []*Value{{
+									String:   stringPtr("*"),
+									DateTime: nil,
+									Date:     nil,
+									Time:     nil,
+									Bool:     nil,
+									Number:   nil,
+									Float:    nil,
+									List:     nil,
+								}},
+							},
+							{
+								Key: "flush_count", Values: []*Value{{
+									String:   nil,
+									DateTime: nil,
+									Date:     nil,
+									Time:     nil,
+									Bool:     nil,
+									Number:   numberPtr(10),
+									Float:    nil,
+									List:     nil,
+								}},
+							},
 						},
 					},
 				},
@@ -242,51 +271,16 @@ pipeline:
 				return
 			}
 
-			if want, got := len(tc.expected.Inputs), len(cfg.Inputs); want != got {
+			if want, got := len(tc.expected.Sections), len(cfg.Sections); want != got {
+				fmt.Printf("%+v\n", cfg.Sections)
 				t.Errorf("wants %v != got %v", want, got)
 				return
 			}
 
-			for idx, input := range tc.expected.Inputs {
-				if want, got := len(input), len(cfg.Inputs[idx]); want != got {
-					t.Errorf("input[%s] wants %v != got %v", idx, want, got)
-					fmt.Printf("GOT=%+v\n", cfg.Inputs[idx])
-					return
-				}
-			}
-
-			if want, got := len(tc.expected.Filters), len(cfg.Filters); want != got {
-				t.Errorf("wants %v != got %v", want, got)
-				return
-			}
-
-			for idx, filter := range tc.expected.Filters {
-				if want, got := len(filter), len(cfg.Filters[idx]); want != got {
-					t.Errorf("wants %v != got %v", want, got)
-					return
-				}
-			}
-
-			if want, got := len(tc.expected.Outputs), len(cfg.Outputs); want != got {
-				t.Errorf("wants %v != got %v", want, got)
-				return
-			}
-
-			for idx, output := range tc.expected.Outputs {
-				if want, got := len(output), len(cfg.Outputs[idx]); want != got {
-					t.Errorf("wants %v != got %v", want, got)
-					return
-				}
-			}
-
-			if want, got := len(tc.expected.Customs), len(cfg.Customs); want != got {
-				t.Errorf("wants %v != got %v", want, got)
-				return
-			}
-
-			for idx, custom := range tc.expected.Customs {
-				if want, got := len(custom), len(cfg.Customs[idx]); want != got {
-					t.Errorf("wants %v != got %v", want, got)
+			for idx, section := range tc.expected.Sections {
+				if want, got := len(section.Fields), len(cfg.Sections[idx].Fields); want != got {
+					t.Errorf("input[%d] wants %v != got %v", idx, want, got)
+					fmt.Printf("GOT=%+v\n", cfg.Sections[idx].Fields)
 					return
 				}
 			}
@@ -319,25 +313,13 @@ func TestNewConfigFromBytes(t *testing.T) {
 				asdasdasdasdasd
 				"@@"
 			`),
-			expected: Config{
-				Inputs:  map[string][]Field{},
-				Filters: map[string][]Field{},
-				Customs: map[string][]Field{},
-				Outputs: map[string][]Field{},
-				Parsers: map[string][]Field{},
-			},
+			expected:      Config{},
 			expectedError: true,
 		},
 		{
-			name:   "test invalid configuration",
-			config: []byte(""),
-			expected: Config{
-				Inputs:  map[string][]Field{},
-				Filters: map[string][]Field{},
-				Customs: map[string][]Field{},
-				Outputs: map[string][]Field{},
-				Parsers: map[string][]Field{},
-			},
+			name:          "test invalid configuration",
+			config:        []byte(""),
+			expected:      Config{},
 			expectedError: true,
 		},
 		{
@@ -354,8 +336,43 @@ func TestNewConfigFromBytes(t *testing.T) {
 					Time_Key time
 					Time_Format %d/%b/%Y:%H:%M:%S %z`),
 			expected: Config{
-				Parsers: map[string][]Field{
-					"apache2.0": []Field{
+				Sections: []ConfigSection{{
+					Type: InputSection,
+					Fields: []Field{
+						{Key: "name", Values: []*Value{{
+							String:   stringPtr("tail"),
+							DateTime: nil,
+							Date:     nil,
+							Time:     nil,
+							Bool:     nil,
+							Number:   nil,
+							Float:    nil,
+							List:     nil,
+						}}},
+						{Key: "tag", Values: []*Value{{
+							String:   stringPtr("kube.*"),
+							DateTime: nil,
+							Date:     nil,
+							Time:     nil,
+							Bool:     nil,
+							Number:   nil,
+							Float:    nil,
+							List:     nil,
+						}}},
+						{Key: "mem_buf_limit", Values: []*Value{{
+							String:   stringPtr("4.8M"),
+							DateTime: nil,
+							Date:     nil,
+							Time:     nil,
+							Bool:     nil,
+							Number:   nil,
+							Float:    nil,
+							List:     nil,
+						}}},
+					},
+				}, {
+					Type: ParserSection,
+					Fields: []Field{
 						{
 							Key: "Name",
 							Values: []*Value{{
@@ -371,7 +388,43 @@ func TestNewConfigFromBytes(t *testing.T) {
 						},
 						{
 							Key: "Format", Values: []*Value{{
-								String:   stringPtr("regexs"),
+								String:   stringPtr("regex"),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							}},
+						},
+						{
+							Key: "Regex", Values: []*Value{{
+								String:   stringPtr(`^(?<host>[^ ]*) [^ ]* (?<user>[^ ]*) \[(?<time>[^\]]*)\] "(?<method>\S+)(?: +(?<path>[^ ]*) +\S*)?" (?<code>[^ ]*) (?<size>[^ ]*)(?: "(?<referer>[^\"]*)" "(?<agent>.*)")?$`),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							}},
+						},
+						{
+							Key: "Time_Key", Values: []*Value{{
+								String:   stringPtr("time"),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							}},
+						},
+						{
+							Key: "Time_Format", Values: []*Value{{
+								String:   stringPtr("%d/%b/%Y:%H:%M:%S %z"),
 								DateTime: nil,
 								Date:     nil,
 								Time:     nil,
@@ -382,40 +435,9 @@ func TestNewConfigFromBytes(t *testing.T) {
 							}},
 						},
 					},
-				},
-				Inputs: map[string][]Field{"tail.0": {
-					{Key: "name", Values: []*Value{{
-						String:   stringPtr("tail"),
-						DateTime: nil,
-						Date:     nil,
-						Time:     nil,
-						Bool:     nil,
-						Number:   nil,
-						Float:    nil,
-						List:     nil,
-					}}},
-					{Key: "tag", Values: []*Value{{
-						String:   stringPtr("kube.*"),
-						DateTime: nil,
-						Date:     nil,
-						Time:     nil,
-						Bool:     nil,
-						Number:   nil,
-						Float:    nil,
-						List:     nil,
-					}}},
-					{Key: "mem_buf_limit", Values: []*Value{{
-						String:   stringPtr("4.8M"),
-						DateTime: nil,
-						Date:     nil,
-						Time:     nil,
-						Bool:     nil,
-						Number:   nil,
-						Float:    nil,
-						List:     nil,
-					}}},
 				}},
-			}},
+			},
+		},
 		{
 			name: "test multiple values",
 			config: []byte(`
@@ -425,8 +447,9 @@ func TestNewConfigFromBytes(t *testing.T) {
 					`),
 			// Rule  $topic ^tele\/[^\/]+\/SENSOR$ sonoff true
 			expected: Config{
-				Filters: map[string][]Field{
-					"rewrite_tag.0": []Field{
+				Sections: []ConfigSection{{
+					Type: FilterSection,
+					Fields: []Field{
 						{
 							Key: "Name",
 							Values: []*Value{{
@@ -472,9 +495,10 @@ func TestNewConfigFromBytes(t *testing.T) {
 							}},
 						},
 					},
-				},
-				Inputs: map[string][]Field{},
-			}},
+				}},
+			},
+		},
+
 		{
 			name: "test rewrite_tag",
 			config: []byte(`
@@ -486,11 +510,46 @@ func TestNewConfigFromBytes(t *testing.T) {
 						name rewrite_tag
 						Rule topic tele sonoff true
 						match mqtt
-				`),
+			`),
 			// Rule  $topic ^tele\/[^\/]+\/SENSOR$ sonoff true
 			expected: Config{
-				Filters: map[string][]Field{
-					"rewrite_tag.0": []Field{
+				Sections: []ConfigSection{{
+					Type: InputSection,
+					Fields: []Field{
+						{Key: "name", Values: []*Value{{
+							String:   stringPtr("tail"),
+							DateTime: nil,
+							Date:     nil,
+							Time:     nil,
+							Bool:     nil,
+							Number:   nil,
+							Float:    nil,
+							List:     nil,
+						}}},
+						{Key: "tag", Values: []*Value{{
+							String:   stringPtr("kube.*"),
+							DateTime: nil,
+							Date:     nil,
+							Time:     nil,
+							Bool:     nil,
+							Number:   nil,
+							Float:    nil,
+							List:     nil,
+						}}},
+						{Key: "mem_buf_limit", Values: []*Value{{
+							String:   stringPtr("4.8M"),
+							DateTime: nil,
+							Date:     nil,
+							Time:     nil,
+							Bool:     nil,
+							Number:   nil,
+							Float:    nil,
+							List:     nil,
+						}}},
+					},
+				}, {
+					Type: InputSection,
+					Fields: []Field{
 						{
 							Key: "Name",
 							Values: []*Value{{
@@ -531,120 +590,92 @@ func TestNewConfigFromBytes(t *testing.T) {
 							},
 						},
 					},
-				},
-				Inputs: map[string][]Field{"tail.0": []Field{
-					{Key: "name", Values: []*Value{{
-						String:   stringPtr("tail"),
-						DateTime: nil,
-						Date:     nil,
-						Time:     nil,
-						Bool:     nil,
-						Number:   nil,
-						Float:    nil,
-						List:     nil,
-					}}},
-					{Key: "tag", Values: []*Value{{
-						String:   stringPtr("kube.*"),
-						DateTime: nil,
-						Date:     nil,
-						Time:     nil,
-						Bool:     nil,
-						Number:   nil,
-						Float:    nil,
-						List:     nil,
-					}}},
-					{Key: "mem_buf_limit", Values: []*Value{{
-						String:   stringPtr("4.8M"),
-						DateTime: nil,
-						Date:     nil,
-						Time:     nil,
-						Bool:     nil,
-						Number:   nil,
-						Float:    nil,
-						List:     nil,
-					}}},
 				}},
-			}},
+			},
+		},
+
 		{
 			name: "test valid larger configuration",
 			config: []byte(`
-				[INPUT]
-					Name        tail
-					Tag         tail.01
-					Path        /var/log/system.log
-				[OUTPUT]
-					Name s3
-					Match *
-					bucket your-bucket
-			`),
+		[INPUT]
+			Name        tail
+			Tag         tail.01
+			Path        /var/log/system.log
+		[OUTPUT]
+			Name s3
+			Match *
+			bucket your-bucket
+	`),
 			expected: Config{
-				Inputs: map[string][]Field{"tail.0": []Field{
-					{Key: "name", Values: []*Value{{
-						String:   stringPtr("tail"),
-						DateTime: nil,
-						Date:     nil,
-						Time:     nil,
-						Bool:     nil,
-						Number:   nil,
-						Float:    nil,
-						List:     nil,
-					}}},
-					{Key: "tag", Values: []*Value{{
-						String:   stringPtr("tail.01"),
-						DateTime: nil,
-						Date:     nil,
-						Time:     nil,
-						Bool:     nil,
-						Number:   nil,
-						Float:    nil,
-						List:     nil,
-					}}},
-					{Key: "Path", Values: []*Value{{
-						String:   stringPtr("/var/log/system.log"),
-						DateTime: nil,
-						Date:     nil,
-						Time:     nil,
-						Bool:     nil,
-						Number:   nil,
-						Float:    nil,
-						List:     nil,
-					}}},
+				Sections: []ConfigSection{{
+					Type: InputSection,
+					Fields: []Field{
+						{Key: "name", Values: []*Value{{
+							String:   stringPtr("tail"),
+							DateTime: nil,
+							Date:     nil,
+							Time:     nil,
+							Bool:     nil,
+							Number:   nil,
+							Float:    nil,
+							List:     nil,
+						}}},
+						{Key: "tag", Values: []*Value{{
+							String:   stringPtr("tail.01"),
+							DateTime: nil,
+							Date:     nil,
+							Time:     nil,
+							Bool:     nil,
+							Number:   nil,
+							Float:    nil,
+							List:     nil,
+						}}},
+						{Key: "Path", Values: []*Value{{
+							String:   stringPtr("/var/log/system.log"),
+							DateTime: nil,
+							Date:     nil,
+							Time:     nil,
+							Bool:     nil,
+							Number:   nil,
+							Float:    nil,
+							List:     nil,
+						}}},
+					},
+				}, {
+					Type: OutputSection,
+					Fields: []Field{
+						{Key: "name", Values: []*Value{{
+							String:   stringPtr("s3"),
+							DateTime: nil,
+							Date:     nil,
+							Time:     nil,
+							Bool:     nil,
+							Number:   nil,
+							Float:    nil,
+							List:     nil,
+						}}},
+						{Key: "Match", Values: []*Value{{
+							String:   stringPtr("*"),
+							DateTime: nil,
+							Date:     nil,
+							Time:     nil,
+							Bool:     nil,
+							Number:   nil,
+							Float:    nil,
+							List:     nil,
+						}}},
+						{Key: "bucket", Values: []*Value{{
+							String:   stringPtr("your-bucket"),
+							DateTime: nil,
+							Date:     nil,
+							Time:     nil,
+							Bool:     nil,
+							Number:   nil,
+							Float:    nil,
+							List:     nil,
+						}}},
+					},
 				}},
-				Filters: map[string][]Field{},
-				Customs: map[string][]Field{},
-				Outputs: map[string][]Field{"s3.0": []Field{
-					{Key: "name", Values: []*Value{{
-						String:   stringPtr("s3"),
-						DateTime: nil,
-						Date:     nil,
-						Time:     nil,
-						Bool:     nil,
-						Number:   nil,
-						Float:    nil,
-						List:     nil,
-					}}},
-					{Key: "Match", Values: []*Value{{
-						String:   stringPtr("*"),
-						DateTime: nil,
-						Date:     nil,
-						Time:     nil,
-						Bool:     nil,
-						Number:   nil,
-						Float:    nil,
-						List:     nil,
-					}}},
-					{Key: "bucket", Values: []*Value{{
-						String:   stringPtr("your-bucket"),
-						DateTime: nil,
-						Date:     nil,
-						Time:     nil,
-						Bool:     nil,
-						Number:   nil,
-						Float:    nil,
-						List:     nil,
-					}}},
-				}},
-				Parsers: map[string][]Field{},
 			},
 			expectedError: false,
 		},
@@ -655,19 +686,20 @@ func TestNewConfigFromBytes(t *testing.T) {
 					Name tcp
 					Port 5556
 					Tag  foobar
-
+		
 				[INPUT]
 					Name tcp
 					Port 5557
 					Tag  foobat
-
+		
 				[OUTPUT]
 					Name  stdout
 					Match *
 			`),
 			expected: Config{
-				Inputs: map[string][]Field{
-					"tcp.0": {
+				Sections: []ConfigSection{{
+					Type: InputSection,
+					Fields: []Field{
 						{Key: "Name", Values: []*Value{{
 							String:   stringPtr("tcp"),
 							DateTime: nil,
@@ -699,7 +731,9 @@ func TestNewConfigFromBytes(t *testing.T) {
 							List:     nil,
 						}}},
 					},
-					"tcp.1": {
+				}, {
+					Type: InputSection,
+					Fields: []Field{
 						{Key: "Name", Values: []*Value{{
 							String:   stringPtr("tcp"),
 							DateTime: nil,
@@ -731,32 +765,31 @@ func TestNewConfigFromBytes(t *testing.T) {
 							List:     nil,
 						}}},
 					},
-				},
-				Filters: map[string][]Field{},
-				Customs: map[string][]Field{},
-				Outputs: map[string][]Field{"stdout.0": []Field{
-					{Key: "name", Values: []*Value{{
-						String:   stringPtr("stdout"),
-						DateTime: nil,
-						Date:     nil,
-						Time:     nil,
-						Bool:     nil,
-						Number:   nil,
-						Float:    nil,
-						List:     nil,
-					}}},
-					{Key: "Match", Values: []*Value{{
-						String:   stringPtr("*"),
-						DateTime: nil,
-						Date:     nil,
-						Time:     nil,
-						Bool:     nil,
-						Number:   nil,
-						Float:    nil,
-						List:     nil,
-					}}},
+				}, {
+					Type: OutputSection,
+					Fields: []Field{
+						{Key: "name", Values: []*Value{{
+							String:   stringPtr("stdout"),
+							DateTime: nil,
+							Date:     nil,
+							Time:     nil,
+							Bool:     nil,
+							Number:   nil,
+							Float:    nil,
+							List:     nil,
+						}}},
+						{Key: "Match", Values: []*Value{{
+							String:   stringPtr("*"),
+							DateTime: nil,
+							Date:     nil,
+							Time:     nil,
+							Bool:     nil,
+							Number:   nil,
+							Float:    nil,
+							List:     nil,
+						}}},
+					},
 				}},
-				Parsers: map[string][]Field{},
 			},
 			expectedError: false,
 		},
@@ -767,7 +800,7 @@ func TestNewConfigFromBytes(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			cfg, err := NewFromBytes(tc.config)
+			cfg, err := ParseINI(tc.config)
 			if tc.expectedError && err == nil {
 				t.Errorf("%s expected error", tc.name)
 				return
@@ -779,50 +812,16 @@ func TestNewConfigFromBytes(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			if want, got := len(tc.expected.Inputs), len(cfg.Inputs); want != got {
+
+			if want, got := len(tc.expected.Sections), len(cfg.Sections); want != got {
 				t.Errorf("wants %v != got %v", want, got)
 				return
 			}
 
-			for idx, input := range tc.expected.Inputs {
-				if want, got := len(input), len(cfg.Inputs[idx]); want != got {
-					t.Errorf("wants %v != got %v", want, got)
-					return
-				}
-			}
-
-			if want, got := len(tc.expected.Filters), len(cfg.Filters); want != got {
-				t.Errorf("wants %v != got %v", want, got)
-				return
-			}
-
-			for idx, filter := range tc.expected.Filters {
-				if want, got := len(filter), len(cfg.Filters[idx]); want != got {
-					t.Errorf("wants %v != got %v", want, got)
-					return
-				}
-			}
-
-			if want, got := len(tc.expected.Outputs), len(cfg.Outputs); want != got {
-				t.Errorf("wants %v != got %v", want, got)
-				return
-			}
-
-			for idx, output := range tc.expected.Outputs {
-				if want, got := len(output), len(cfg.Outputs[idx]); want != got {
-					t.Errorf("wants %v != got %v", want, got)
-					return
-				}
-			}
-
-			if want, got := len(tc.expected.Customs), len(cfg.Customs); want != got {
-				t.Errorf("wants %v != got %v", want, got)
-				return
-			}
-
-			for idx, custom := range tc.expected.Customs {
-				if want, got := len(custom), len(cfg.Customs[idx]); want != got {
-					t.Errorf("wants %v != got %v", want, got)
+			for idx, section := range tc.expected.Sections {
+				if want, got := len(section.Fields), len(cfg.Sections[idx].Fields); want != got {
+					t.Errorf("input[%d] wants %v != got %v", idx, want, got)
+					fmt.Printf("GOT=%+v\n", cfg.Sections[idx].Fields)
 					return
 				}
 			}
