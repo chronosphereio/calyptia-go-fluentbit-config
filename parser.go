@@ -2,6 +2,7 @@ package fluentbit_config
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -292,14 +293,6 @@ func ParseINI(data []byte) (*Config, error) {
 	return &config, nil
 }
 
-type yamlGrammarPipeline struct {
-	Inputs  []map[string]Fields `yaml:"inputs"`
-	Filters []map[string]Fields `yaml:"filters,omitempty"`
-	Parsers []map[string]Fields `yaml:"parsers,omitempty"`
-	Outputs []map[string]Fields `yaml:"outputs"`
-	Customs []map[string]Fields `yaml:"customs,omitempty"`
-}
-
 type Fields []Field
 
 func (fs *Fields) UnmarshalYAML(unmarshal func(v interface{}) error) error {
@@ -366,9 +359,82 @@ func (fs Fields) MarshalYAML() (interface{}, error) {
 	return fmap, nil
 }
 
+func (fs *Fields) UnmarshalJSON(raw []byte) error {
+	panic("FOO FIGHTORZ")
+	kv := make(map[string]interface{})
+	if err := json.Unmarshal(raw, &kv); err != nil {
+		return err
+	}
+	fields := make([]Field, 0)
+	for k, v := range kv {
+		if k == "name" {
+			continue
+		}
+		switch v.(type) {
+		case string:
+			str := v.(string)
+			fields = append(fields, Field{
+				Key: k,
+				Values: []*Value{{
+					String: &str,
+				}},
+			})
+		case int:
+			i := v.(int)
+			f := float64(i)
+			fields = append(fields, Field{
+				Key: k,
+				Values: []*Value{{
+					Number: &f,
+				}},
+			})
+		default:
+			return fmt.Errorf("unknown type: %+v", v)
+		}
+	}
+	*fs = fields
+
+	return nil
+}
+
+func (fs Fields) MarshalJSON() ([]byte, error) {
+	fmap := make(map[string]interface{})
+	for _, field := range fs {
+		for _, value := range field.Values {
+			switch true {
+			case value.String != nil:
+				fmap[field.Key] = *value.String
+			case value.DateTime != nil:
+				fmap[field.Key] = *value.DateTime
+			case value.Date != nil:
+				fmap[field.Key] = *value.Date
+			case value.Time != nil:
+				fmap[field.Key] = *value.Time
+			case value.Bool != nil:
+				fmap[field.Key] = *value.Bool
+			case value.Number != nil:
+				fmap[field.Key] = *value.Number
+			case value.Float != nil:
+				fmap[field.Key] = *value.Float
+			default:
+				return nil, fmt.Errorf("unknown type: %+v", field)
+			}
+		}
+	}
+	return json.Marshal(fmap)
+}
+
+type yamlGrammarPipeline struct {
+	Inputs  []map[string]Fields `yaml:"inputs" json:"inputs"`
+	Filters []map[string]Fields `yaml:"filters,omitempty" json:"filters,omitempty"`
+	Parsers []map[string]Fields `yaml:"parsers,omitempty" json:"parsers,omitempty"`
+	Outputs []map[string]Fields `yaml:"outputs" json:"outputs"`
+	Customs []map[string]Fields `yaml:"customs,omitempty" json:"customs,omitempty"`
+}
+
 type yamlGrammar struct {
-	Service  map[string]interface{} `yaml:"service"`
-	Pipeline yamlGrammarPipeline    `yaml:"pipeline"`
+	Service  map[string]interface{} `yaml:"service" json:"service"`
+	Pipeline yamlGrammarPipeline    `yaml:"pipeline" json:"pipeline"`
 }
 
 func getPluginName(fields map[string]Fields) string {
@@ -597,5 +663,209 @@ func ParseYAML(data []byte) (*Config, error) {
 }
 
 func ParseJSON(data []byte) (*Config, error) {
-	return nil, fmt.Errorf("WIP, unimplemented")
+	var g yamlGrammar
+	err := json.Unmarshal(data, &g)
+	if err != nil {
+		return nil, err
+	}
+
+	cfg := &Config{
+		PluginIndex: make(map[string]int),
+		Sections:    make([]ConfigSection, 0),
+	}
+
+	if g.Service != nil {
+		service := ConfigSection{
+			Type:   ServiceSection,
+			Fields: make([]Field, 0),
+		}
+		for k, v := range g.Service {
+			value := Value{}
+			switch v.(type) {
+			case string:
+				value.String = stringPtr(v.(string))
+			case int:
+				value.Number = numberPtr(float64(v.(int)))
+			case float64:
+				value.Float = numberPtr(v.(float64))
+			}
+			service.Fields = append(service.Fields, Field{
+				Key:    k,
+				Values: []*Value{&value},
+			})
+		}
+		cfg.Sections = append(cfg.Sections, service)
+	}
+
+	for _, fields := range g.Pipeline.Inputs {
+		pluginName := getPluginName(fields)
+		pluginIndex, ok := cfg.PluginIndex[pluginName]
+		if !ok {
+			pluginIndex = 0
+		}
+		id := fmt.Sprintf("%s.%d", pluginName, pluginIndex)
+		section := ConfigSection{
+			Type:   InputSection,
+			ID:     id,
+			Fields: make([]Field, 0),
+		}
+		for _, fields := range fields {
+			section.Fields = append(section.Fields, fields...)
+		}
+		section.Fields = append(section.Fields, Field{
+			Key:    "name",
+			Values: []*Value{{String: stringPtr(pluginName)}},
+		})
+		cfg.Sections = append(cfg.Sections, section)
+	}
+
+	for _, fields := range g.Pipeline.Filters {
+		pluginName := getPluginName(fields)
+		pluginIndex, ok := cfg.PluginIndex[pluginName]
+		if !ok {
+			pluginIndex = 0
+		}
+		id := fmt.Sprintf("%s.%d", pluginName, pluginIndex)
+		section := ConfigSection{
+			Type:   FilterSection,
+			ID:     id,
+			Fields: make([]Field, 0),
+		}
+		for _, fields := range fields {
+			section.Fields = append(section.Fields, fields...)
+		}
+		section.Fields = append(section.Fields, Field{
+			Key:    "name",
+			Values: []*Value{{String: stringPtr(pluginName)}},
+		})
+		cfg.Sections = append(cfg.Sections, section)
+	}
+	for _, fields := range g.Pipeline.Outputs {
+		pluginName := getPluginName(fields)
+		pluginIndex, ok := cfg.PluginIndex[pluginName]
+		if !ok {
+			pluginIndex = 0
+		}
+		id := fmt.Sprintf("%s.%d", pluginName, pluginIndex)
+		section := ConfigSection{
+			Type:   OutputSection,
+			ID:     id,
+			Fields: make([]Field, 0),
+		}
+		for _, fields := range fields {
+			section.Fields = append(section.Fields, fields...)
+		}
+		section.Fields = append(section.Fields, Field{
+			Key:    "name",
+			Values: []*Value{{String: stringPtr(pluginName)}},
+		})
+		cfg.Sections = append(cfg.Sections, section)
+	}
+
+	for _, fields := range g.Pipeline.Parsers {
+		pluginName := getPluginName(fields)
+		pluginIndex, ok := cfg.PluginIndex[pluginName]
+		if !ok {
+			pluginIndex = 0
+		}
+		id := fmt.Sprintf("%s.%d", pluginName, pluginIndex)
+		section := ConfigSection{
+			Type:   ParserSection,
+			ID:     id,
+			Fields: make([]Field, 0),
+		}
+		for _, fields := range fields {
+			section.Fields = append(section.Fields, fields...)
+		}
+		section.Fields = append(section.Fields, Field{
+			Key:    "name",
+			Values: []*Value{{String: stringPtr(pluginName)}},
+		})
+		cfg.Sections = append(cfg.Sections, section)
+	}
+
+	for _, fields := range g.Pipeline.Customs {
+		pluginName := getPluginName(fields)
+		pluginIndex, ok := cfg.PluginIndex[pluginName]
+		if !ok {
+			pluginIndex = 0
+		}
+		id := fmt.Sprintf("%s.%d", pluginName, pluginIndex)
+		section := ConfigSection{
+			Type:   CustomSection,
+			ID:     id,
+			Fields: make([]Field, 0),
+		}
+		for _, fields := range fields {
+			section.Fields = append(section.Fields, fields...)
+		}
+		section.Fields = append(section.Fields, Field{
+			Key:    "name",
+			Values: []*Value{{String: stringPtr(pluginName)}},
+		})
+		cfg.Sections = append(cfg.Sections, section)
+	}
+
+	return cfg, nil
+}
+
+func DumpJSON(cfg *Config) ([]byte, error) {
+	yg := yamlGrammar{
+		Service: make(map[string]interface{}),
+		Pipeline: yamlGrammarPipeline{
+			Inputs:  make([]map[string]Fields, 0),
+			Filters: make([]map[string]Fields, 0),
+			Outputs: make([]map[string]Fields, 0),
+			Parsers: make([]map[string]Fields, 0),
+			Customs: make([]map[string]Fields, 0),
+		},
+	}
+
+	for _, section := range cfg.Sections {
+		if section.Type == ServiceSection {
+			for _, field := range section.Fields {
+				switch true {
+				case field.Values[0].String != nil:
+					yg.Service[field.Key] = *field.Values[0].String
+				case field.Values[0].DateTime != nil:
+					yg.Service[field.Key] = *field.Values[0].DateTime
+				case field.Values[0].Date != nil:
+					yg.Service[field.Key] = *field.Values[0].Date
+				case field.Values[0].Time != nil:
+					yg.Service[field.Key] = *field.Values[0].Time
+				case field.Values[0].Bool != nil:
+					yg.Service[field.Key] = *field.Values[0].Bool
+				case field.Values[0].Number != nil:
+					yg.Service[field.Key] = *field.Values[0].Number
+				case field.Values[0].Float != nil:
+					yg.Service[field.Key] = *field.Values[0].Float
+				}
+			}
+		} else {
+			sectionName := getPluginNameParameter(section.Fields)
+			sectionmap := make(map[string]Fields)
+			sectionmap[sectionName] = make(Fields, 0)
+
+			for _, field := range section.Fields {
+				sectionmap[sectionName] = append(sectionmap[sectionName], Field{
+					Key:    field.Key,
+					Values: field.Values,
+				})
+			}
+			switch section.Type {
+			case InputSection:
+				yg.Pipeline.Inputs = append(yg.Pipeline.Inputs, sectionmap)
+			case FilterSection:
+				yg.Pipeline.Filters = append(yg.Pipeline.Filters, sectionmap)
+			case OutputSection:
+				yg.Pipeline.Outputs = append(yg.Pipeline.Outputs, sectionmap)
+			case ParserSection:
+				yg.Pipeline.Parsers = append(yg.Pipeline.Parsers, sectionmap)
+			case CustomSection:
+				yg.Pipeline.Customs = append(yg.Pipeline.Customs, sectionmap)
+			}
+		}
+	}
+
+	return json.MarshalIndent(&yg, "", "  ")
 }
