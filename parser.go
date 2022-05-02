@@ -187,19 +187,19 @@ func (value *Value) dumpValueINI(ini *bytes.Buffer) error {
 	// }
 	switch true {
 	case value.String != nil:
-		ini.Write([]byte(fmt.Sprintf("%s", *value.String)))
+		ini.Write([]byte(*value.String))
 	case value.DateTime != nil:
-		ini.Write([]byte(fmt.Sprintf("%s", *value.DateTime)))
+		ini.Write([]byte(*value.DateTime))
 	case value.Date != nil:
-		ini.Write([]byte(fmt.Sprintf("%s", *value.Date)))
+		ini.Write([]byte(*value.Date))
 	case value.Time != nil:
-		ini.Write([]byte(fmt.Sprintf("%s", *value.Time)))
+		ini.Write([]byte(*value.Time))
 	case value.TimeFormat != nil:
-		ini.Write([]byte(fmt.Sprintf("%s", *value.TimeFormat)))
+		ini.Write([]byte(*value.TimeFormat))
 	case value.Topic != nil:
 		ini.Write([]byte(fmt.Sprintf("$%s", *value.Topic)))
 	case value.Regex != nil:
-		ini.Write([]byte(fmt.Sprintf("%s", *value.Regex)))
+		ini.Write([]byte(*value.Regex))
 	case value.Bool != nil:
 		if *value.Bool {
 			ini.Write([]byte("on"))
@@ -359,44 +359,6 @@ func (fs Fields) MarshalYAML() (interface{}, error) {
 	return fmap, nil
 }
 
-func (fs *Fields) UnmarshalJSON(raw []byte) error {
-	panic("FOO FIGHTORZ")
-	kv := make(map[string]interface{})
-	if err := json.Unmarshal(raw, &kv); err != nil {
-		return err
-	}
-	fields := make([]Field, 0)
-	for k, v := range kv {
-		if k == "name" {
-			continue
-		}
-		switch v.(type) {
-		case string:
-			str := v.(string)
-			fields = append(fields, Field{
-				Key: k,
-				Values: []*Value{{
-					String: &str,
-				}},
-			})
-		case int:
-			i := v.(int)
-			f := float64(i)
-			fields = append(fields, Field{
-				Key: k,
-				Values: []*Value{{
-					Number: &f,
-				}},
-			})
-		default:
-			return fmt.Errorf("unknown type: %+v", v)
-		}
-	}
-	*fs = fields
-
-	return nil
-}
-
 func (fs Fields) MarshalJSON() ([]byte, error) {
 	fmap := make(map[string]interface{})
 	for _, field := range fs {
@@ -439,7 +401,7 @@ type yamlGrammar struct {
 
 func getPluginName(fields map[string]Fields) string {
 	rkey := ""
-	for key, _ := range fields {
+	for key := range fields {
 		rkey = key
 	}
 	return rkey
