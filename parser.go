@@ -2,6 +2,7 @@ package fluentbit_config
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -186,19 +187,19 @@ func (value *Value) dumpValueINI(ini *bytes.Buffer) error {
 	// }
 	switch true {
 	case value.String != nil:
-		ini.Write([]byte(fmt.Sprintf("%s", *value.String)))
+		ini.Write([]byte(*value.String))
 	case value.DateTime != nil:
-		ini.Write([]byte(fmt.Sprintf("%s", *value.DateTime)))
+		ini.Write([]byte(*value.DateTime))
 	case value.Date != nil:
-		ini.Write([]byte(fmt.Sprintf("%s", *value.Date)))
+		ini.Write([]byte(*value.Date))
 	case value.Time != nil:
-		ini.Write([]byte(fmt.Sprintf("%s", *value.Time)))
+		ini.Write([]byte(*value.Time))
 	case value.TimeFormat != nil:
-		ini.Write([]byte(fmt.Sprintf("%s", *value.TimeFormat)))
+		ini.Write([]byte(*value.TimeFormat))
 	case value.Topic != nil:
 		ini.Write([]byte(fmt.Sprintf("$%s", *value.Topic)))
 	case value.Regex != nil:
-		ini.Write([]byte(fmt.Sprintf("%s", *value.Regex)))
+		ini.Write([]byte(*value.Regex))
 	case value.Bool != nil:
 		if *value.Bool {
 			ini.Write([]byte("on"))
@@ -292,14 +293,6 @@ func ParseINI(data []byte) (*Config, error) {
 	return &config, nil
 }
 
-type yamlGrammarPipeline struct {
-	Inputs  []map[string]Fields `yaml:"inputs"`
-	Filters []map[string]Fields `yaml:"filters,omitempty"`
-	Parsers []map[string]Fields `yaml:"parsers,omitempty"`
-	Outputs []map[string]Fields `yaml:"outputs"`
-	Customs []map[string]Fields `yaml:"customs,omitempty"`
-}
-
 type Fields []Field
 
 func (fs *Fields) UnmarshalYAML(unmarshal func(v interface{}) error) error {
@@ -366,14 +359,49 @@ func (fs Fields) MarshalYAML() (interface{}, error) {
 	return fmap, nil
 }
 
+func (fs Fields) MarshalJSON() ([]byte, error) {
+	fmap := make(map[string]interface{})
+	for _, field := range fs {
+		for _, value := range field.Values {
+			switch true {
+			case value.String != nil:
+				fmap[field.Key] = *value.String
+			case value.DateTime != nil:
+				fmap[field.Key] = *value.DateTime
+			case value.Date != nil:
+				fmap[field.Key] = *value.Date
+			case value.Time != nil:
+				fmap[field.Key] = *value.Time
+			case value.Bool != nil:
+				fmap[field.Key] = *value.Bool
+			case value.Number != nil:
+				fmap[field.Key] = *value.Number
+			case value.Float != nil:
+				fmap[field.Key] = *value.Float
+			default:
+				return nil, fmt.Errorf("unknown type: %+v", field)
+			}
+		}
+	}
+	return json.Marshal(fmap)
+}
+
+type yamlGrammarPipeline struct {
+	Inputs  []map[string]Fields `yaml:"inputs" json:"inputs"`
+	Filters []map[string]Fields `yaml:"filters,omitempty" json:"filters,omitempty"`
+	Parsers []map[string]Fields `yaml:"parsers,omitempty" json:"parsers,omitempty"`
+	Outputs []map[string]Fields `yaml:"outputs" json:"outputs"`
+	Customs []map[string]Fields `yaml:"customs,omitempty" json:"customs,omitempty"`
+}
+
 type yamlGrammar struct {
-	Service  map[string]interface{} `yaml:"service"`
-	Pipeline yamlGrammarPipeline    `yaml:"pipeline"`
+	Service  map[string]interface{} `yaml:"service" json:"service"`
+	Pipeline yamlGrammarPipeline    `yaml:"pipeline" json:"pipeline"`
 }
 
 func getPluginName(fields map[string]Fields) string {
 	rkey := ""
-	for key, _ := range fields {
+	for key := range fields {
 		rkey = key
 	}
 	return rkey
@@ -388,7 +416,7 @@ func getPluginNameParameter(fields Fields) string {
 	return ""
 }
 
-func DumpYAML(cfg *Config) ([]byte, error) {
+func (cfg *Config) dumpYamlGrammar() *yamlGrammar {
 	yg := yamlGrammar{
 		Service: make(map[string]interface{}),
 		Pipeline: yamlGrammarPipeline{
@@ -446,27 +474,21 @@ func DumpYAML(cfg *Config) ([]byte, error) {
 		}
 	}
 
-	return yaml.Marshal(&yg)
+	return &yg
 }
 
-func ParseYAML(data []byte) (*Config, error) {
-	var g yamlGrammar
-	err := yaml.UnmarshalStrict(data, &g)
-	if err != nil {
-		return nil, err
-	}
-
+func (yg *yamlGrammar) dumpConfig() *Config {
 	cfg := &Config{
 		PluginIndex: make(map[string]int),
 		Sections:    make([]ConfigSection, 0),
 	}
 
-	if g.Service != nil {
+	if yg.Service != nil {
 		service := ConfigSection{
 			Type:   ServiceSection,
 			Fields: make([]Field, 0),
 		}
-		for k, v := range g.Service {
+		for k, v := range yg.Service {
 			value := Value{}
 			switch v.(type) {
 			case string:
@@ -484,7 +506,7 @@ func ParseYAML(data []byte) (*Config, error) {
 		cfg.Sections = append(cfg.Sections, service)
 	}
 
-	for _, fields := range g.Pipeline.Inputs {
+	for _, fields := range yg.Pipeline.Inputs {
 		pluginName := getPluginName(fields)
 		pluginIndex, ok := cfg.PluginIndex[pluginName]
 		if !ok {
@@ -506,7 +528,7 @@ func ParseYAML(data []byte) (*Config, error) {
 		cfg.Sections = append(cfg.Sections, section)
 	}
 
-	for _, fields := range g.Pipeline.Filters {
+	for _, fields := range yg.Pipeline.Filters {
 		pluginName := getPluginName(fields)
 		pluginIndex, ok := cfg.PluginIndex[pluginName]
 		if !ok {
@@ -527,7 +549,7 @@ func ParseYAML(data []byte) (*Config, error) {
 		})
 		cfg.Sections = append(cfg.Sections, section)
 	}
-	for _, fields := range g.Pipeline.Outputs {
+	for _, fields := range yg.Pipeline.Outputs {
 		pluginName := getPluginName(fields)
 		pluginIndex, ok := cfg.PluginIndex[pluginName]
 		if !ok {
@@ -549,7 +571,7 @@ func ParseYAML(data []byte) (*Config, error) {
 		cfg.Sections = append(cfg.Sections, section)
 	}
 
-	for _, fields := range g.Pipeline.Parsers {
+	for _, fields := range yg.Pipeline.Parsers {
 		pluginName := getPluginName(fields)
 		pluginIndex, ok := cfg.PluginIndex[pluginName]
 		if !ok {
@@ -571,7 +593,7 @@ func ParseYAML(data []byte) (*Config, error) {
 		cfg.Sections = append(cfg.Sections, section)
 	}
 
-	for _, fields := range g.Pipeline.Customs {
+	for _, fields := range yg.Pipeline.Customs {
 		pluginName := getPluginName(fields)
 		pluginIndex, ok := cfg.PluginIndex[pluginName]
 		if !ok {
@@ -593,9 +615,33 @@ func ParseYAML(data []byte) (*Config, error) {
 		cfg.Sections = append(cfg.Sections, section)
 	}
 
-	return cfg, nil
+	return cfg
+}
+
+func DumpYAML(cfg *Config) ([]byte, error) {
+	return yaml.Marshal(cfg.dumpYamlGrammar())
+}
+
+func ParseYAML(data []byte) (*Config, error) {
+	var g yamlGrammar
+	err := yaml.UnmarshalStrict(data, &g)
+	if err != nil {
+		return nil, err
+	}
+
+	return g.dumpConfig(), nil
 }
 
 func ParseJSON(data []byte) (*Config, error) {
-	return nil, fmt.Errorf("WIP, unimplemented")
+	var g yamlGrammar
+	err := json.Unmarshal(data, &g)
+	if err != nil {
+		return nil, err
+	}
+
+	return g.dumpConfig(), nil
+}
+
+func DumpJSON(cfg *Config) ([]byte, error) {
+	return json.MarshalIndent(cfg.dumpYamlGrammar(), "", "  ")
 }

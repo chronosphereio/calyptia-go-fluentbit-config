@@ -300,6 +300,320 @@ pipeline:
 	}
 }
 
+func TestParseJSON(t *testing.T) {
+	tt := []struct {
+		name          string
+		config        []byte
+		expected      Config
+		expectedError bool
+	}{
+		{
+			name: "basic configuration",
+			config: []byte(`{
+  "service": {
+    "flush_interval": 1,
+    "log_level": "error"
+  },
+  "pipeline": {
+    "inputs": [
+      {
+        "dummy": {
+          "name": "dummy",
+          "rate": 5
+        }
+      },
+      {
+        "dummy": {
+          "dummy": "{\"FOO\": \"BAR\"}",
+          "name": "dummy",
+          "rate": 1
+        }
+      }
+    ],
+    "filters": [
+      {
+        "record_modifier": {
+          "match": "*",
+          "name": "record_modifier",
+          "record": "powered_by calyptia"
+        }
+      }
+    ],
+    "outputs": [
+      {
+        "stdout": {
+          "match": "*",
+          "name": "stdout"
+        }
+      },
+      {
+        "exit": {
+          "flush_count": 10,
+          "match": "*",
+          "name": "exit"
+        }
+      }
+    ]
+  }
+}`),
+			expected: Config{
+				Sections: []ConfigSection{
+					{
+						Type: ServiceSection,
+						Fields: []Field{
+							{Key: "flush_interval", Values: []*Value{{
+								String:   nil,
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   numberPtr(1),
+								Float:    nil,
+								List:     nil,
+							}}},
+							{Key: "log_level", Values: []*Value{{
+								String:   stringPtr("error"),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							}}},
+						},
+					},
+					{
+						Type: InputSection,
+						ID:   "dummy.0",
+						Fields: []Field{{
+							Key: "name", Values: []*Value{{
+								String:   stringPtr("dummy"),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							}},
+						},
+							{
+								Key: "rate", Values: []*Value{{
+									String:   nil,
+									DateTime: nil,
+									Date:     nil,
+									Time:     nil,
+									Bool:     nil,
+									Number:   numberPtr(5),
+									Float:    nil,
+									List:     nil,
+								}},
+							},
+						},
+					},
+					{
+						Type: InputSection,
+						ID:   "dummy.1",
+						Fields: []Field{{
+							Key: "name", Values: []*Value{{
+								String:   stringPtr("dummy"),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							}},
+						},
+							{
+								Key: "dummy", Values: []*Value{{
+									String:   stringPtr(`{"FOO": "BAR"}`),
+									DateTime: nil,
+									Date:     nil,
+									Time:     nil,
+									Bool:     nil,
+									Number:   nil,
+									Float:    nil,
+									List:     nil,
+								}},
+							},
+							{
+								Key: "rate", Values: []*Value{{
+									String:   nil,
+									DateTime: nil,
+									Date:     nil,
+									Time:     nil,
+									Bool:     nil,
+									Number:   numberPtr(1),
+									Float:    nil,
+									List:     nil,
+								}},
+							},
+						},
+					},
+					{
+						Type: FilterSection,
+						ID:   "record_modifier.0",
+						Fields: []Field{{
+							Key: "name", Values: []*Value{{
+								String:   stringPtr("record_modifier"),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							}},
+						},
+							{
+								Key: "match", Values: []*Value{{
+									String:   stringPtr("*"),
+									DateTime: nil,
+									Date:     nil,
+									Time:     nil,
+									Bool:     nil,
+									Number:   nil,
+									Float:    nil,
+									List:     nil,
+								}},
+							},
+							{
+								Key: "record", Values: []*Value{{
+									String:   stringPtr("powered_by calyptia"),
+									DateTime: nil,
+									Date:     nil,
+									Time:     nil,
+									Bool:     nil,
+									Number:   nil,
+									Float:    nil,
+									List:     nil,
+								}},
+							},
+						},
+					},
+					{
+						Type: OutputSection,
+						ID:   "stdout.0",
+						Fields: []Field{{
+							Key: "name", Values: []*Value{{
+								String:   stringPtr("stdout"),
+								DateTime: nil,
+								Date:     nil,
+								Time:     nil,
+								Bool:     nil,
+								Number:   nil,
+								Float:    nil,
+								List:     nil,
+							}},
+						},
+							{
+								Key: "match", Values: []*Value{{
+									String:   stringPtr("*"),
+									DateTime: nil,
+									Date:     nil,
+									Time:     nil,
+									Bool:     nil,
+									Number:   nil,
+									Float:    nil,
+									List:     nil,
+								}},
+							},
+						},
+					},
+					{
+						Type: OutputSection,
+						ID:   "exit.1",
+						Fields: []Field{
+							{
+								Key: "name", Values: []*Value{{
+									String:   stringPtr("exit"),
+									DateTime: nil,
+									Date:     nil,
+									Time:     nil,
+									Bool:     nil,
+									Number:   nil,
+									Float:    nil,
+									List:     nil,
+								}},
+							},
+							{
+								Key: "match", Values: []*Value{{
+									String:   stringPtr("*"),
+									DateTime: nil,
+									Date:     nil,
+									Time:     nil,
+									Bool:     nil,
+									Number:   nil,
+									Float:    nil,
+									List:     nil,
+								}},
+							},
+							{
+								Key: "flush_count", Values: []*Value{{
+									String:   nil,
+									DateTime: nil,
+									Date:     nil,
+									Time:     nil,
+									Bool:     nil,
+									Number:   numberPtr(10),
+									Float:    nil,
+									List:     nil,
+								}},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg, err := ParseYAML(tc.config)
+			if tc.expectedError && err == nil {
+				t.Errorf("%s expected error", tc.name)
+				return
+			}
+			if tc.expectedError && err != nil {
+				return
+			}
+			if !tc.expectedError && err != nil {
+				t.Error(err)
+				return
+			}
+
+			if want, got := len(tc.expected.Sections), len(cfg.Sections); want != got {
+				fmt.Printf("%+v\n", cfg.Sections)
+				t.Errorf("wants %v != got %v", want, got)
+				return
+			}
+
+			for idx, section := range tc.expected.Sections {
+				if want, got := len(section.Fields), len(cfg.Sections[idx].Fields); want != got {
+					t.Errorf("input[%d] wants %v != got %v", idx, want, got)
+					fmt.Printf("GOT=%+v\n", cfg.Sections[idx].Fields)
+					return
+				}
+			}
+
+			y, err := DumpJSON(cfg)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			if !bytes.Equal(y, tc.config) {
+				fmt.Printf("\n'%s'\n!=\n'%s'\n", string(y), string(tc.config))
+				t.Errorf("json is not reversible")
+				return
+			}
+		})
+	}
+}
+
 func TestNewConfigFromBytes(t *testing.T) {
 	tt := []struct {
 		name          string
