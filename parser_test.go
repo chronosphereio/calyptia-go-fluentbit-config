@@ -648,7 +648,8 @@ func TestNewConfigFromBytes(t *testing.T) {
 					Format regex
 					Regex  ^(?<host>[^ ]*) [^ ]* (?<user>[^ ]*) \[(?<time>[^\]]*)\] "(?<method>\S+)(?: +(?<path>[^ ]*) +\S*)?" (?<code>[^ ]*) (?<size>[^ ]*)(?: "(?<referer>[^\"]*)" "(?<agent>.*)")?$
 					Time_Key time
-					Time_Format %d/%b/%Y:%H:%M:%S %z`),
+					Time_Format %d/%b/%Y:%H:%M:%S %z
+			`),
 			expected: Config{
 				Sections: []ConfigSection{{
 					Type: InputSection,
