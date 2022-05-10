@@ -655,34 +655,13 @@ func TestNewConfigFromBytes(t *testing.T) {
 					Type: InputSection,
 					Fields: []Field{
 						{Key: "name", Values: []*Value{{
-							String:   stringPtr("tail"),
-							DateTime: nil,
-							Date:     nil,
-							Time:     nil,
-							Bool:     nil,
-							Number:   nil,
-							Float:    nil,
-							List:     nil,
+							String: stringPtr("tail"),
 						}}},
 						{Key: "tag", Values: []*Value{{
-							String:   stringPtr("kube.*"),
-							DateTime: nil,
-							Date:     nil,
-							Time:     nil,
-							Bool:     nil,
-							Number:   nil,
-							Float:    nil,
-							List:     nil,
+							String: stringPtr("kube.*"),
 						}}},
 						{Key: "mem_buf_limit", Values: []*Value{{
-							String:   stringPtr("4.8M"),
-							DateTime: nil,
-							Date:     nil,
-							Time:     nil,
-							Bool:     nil,
-							Number:   nil,
-							Float:    nil,
-							List:     nil,
+							String: stringPtr("4.8M"),
 						}}},
 					},
 				}, {
@@ -691,62 +670,27 @@ func TestNewConfigFromBytes(t *testing.T) {
 						{
 							Key: "Name",
 							Values: []*Value{{
-								String:   stringPtr("apache2"),
-								DateTime: nil,
-								Date:     nil,
-								Time:     nil,
-								Bool:     nil,
-								Number:   nil,
-								Float:    nil,
-								List:     nil,
+								String: stringPtr("apache2"),
 							}},
 						},
 						{
 							Key: "Format", Values: []*Value{{
-								String:   stringPtr("regex"),
-								DateTime: nil,
-								Date:     nil,
-								Time:     nil,
-								Bool:     nil,
-								Number:   nil,
-								Float:    nil,
-								List:     nil,
+								String: stringPtr("regex"),
 							}},
 						},
 						{
 							Key: "Regex", Values: []*Value{{
-								String:   stringPtr(`^(?<host>[^ ]*) [^ ]* (?<user>[^ ]*) \[(?<time>[^\]]*)\] "(?<method>\S+)(?: +(?<path>[^ ]*) +\S*)?" (?<code>[^ ]*) (?<size>[^ ]*)(?: "(?<referer>[^\"]*)" "(?<agent>.*)")?$`),
-								DateTime: nil,
-								Date:     nil,
-								Time:     nil,
-								Bool:     nil,
-								Number:   nil,
-								Float:    nil,
-								List:     nil,
+								Regex: stringPtr(`^(?<host>[^ ]*) [^ ]* (?<user>[^ ]*) \[(?<time>[^\]]*)\] "(?<method>\S+)(?: +(?<path>[^ ]*) +\S*)?" (?<code>[^ ]*) (?<size>[^ ]*)(?: "(?<referer>[^\"]*)" "(?<agent>.*)")?$`),
 							}},
 						},
 						{
 							Key: "Time_Key", Values: []*Value{{
-								String:   stringPtr("time"),
-								DateTime: nil,
-								Date:     nil,
-								Time:     nil,
-								Bool:     nil,
-								Number:   nil,
-								Float:    nil,
-								List:     nil,
+								String: stringPtr("time"),
 							}},
 						},
 						{
 							Key: "Time_Format", Values: []*Value{{
-								String:   stringPtr("%d/%b/%Y:%H:%M:%S %z"),
-								DateTime: nil,
-								Date:     nil,
-								Time:     nil,
-								Bool:     nil,
-								Number:   nil,
-								Float:    nil,
-								List:     nil,
+								TimeFormat: stringPtr("%d/%b/%Y:%H:%M:%S %z"),
 							}},
 						},
 					},
@@ -822,9 +766,9 @@ func TestNewConfigFromBytes(t *testing.T) {
 						tag kube.*
 						mem_buf_limit 4.8M
 					[FILTER]
-						name rewrite_tag
+						Name rewrite_tag
+						Match mqtt
 						Rule topic tele sonoff true
-						match mqtt
 			`),
 			// Rule  $topic ^tele\/[^\/]+\/SENSOR$ sonoff true
 			expected: Config{
@@ -832,34 +776,13 @@ func TestNewConfigFromBytes(t *testing.T) {
 					Type: InputSection,
 					Fields: []Field{
 						{Key: "name", Values: []*Value{{
-							String:   stringPtr("tail"),
-							DateTime: nil,
-							Date:     nil,
-							Time:     nil,
-							Bool:     nil,
-							Number:   nil,
-							Float:    nil,
-							List:     nil,
+							String: stringPtr("tail"),
 						}}},
 						{Key: "tag", Values: []*Value{{
-							String:   stringPtr("kube.*"),
-							DateTime: nil,
-							Date:     nil,
-							Time:     nil,
-							Bool:     nil,
-							Number:   nil,
-							Float:    nil,
-							List:     nil,
+							String: stringPtr("kube.*"),
 						}}},
 						{Key: "mem_buf_limit", Values: []*Value{{
-							String:   stringPtr("4.8M"),
-							DateTime: nil,
-							Date:     nil,
-							Time:     nil,
-							Bool:     nil,
-							Number:   nil,
-							Float:    nil,
-							List:     nil,
+							String: stringPtr("4.8M"),
 						}}},
 					},
 				}, {
@@ -868,40 +791,20 @@ func TestNewConfigFromBytes(t *testing.T) {
 						{
 							Key: "Name",
 							Values: []*Value{{
-								String:   stringPtr("rewrite_tag"),
-								DateTime: nil,
-								Date:     nil,
-								Time:     nil,
-								Bool:     nil,
-								Number:   nil,
-								Float:    nil,
-								List:     nil,
+								String: stringPtr("rewrite_tag"),
 							}},
 						},
 						{
 							Key: "Match", Values: []*Value{{
-								String:   stringPtr("mqtt"),
-								DateTime: nil,
-								Date:     nil,
-								Time:     nil,
-								Bool:     nil,
-								Number:   nil,
-								Float:    nil,
-								List:     nil,
+								String: stringPtr("mqtt"),
 							}},
 						},
 						{
 							Key: "Rule", Values: []*Value{
-								{
-									String:   stringPtr("mqtt"),
-									DateTime: nil,
-									Date:     nil,
-									Time:     nil,
-									Bool:     nil,
-									Number:   nil,
-									Float:    nil,
-									List:     nil,
-								},
+								{String: stringPtr("topic")},
+								{String: stringPtr("tele")},
+								{String: stringPtr("sonoff")},
+								{String: stringPtr("true")},
 							},
 						},
 					},
@@ -926,68 +829,26 @@ func TestNewConfigFromBytes(t *testing.T) {
 					Type: InputSection,
 					Fields: []Field{
 						{Key: "name", Values: []*Value{{
-							String:   stringPtr("tail"),
-							DateTime: nil,
-							Date:     nil,
-							Time:     nil,
-							Bool:     nil,
-							Number:   nil,
-							Float:    nil,
-							List:     nil,
+							String: stringPtr("tail"),
 						}}},
 						{Key: "tag", Values: []*Value{{
-							String:   stringPtr("tail.01"),
-							DateTime: nil,
-							Date:     nil,
-							Time:     nil,
-							Bool:     nil,
-							Number:   nil,
-							Float:    nil,
-							List:     nil,
+							String: stringPtr("tail.01"),
 						}}},
 						{Key: "Path", Values: []*Value{{
-							String:   stringPtr("/var/log/system.log"),
-							DateTime: nil,
-							Date:     nil,
-							Time:     nil,
-							Bool:     nil,
-							Number:   nil,
-							Float:    nil,
-							List:     nil,
+							String: stringPtr("/var/log/system.log"),
 						}}},
 					},
 				}, {
 					Type: OutputSection,
 					Fields: []Field{
 						{Key: "name", Values: []*Value{{
-							String:   stringPtr("s3"),
-							DateTime: nil,
-							Date:     nil,
-							Time:     nil,
-							Bool:     nil,
-							Number:   nil,
-							Float:    nil,
-							List:     nil,
+							String: stringPtr("s3"),
 						}}},
 						{Key: "Match", Values: []*Value{{
-							String:   stringPtr("*"),
-							DateTime: nil,
-							Date:     nil,
-							Time:     nil,
-							Bool:     nil,
-							Number:   nil,
-							Float:    nil,
-							List:     nil,
+							String: stringPtr("*"),
 						}}},
 						{Key: "bucket", Values: []*Value{{
-							String:   stringPtr("your-bucket"),
-							DateTime: nil,
-							Date:     nil,
-							Time:     nil,
-							Bool:     nil,
-							Number:   nil,
-							Float:    nil,
-							List:     nil,
+							String: stringPtr("your-bucket"),
 						}}},
 					},
 				}},
@@ -995,7 +856,7 @@ func TestNewConfigFromBytes(t *testing.T) {
 			expectedError: false,
 		},
 		{
-			name: "test valid larger configuration",
+			name: "test valid multiple inputs",
 			config: []byte(`
 				[INPUT]
 					Name tcp
@@ -1016,92 +877,37 @@ func TestNewConfigFromBytes(t *testing.T) {
 					Type: InputSection,
 					Fields: []Field{
 						{Key: "Name", Values: []*Value{{
-							String:   stringPtr("tcp"),
-							DateTime: nil,
-							Date:     nil,
-							Time:     nil,
-							Bool:     nil,
-							Number:   nil,
-							Float:    nil,
-							List:     nil,
+							String: stringPtr("tcp"),
 						}}},
 						{Key: "Port", Values: []*Value{{
-							String:   nil,
-							DateTime: nil,
-							Date:     nil,
-							Time:     nil,
-							Bool:     nil,
-							Number:   numberPtr(5556),
-							Float:    nil,
-							List:     nil,
+							String: stringPtr("5556"),
+							List:   nil,
 						}}},
 						{Key: "Tag", Values: []*Value{{
-							String:   stringPtr("foobar"),
-							DateTime: nil,
-							Date:     nil,
-							Time:     nil,
-							Bool:     nil,
-							Number:   nil,
-							Float:    nil,
-							List:     nil,
+							String: stringPtr("foobar"),
 						}}},
 					},
 				}, {
 					Type: InputSection,
 					Fields: []Field{
 						{Key: "Name", Values: []*Value{{
-							String:   stringPtr("tcp"),
-							DateTime: nil,
-							Date:     nil,
-							Time:     nil,
-							Bool:     nil,
-							Number:   nil,
-							Float:    nil,
-							List:     nil,
+							String: stringPtr("tcp"),
 						}}},
 						{Key: "Port", Values: []*Value{{
-							String:   nil,
-							DateTime: nil,
-							Date:     nil,
-							Time:     nil,
-							Bool:     nil,
-							Number:   numberPtr(5557),
-							Float:    nil,
-							List:     nil,
+							String: stringPtr("5557"),
 						}}},
 						{Key: "Tag", Values: []*Value{{
-							String:   stringPtr("foobat"),
-							DateTime: nil,
-							Date:     nil,
-							Time:     nil,
-							Bool:     nil,
-							Number:   nil,
-							Float:    nil,
-							List:     nil,
+							String: stringPtr("foobat"),
 						}}},
 					},
 				}, {
 					Type: OutputSection,
 					Fields: []Field{
 						{Key: "name", Values: []*Value{{
-							String:   stringPtr("stdout"),
-							DateTime: nil,
-							Date:     nil,
-							Time:     nil,
-							Bool:     nil,
-							Number:   nil,
-							Float:    nil,
-							List:     nil,
+							String: stringPtr("stdout"),
 						}}},
 						{Key: "Match", Values: []*Value{{
-							String:   stringPtr("*"),
-							DateTime: nil,
-							Date:     nil,
-							Time:     nil,
-							Bool:     nil,
-							Number:   nil,
-							Float:    nil,
-							List:     nil,
+							String: stringPtr("*"),
 						}}},
 					},
 				}},
@@ -1109,38 +915,37 @@ func TestNewConfigFromBytes(t *testing.T) {
 			expectedError: false,
 		},
 		{
-			name: "test valid larger configuration",
+			name: "test time formats",
 			config: []byte(`
-[PARSER]
-	Name        syslog-rfc3164-local
-	Format      regex
-	Regex       ^\<(?<pri>[0-9]+)\>(?<time>[^ ]* {1,2}[^ ]* [^ ]*) (?<ident>[a-zA-Z0-9_\/\.\-]*)(?:\[(?<pid>[0-9]+)\])?(?:[^\:]*\:)? *(?<message>.*)$
-	Time_Key    time
-	Time_Format %b %d %H:%M:%S
-	Time_Keep   On
+				[PARSER]
+					Name        syslog-rfc3164-local
+					Format      regex
+					Regex       ^\<(?<pri>[0-9]+)\>(?<time>[^ ]* {1,2}[^ ]* [^ ]*) (?<ident>[a-zA-Z0-9_\/\.\-]*)(?:\[(?<pid>[0-9]+)\])?(?:[^\:]*\:)? *(?<message>.*)$
+					Time_Key    time
+					Time_Format %b %d %H:%M:%S
+					Time_Keep   On
 			`),
-			// %b %d %H:%M:%S
 			expected: Config{
 				Sections: []ConfigSection{{
 					Type: ParserSection,
 					Fields: []Field{
 						{Key: "Name", Values: []*Value{{
-							String:   stringPtr("syslog-rfc3164-local"),
+							String: stringPtr("syslog-rfc3164-local"),
 						}}},
 						{Key: "Format", Values: []*Value{{
-							String:   stringPtr("regex"),
+							String: stringPtr("regex"),
 						}}},
 						{Key: "Regex", Values: []*Value{{
-							String:   stringPtr(`^\<(?<pri>[0-9]+)\>(?<time>[^ ]* {1,2}[^ ]* [^ ]*) (?<ident>[a-zA-Z0-9_\/\.\-]*)(?:\[(?<pid>[0-9]+)\])?(?:[^\:]*\:)? *(?<message>.*)$`),
+							Regex: stringPtr(`^\<(?<pri>[0-9]+)\>(?<time>[^ ]* {1,2}[^ ]* [^ ]*) (?<ident>[a-zA-Z0-9_\/\.\-]*)(?:\[(?<pid>[0-9]+)\])?(?:[^\:]*\:)? *(?<message>.*)$`),
 						}}},
 						{Key: "Time_Key", Values: []*Value{{
-							String:   stringPtr("time"),
+							String: stringPtr("time"),
 						}}},
 						{Key: "Time_Format", Values: []*Value{{
-							String:   stringPtr("%b %d %H:%M:%S"),
+							TimeFormat: stringPtr("%b %d %H:%M:%S"),
 						}}},
 						{Key: "Time_Keep", Values: []*Value{{
-							String:   stringPtr("On"),
+							String: stringPtr("On"),
 						}}},
 					},
 				}},
@@ -1174,9 +979,21 @@ func TestNewConfigFromBytes(t *testing.T) {
 
 			for idx, section := range tc.expected.Sections {
 				if want, got := len(section.Fields), len(cfg.Sections[idx].Fields); want != got {
-					t.Errorf("input[%d] wants %v != got %v", idx, want, got)
-					fmt.Printf("GOT=%+v\n", cfg.Sections[idx].Fields)
+					t.Errorf("section[%d] wants %v != got %v", idx, want, got)
 					return
+				}
+
+				for fidx, field := range section.Fields {
+					if want, got := len(field.Values), len(cfg.Sections[idx].Fields[fidx].Values); want != got {
+						t.Errorf("section[%d].fields[%s:%d] %d != got %d", idx, field.Key, fidx, want, got)
+						return
+					}
+					for vidx, value := range cfg.Sections[idx].Fields[fidx].Values {
+						if !value.Equals(field.Values[vidx]) {
+							t.Errorf("unexpected value section[%d].fields[%s]", idx, field.Key)
+							return
+						}
+					}
 				}
 			}
 
