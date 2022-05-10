@@ -16,7 +16,7 @@ var (
 		{"DateTime", `\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(-\d\d:\d\d)?`, nil},
 		{"Date", `\d\d\d\d-\d\d-\d\d`, nil},
 		{"Time", `\d\d:\d\d:\d\d(\.\d+)?`, nil},
-		{"TimeFormat", `^((%[dbYHMSz])(\:|\/|\ |))+$`, nil},
+		{"TimeFormat", `((%[dbYHMSz])(\:|\/|\ |\-|))+`, nil},
 		{"Ident", `[a-zA-Z_\.\*\-0-9\/\{\}]+`, nil},
 		{"String", `[a-zA-Z0-9_\.\/\*\-]+`, nil},
 		{"Number", `[-+]?[.0-9]+\b`, nil},
@@ -66,6 +66,87 @@ type Value struct {
 	Number     *float64 `| @Number`
 	Float      *float64 `| @Float`
 	List       []*Value `| "[" ( @@ ( "," @@ )* )? "]"`
+}
+
+func (a *Value) Equals(b *Value) bool {
+	if a.String != nil {
+		if b.String == nil {
+			return false
+		}
+		return *a.String == *b.String
+	} else if a.DateTime != nil {
+		if b.DateTime == nil {
+			return false
+		}
+		return *a.DateTime == *b.DateTime
+	} else if a.Date != nil {
+		if b.Date == nil {
+			return false
+		}
+		return *a.Date == *b.Date
+	} else if a.Time != nil {
+		if b.Time == nil {
+			return false
+		}
+		return *a.Time == *b.Time
+	} else if a.TimeFormat != nil {
+		if b.TimeFormat == nil {
+			return false
+		}
+		return *a.TimeFormat == *b.TimeFormat
+	} else if a.Topic != nil {
+		if b.Topic == nil {
+			return false
+		}
+		return *a.Topic == *b.Topic
+	} else if a.Regex != nil {
+		if b.Regex == nil {
+			return false
+		}
+		return *a.Regex == *b.Regex
+	} else if a.Bool != nil {
+		if b.Bool == nil {
+			return false
+		}
+		return *a.Bool == *b.Bool
+	} else if a.Number != nil {
+		if b.Number == nil {
+			return false
+		}
+		return *a.Number == *b.Number
+	} else if a.Float != nil {
+		if b.Float == nil {
+			return false
+		}
+		return *a.Float == *b.Float
+	}
+	return false
+}
+
+func (v *Value) Value() interface{} {
+	switch {
+	case v.String != nil:
+		return *v.String
+	case v.DateTime != nil:
+		return *v.DateTime
+	case v.Date != nil:
+		return *v.Date
+	case v.Time != nil:
+		return *v.Time
+	case v.TimeFormat != nil:
+		return *v.TimeFormat
+	case v.Topic != nil:
+		return *v.Topic
+	case v.Regex != nil:
+		return *v.Regex
+	case v.Bool != nil:
+		return *v.Bool
+	case v.Number != nil:
+		return *v.Number
+	case v.Float != nil:
+		return *v.Float
+	}
+	return nil
 }
 
 type ConfigSectionType int
