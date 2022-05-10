@@ -1107,6 +1107,45 @@ func TestNewConfigFromBytes(t *testing.T) {
 			},
 			expectedError: false,
 		},
+		{
+			name: "test valid larger configuration",
+			config: []byte(`
+[PARSER]
+	Name        syslog-rfc3164-local
+	Format      regex
+	Regex       ^\<(?<pri>[0-9]+)\>(?<time>[^ ]* {1,2}[^ ]* [^ ]*) (?<ident>[a-zA-Z0-9_\/\.\-]*)(?:\[(?<pid>[0-9]+)\])?(?:[^\:]*\:)? *(?<message>.*)$
+	Time_Key    time
+	Time_Format %b %d %H:%M:%S
+	Time_Keep   On
+			`),
+			// %b %d %H:%M:%S
+			expected: Config{
+				Sections: []ConfigSection{{
+					Type: ParserSection,
+					Fields: []Field{
+						{Key: "Name", Values: []*Value{{
+							String:   stringPtr("syslog-rfc3164-local"),
+						}}},
+						{Key: "Format", Values: []*Value{{
+							String:   stringPtr("regex"),
+						}}},
+						{Key: "Regex", Values: []*Value{{
+							String:   stringPtr(`^\<(?<pri>[0-9]+)\>(?<time>[^ ]* {1,2}[^ ]* [^ ]*) (?<ident>[a-zA-Z0-9_\/\.\-]*)(?:\[(?<pid>[0-9]+)\])?(?:[^\:]*\:)? *(?<message>.*)$`),
+						}}},
+						{Key: "Time_Key", Values: []*Value{{
+							String:   stringPtr("time"),
+						}}},
+						{Key: "Time_Format", Values: []*Value{{
+							String:   stringPtr("%b %d %H:%M:%S"),
+						}}},
+						{Key: "Time_Keep", Values: []*Value{{
+							String:   stringPtr("On"),
+						}}},
+					},
+				}},
+			},
+			expectedError: false,
+		},
 	}
 
 	stripIndentation := regexp.MustCompile("\n[\t]+")
