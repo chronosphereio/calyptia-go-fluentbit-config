@@ -924,6 +924,13 @@ func TestNewConfigFromBytes(t *testing.T) {
 					Time_Key    time
 					Time_Format %b %d %H:%M:%S
 					Time_Keep   On
+				[PARSER]
+					Name        mongodb
+					Format      regex
+					Regex       ^(?<time>[^ ]*)\s+(?<severity>\w)\s+(?<component>[^ ]+)\s+\[(?<context>[^\]]+)]\s+(?<message>.*?) *(?<ms>(\d+))?(:?ms)?$
+					Time_Format %Y-%m-%dT%H:%M:%S.%L
+					Time_Keep   On
+					Time_Key    time
 			`),
 			expected: Config{
 				Sections: []ConfigSection{{
@@ -946,6 +953,28 @@ func TestNewConfigFromBytes(t *testing.T) {
 						}}},
 						{Key: "Time_Keep", Values: []*Value{{
 							String: stringPtr("On"),
+						}}},
+					},
+				}, {
+					Type: ParserSection,
+					Fields: []Field{
+						{Key: "Name", Values: []*Value{{
+							String: stringPtr("mongodb"),
+						}}},
+						{Key: "Format", Values: []*Value{{
+							String: stringPtr("regex"),
+						}}},
+						{Key: "Regex", Values: []*Value{{
+							Regex: stringPtr(`^(?<time>[^ ]*)\s+(?<severity>\w)\s+(?<component>[^ ]+)\s+\[(?<context>[^\]]+)]\s+(?<message>.*?) *(?<ms>(\d+))?(:?ms)?$`),
+						}}},
+						{Key: "Time_Format", Values: []*Value{{
+							TimeFormat: stringPtr("%Y-%m-%dT%H:%M:%S.%L"),
+						}}},
+						{Key: "Time_Keep", Values: []*Value{{
+							String: stringPtr("On"),
+						}}},
+						{Key: "Time_Key", Values: []*Value{{
+							String: stringPtr("time"),
 						}}},
 					},
 				}},
