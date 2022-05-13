@@ -3,7 +3,7 @@ module github.com/calyptia/go-fluentbit-config
 go 1.17
 
 require (
-	github.com/alecthomas/participle/v2 v2.0.0-alpha7
+	github.com/alecthomas/participle/v2 v2.0.0-alpha8
 	github.com/yudai/gojsondiff v1.0.0
 	gopkg.in/yaml.v2 v2.4.0
 )

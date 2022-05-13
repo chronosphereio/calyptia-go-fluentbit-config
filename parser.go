@@ -13,24 +13,24 @@ import (
 )
 
 var (
-	DefaultLexerRules = []lexer.Rule{
-		{"TemplateVariable", `\{\{[^\}]+\}\}`, nil},
-		{"JsonObject", `\{[^\}]+\}`, nil},
-		{"DateTime", `\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d(\.\d+)?`, nil},
-		{"Date", `\d\d\d\d-\d\d-\d\d`, nil},
-		{"Time", `\d\d:\d\d:\d\d(\.\d+)?`, nil},
-		{"TimeFormat", `((%([aAbBhcCdeDHIjmMnprRStTUwWxXyYLz]|E[cCxXyY]|O[deHImMSUwWy]))(\:|\/| |\-|T|Z|\.|))+`, nil},
-		{"Float", `[-+]?(\d*\.)?\d+`, nil},
-		{"Number", `[-+]?(\d*)?\d+`, nil},
-		{"Ident", `[a-zA-Z_\.\*\-0-9\/\{\}]+`, nil},
-		{"List", `([a-zA-Z_\.\*\-0-9\/]+ )+[a-zA-Z_\.\*\-0-9\/]+`, nil},
-		{"String", `[a-zA-Z_\.\*\-0-9\/]+`, nil},
-		{"Punct", `\[|]|[-!()+/*=,]`, nil},
-		{"Regex", `\^[^\n]+\$`, nil},
-		{"Topic", `\$[a-zA-Z0-9_\.\/\*\-]+`, nil},
-		{"comment", `#[^\n]+`, nil},
-		{"whitespace", `[ \t]+`, nil},
-		{"EOL", "[\r\n]*", nil},
+	DefaultLexerRules = []lexer.SimpleRule{
+		{"TemplateVariable", `\{\{[^\}]+\}\}`},
+		{"JsonObject", `\{[^\}]+\}`},
+		{"DateTime", `\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d(\.\d+)?`},
+		{"Date", `\d\d\d\d-\d\d-\d\d`},
+		{"Time", `\d\d:\d\d:\d\d(\.\d+)?`},
+		{"TimeFormat", `((%([aAbBhcCdeDHIjmMnprRStTUwWxXyYLz]|E[cCxXyY]|O[deHImMSUwWy]))(\:|\/| |\-|T|Z|\.|))+`},
+		{"Float", `[-+]?(\d*\.)?\d+`},
+		{"Number", `[-+]?(\d*)?\d+`},
+		{"Ident", `[a-zA-Z_\.\*\-0-9\/\{\}]+`},
+		{"List", `([a-zA-Z_\.\*\-0-9\/]+ )+[a-zA-Z_\.\*\-0-9\/]+`},
+		{"String", `[a-zA-Z_\.\*\-0-9\/]+`},
+		{"Punct", `\[|]|[-!()+/*=,]`},
+		{"Regex", `\^[^\n]+\$`},
+		{"Topic", `\$[a-zA-Z0-9_\.\/\*\-]+`},
+		{"comment", `#[^\n]+`},
+		{"whitespace", `[ \t]+`},
+		{"EOL", "[\r\n]*"},
 	}
 )
 
