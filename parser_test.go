@@ -800,14 +800,14 @@ func TestINItoJSON(t *testing.T) {
 				return
 			}
 
-			if !bytes.Equal(jsonconfig, expected) {
-				differ := diff.New()
-				d, err := differ.Compare(expected, jsonconfig)
-				if err != nil {
-					t.Error(err)
-					return
-				}
+			differ := diff.New()
+			d, err := differ.Compare(expected, jsonconfig)
+			if err != nil {
+				t.Error(err)
+				return
+			}
 
+			if d.Modified() {
 				var eJson map[string]interface{}
 				if err := json.Unmarshal(expected, &eJson); err != nil {
 					t.Error(err)
