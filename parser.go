@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/alecthomas/participle/v2"
@@ -13,28 +14,30 @@ import (
 
 var (
 	DefaultLexerRules = []lexer.Rule{
-		{"DateTime", `\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(-\d\d:\d\d)?`, nil},
+		{"JsonObject", `\{[^\}]+\}`, nil},
+		{"DateTime", `\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d(\.\d+)?`, nil},
 		{"Date", `\d\d\d\d-\d\d-\d\d`, nil},
 		{"Time", `\d\d:\d\d:\d\d(\.\d+)?`, nil},
 		{"TimeFormat", `((%([aAbBhcCdeDHIjmMnprRStTUwWxXyYLz]|E[cCxXyY]|O[deHImMSUwWy]))(\:|\/| |\-|T|Z|\.|))+`, nil},
+		{"Float", `[-+]?(\d*\.)?\d+`, nil},
+		{"Number", `[-+]?(\d*)?\d+`, nil},
 		{"Ident", `[a-zA-Z_\.\*\-0-9\/\{\}]+`, nil},
-		{"String", `[a-zA-Z0-9_\.\/\*\-]+`, nil},
-		{"Number", `[-+]?[.0-9]+\b`, nil},
-		{`Float`, `(\d*)(\.)*(\d+)+`, nil},
+		{"List", `([a-zA-Z_\.\*\-0-9\/]+ )+[a-zA-Z_\.\*\-0-9\/]+`, nil},
+		{"String", `[a-zA-Z_\.\*\-0-9\/]+`, nil},
 		{"Punct", `\[|]|[-!()+/*=,]`, nil},
 		{"Regex", `\^[^\n]+\$`, nil},
 		{"Topic", `\$[a-zA-Z0-9_\.\/\*\-]+`, nil},
 		{"comment", `#[^\n]+`, nil},
-		{"whitespace", `[\ \t]+`, nil},
-		{"EOL", "[\r\n]+", nil},
+		{"whitespace", `[ \t]+`, nil},
+		{"EOL", "[\r\n]*", nil},
 	}
 )
 
 type ConfigGrammar struct {
 	Pos     lexer.Position
-	Start   string   ` @EOL*`
+	Start   string   `@EOL*`
 	Entries []*Entry `@@*`
-	End     string   ` @EOL*`
+	End     string   `@EOL*`
 }
 
 type Entry struct {
@@ -49,23 +52,24 @@ type Section struct {
 }
 
 type Field struct {
-	Key    string   `@Ident`
-	Values []*Value `@@+`
-	End    string   ` @EOL*`
+	Key   string  `@Ident`
+	Value *Value  ` @@`
+	End   *string ` @EOL`
 }
 
 type Value struct {
-	String     *string  ` @Ident`
+	JsonObject *string  `@JsonObject`
 	DateTime   *string  `| @DateTime`
 	Date       *string  `| @Date`
 	Time       *string  `| @Time`
 	TimeFormat *string  `| @TimeFormat`
+	Number     *int64   `| @Number`
+	Float      *float64 `| @Float`
 	Topic      *string  `| @Topic`
 	Regex      *string  `| @Regex`
+	String     *string  `| @Ident`
 	Bool       *bool    `| (@"true" | "false")`
-	Number     *float64 `| @Number`
-	Float      *float64 `| @Float`
-	List       []*Value `| "[" ( @@ ( "," @@ )* )? "]"`
+	List       []string `| @List`
 }
 
 func (a *Value) Equals(b *Value) bool {
@@ -186,8 +190,12 @@ func stringPtr(s string) *string {
 	return &s
 }
 
-func numberPtr(n float64) *float64 {
+func numberPtr(n int64) *int64 {
 	return &n
+}
+
+func floatPtr(f float64) *float64 {
+	return &f
 }
 
 func (c *Config) addSection(sectype ConfigSectionType, e *Entry) {
@@ -196,7 +204,7 @@ func (c *Config) addSection(sectype ConfigSectionType, e *Entry) {
 
 	for _, field := range e.Section.Fields {
 		if strings.ToLower(field.Key) == "name" {
-			plugin = *field.Values[0].String
+			plugin = *field.Value.String
 		}
 		section.Fields = append(section.Fields, *field)
 	}
@@ -287,32 +295,30 @@ func (value *Value) dumpValueINI(ini *bytes.Buffer) error {
 		} else {
 			ini.Write([]byte("off"))
 		}
-	case value.Float != nil:
-		ini.Write([]byte(fmt.Sprintf("%f", *value.Float)))
 	case value.Number != nil:
-		ini.Write([]byte(fmt.Sprintf("%f", *value.Number)))
+		ini.Write([]byte(fmt.Sprintf("%d", int(*value.Number))))
+	case value.Float != nil:
+		ini.Write([]byte(fmt.Sprintf("%0.6f", *value.Float)))
 	case value.List != nil:
-		for _, v := range value.List {
-			if err := v.dumpValueINI(ini); err != nil {
-				return err
-			}
-		}
+		//for _, v := range value.List {
+		//if err := v.dumpValueINI(ini); err != nil {
+		//	return err
+		//}
+		//}
 	}
 	return nil
 }
 
 func (f *Field) dumpFieldINI(ini *bytes.Buffer) error {
-	ini.Write([]byte(fmt.Sprintf("%s ", f.Key)))
-	for idx, value := range f.Values {
-		if err := value.dumpValueINI(ini); err != nil {
-			return err
-		}
-		// add whitespace between fields
-		if (idx + 1) < len(f.Values) {
-			ini.Write([]byte(" "))
-		}
+	ini.Write([]byte(fmt.Sprintf("    %s ", f.Key)))
+	if err := f.Value.dumpValueINI(ini); err != nil {
+		return err
 	}
-	ini.Write([]byte(f.End))
+	if f.End != nil {
+		ini.Write([]byte(*f.End))
+	} else {
+		ini.Write([]byte("\n"))
+	}
 	return nil
 }
 
@@ -324,10 +330,11 @@ func (c *Config) DumpINI() ([]byte, error) {
 	// Outputs     map[string][]Field
 	// Parsers     map[string][]Field
 
-	ini := bytes.NewBuffer([]byte("\n"))
+	ini := bytes.NewBuffer([]byte(""))
 
 	for _, section := range c.Sections {
-		ini.Write([]byte(fmt.Sprintf("[%s]\n", ConfigSectionTypes[section.Type])))
+		ini.Write([]byte(fmt.Sprintf("[%s]\n",
+			ConfigSectionTypes[section.Type])))
 
 		for _, field := range section.Fields {
 			if err := field.dumpFieldINI(ini); err != nil {
@@ -383,29 +390,41 @@ func (fs *Fields) UnmarshalYAML(unmarshal func(v interface{}) error) error {
 	}
 	fields := make([]Field, 0)
 	for k, v := range kv {
-		if k == "name" {
-			continue
-		}
-		switch v.(type) {
+		switch t := v.(type) {
 		case string:
 			str := v.(string)
 			fields = append(fields, Field{
 				Key: k,
-				Values: []*Value{{
+				Value: &Value{
 					String: &str,
-				}},
+				},
 			})
 		case int:
-			i := v.(int)
-			f := float64(i)
+			i := int64(v.(int))
 			fields = append(fields, Field{
 				Key: k,
-				Values: []*Value{{
-					Number: &f,
-				}},
+				Value: &Value{
+					Number: &i,
+				},
+			})
+		case int64:
+			i := v.(int64)
+			fields = append(fields, Field{
+				Key: k,
+				Value: &Value{
+					Number: &i,
+				},
+			})
+		case float64:
+			f := v.(float64)
+			fields = append(fields, Field{
+				Key: k,
+				Value: &Value{
+					Float: &f,
+				},
 			})
 		default:
-			return fmt.Errorf("unknown type: %+v", v)
+			return fmt.Errorf("unknown type: %+v: %+v", t, v)
 		}
 	}
 	*fs = fields
@@ -416,67 +435,171 @@ func (fs *Fields) UnmarshalYAML(unmarshal func(v interface{}) error) error {
 func (fs Fields) MarshalYAML() (interface{}, error) {
 	fmap := make(map[string]interface{})
 	for _, field := range fs {
-		for _, value := range field.Values {
-			switch true {
-			case value.String != nil:
-				fmap[field.Key] = *value.String
-			case value.DateTime != nil:
-				fmap[field.Key] = *value.DateTime
-			case value.Date != nil:
-				fmap[field.Key] = *value.Date
-			case value.Time != nil:
-				fmap[field.Key] = *value.Time
-			case value.Bool != nil:
-				fmap[field.Key] = *value.Bool
-			case value.Number != nil:
-				fmap[field.Key] = *value.Number
-			case value.Float != nil:
-				fmap[field.Key] = *value.Float
-			default:
-				return nil, fmt.Errorf("unknown type: %+v", field)
-			}
+		switch true {
+		case field.Value.String != nil:
+			fmap[field.Key] = *field.Value.String
+		case field.Value.DateTime != nil:
+			fmap[field.Key] = *field.Value.DateTime
+		case field.Value.Date != nil:
+			fmap[field.Key] = *field.Value.Date
+		case field.Value.Time != nil:
+			fmap[field.Key] = *field.Value.Time
+		case field.Value.Bool != nil:
+			fmap[field.Key] = *field.Value.Bool
+		case field.Value.Number != nil:
+			fmap[field.Key] = *field.Value.Number
+		case field.Value.Float != nil:
+			fmap[field.Key] = *field.Value.Float
+		default:
+			return nil, fmt.Errorf("unknown type: %+v", field)
 		}
 	}
 	return fmap, nil
 }
 
 func (fs Fields) MarshalJSON() ([]byte, error) {
-	fmap := make(map[string]interface{})
-	for _, field := range fs {
-		for _, value := range field.Values {
-			switch true {
-			case value.String != nil:
-				fmap[field.Key] = *value.String
-			case value.DateTime != nil:
-				fmap[field.Key] = *value.DateTime
-			case value.Date != nil:
-				fmap[field.Key] = *value.Date
-			case value.Time != nil:
-				fmap[field.Key] = *value.Time
-			case value.Bool != nil:
-				fmap[field.Key] = *value.Bool
-			case value.Number != nil:
-				fmap[field.Key] = *value.Number
-			case value.Float != nil:
-				fmap[field.Key] = *value.Float
-			default:
-				return nil, fmt.Errorf("unknown type: %+v", field)
+	bfields := bytes.NewBuffer([]byte(""))
+	bfields.Write([]byte("{"))
+
+	for fidx, field := range fs {
+		bfields.Write([]byte(fmt.Sprintf("\"%s\": ", field.Key)))
+		val := bytes.NewBuffer([]byte(""))
+		isstr := false
+
+		switch true {
+		case field.Value.String != nil:
+			if isstr {
+				val.Write([]byte(" "))
+			} else {
+				isstr = true
 			}
+			val.Write([]byte(*field.Value.String))
+		case field.Value.DateTime != nil:
+			if isstr {
+				val.Write([]byte(" "))
+			} else {
+				isstr = true
+			}
+			val.Write([]byte(*field.Value.DateTime))
+		case field.Value.Date != nil:
+			if isstr {
+				val.Write([]byte(" "))
+			} else {
+				isstr = true
+			}
+			val.Write([]byte(*field.Value.Date))
+		case field.Value.Time != nil:
+			if isstr {
+				val.Write([]byte(" "))
+			} else {
+				isstr = true
+			}
+			val.Write([]byte(*field.Value.Time))
+		case field.Value.Bool != nil:
+			if *field.Value.Bool {
+				val.Reset()
+				val.Write([]byte("true"))
+			} else {
+				val.Reset()
+				val.Write([]byte("false"))
+			}
+		case field.Value.Number != nil:
+			val.Write([]byte(fmt.Sprintf("%d", int(*field.Value.Number))))
+		case field.Value.Float != nil:
+			val.Write([]byte(fmt.Sprintf("%0.6f", *field.Value.Float)))
+		case field.Value.JsonObject != nil:
+			val.Write([]byte(strconv.Quote(*field.Value.JsonObject)))
+		default:
+			return nil, fmt.Errorf("unknown typed: %+v", field)
+		}
+
+		if isstr {
+			bfields.Write([]byte(strconv.Quote(val.String())))
+		} else {
+			bfields.Write(val.Bytes())
+		}
+
+		if fidx < len(fs)-1 {
+			bfields.Write([]byte(", "))
 		}
 	}
-	return json.Marshal(fmap)
+
+	bfields.Write([]byte("}"))
+	return bfields.Bytes(), nil
+}
+
+func (fs *Fields) UnmarshalJSON(b []byte) error {
+	fields := make(Fields, 0)
+
+	dec := json.NewDecoder(bytes.NewReader(b))
+	t, err := dec.Token()
+	if err != nil {
+		return err
+	}
+	dec.UseNumber()
+
+	if t != json.Delim('{') {
+		return fmt.Errorf("unable to parse fields")
+	}
+	for dec.More() {
+		k, err := dec.Token()
+		if err != nil {
+			return err
+		}
+		var v interface{}
+		if err := dec.Decode(&v); err != nil {
+			return err
+		}
+
+		switch v.(type) {
+		case string:
+			str := v.(string)
+			fields = append(fields, Field{
+				Key: k.(string),
+				Value: &Value{
+					String: &str,
+				},
+			})
+		case json.Number:
+			n := v.(json.Number)
+			if i, err := n.Int64(); err != nil {
+				f, err := n.Float64()
+				if err != nil {
+					return err
+				}
+				fields = append(fields, Field{
+					Key: k.(string),
+					Value: &Value{
+						Float: &f,
+					},
+				})
+			} else {
+				fields = append(fields, Field{
+					Key: k.(string),
+					Value: &Value{
+						Number: &i,
+					},
+				})
+			}
+		default:
+			return fmt.Errorf("unknown type: %+v", v)
+		}
+	}
+
+	*fs = fields
+	return nil
 }
 
 type yamlGrammarPipeline struct {
-	Inputs  []map[string]Fields `yaml:"inputs" json:"inputs"`
+	Inputs  []map[string]Fields `yaml:"inputs,omitempty" json:"inputs,omitempty"`
 	Filters []map[string]Fields `yaml:"filters,omitempty" json:"filters,omitempty"`
 	Parsers []map[string]Fields `yaml:"parsers,omitempty" json:"parsers,omitempty"`
-	Outputs []map[string]Fields `yaml:"outputs" json:"outputs"`
+	Outputs []map[string]Fields `yaml:"outputs,omitempty" json:"outputs,omitempty"`
 	Customs []map[string]Fields `yaml:"customs,omitempty" json:"customs,omitempty"`
 }
 
 type yamlGrammar struct {
-	Service  map[string]interface{} `yaml:"service" json:"service"`
+	Service  map[string]interface{} `yaml:"service,omitempty" json:"service,omitempty"`
 	Pipeline yamlGrammarPipeline    `yaml:"pipeline" json:"pipeline"`
 }
 
@@ -488,10 +611,13 @@ func getPluginName(fields map[string]Fields) string {
 	return rkey
 }
 
-func getPluginNameParameter(fields Fields) string {
-	for _, field := range fields {
-		if field.Key == "name" {
-			return *field.Values[0].String
+func getPluginNameParameter(cfg ConfigSection) string {
+	//if cfg.ID != "" {
+	//	return cfg.ID
+	//}
+	for _, field := range cfg.Fields {
+		if strings.ToLower(field.Key) == "name" {
+			return *field.Value.String
 		}
 	}
 	return ""
@@ -513,31 +639,31 @@ func (cfg *Config) dumpYamlGrammar() *yamlGrammar {
 		if section.Type == ServiceSection {
 			for _, field := range section.Fields {
 				switch true {
-				case field.Values[0].String != nil:
-					yg.Service[field.Key] = *field.Values[0].String
-				case field.Values[0].DateTime != nil:
-					yg.Service[field.Key] = *field.Values[0].DateTime
-				case field.Values[0].Date != nil:
-					yg.Service[field.Key] = *field.Values[0].Date
-				case field.Values[0].Time != nil:
-					yg.Service[field.Key] = *field.Values[0].Time
-				case field.Values[0].Bool != nil:
-					yg.Service[field.Key] = *field.Values[0].Bool
-				case field.Values[0].Number != nil:
-					yg.Service[field.Key] = *field.Values[0].Number
-				case field.Values[0].Float != nil:
-					yg.Service[field.Key] = *field.Values[0].Float
+				case field.Value.String != nil:
+					yg.Service[field.Key] = *field.Value.String
+				case field.Value.DateTime != nil:
+					yg.Service[field.Key] = *field.Value.DateTime
+				case field.Value.Date != nil:
+					yg.Service[field.Key] = *field.Value.Date
+				case field.Value.Time != nil:
+					yg.Service[field.Key] = *field.Value.Time
+				case field.Value.Bool != nil:
+					yg.Service[field.Key] = *field.Value.Bool
+				case field.Value.Number != nil:
+					yg.Service[field.Key] = *field.Value.Number
+				case field.Value.Float != nil:
+					yg.Service[field.Key] = *field.Value.Float
 				}
 			}
 		} else {
-			sectionName := getPluginNameParameter(section.Fields)
+			sectionName := getPluginNameParameter(section)
 			sectionmap := make(map[string]Fields)
 			sectionmap[sectionName] = make(Fields, 0)
 
 			for _, field := range section.Fields {
 				sectionmap[sectionName] = append(sectionmap[sectionName], Field{
-					Key:    field.Key,
-					Values: field.Values,
+					Key:   field.Key,
+					Value: field.Value,
 				})
 			}
 			switch section.Type {
@@ -575,13 +701,15 @@ func (yg *yamlGrammar) dumpConfig() *Config {
 			case string:
 				value.String = stringPtr(v.(string))
 			case int:
-				value.Number = numberPtr(float64(v.(int)))
+				value.Number = numberPtr(int64(v.(int)))
+			case int64:
+				value.Number = numberPtr(v.(int64))
 			case float64:
-				value.Float = numberPtr(v.(float64))
+				value.Float = floatPtr(v.(float64))
 			}
 			service.Fields = append(service.Fields, Field{
-				Key:    k,
-				Values: []*Value{&value},
+				Key:   k,
+				Value: &value,
 			})
 		}
 		cfg.Sections = append(cfg.Sections, service)
@@ -602,10 +730,6 @@ func (yg *yamlGrammar) dumpConfig() *Config {
 		for _, fields := range fields {
 			section.Fields = append(section.Fields, fields...)
 		}
-		section.Fields = append(section.Fields, Field{
-			Key:    "name",
-			Values: []*Value{{String: stringPtr(pluginName)}},
-		})
 		cfg.Sections = append(cfg.Sections, section)
 	}
 
@@ -624,10 +748,6 @@ func (yg *yamlGrammar) dumpConfig() *Config {
 		for _, fields := range fields {
 			section.Fields = append(section.Fields, fields...)
 		}
-		section.Fields = append(section.Fields, Field{
-			Key:    "name",
-			Values: []*Value{{String: stringPtr(pluginName)}},
-		})
 		cfg.Sections = append(cfg.Sections, section)
 	}
 	for _, fields := range yg.Pipeline.Outputs {
@@ -645,10 +765,6 @@ func (yg *yamlGrammar) dumpConfig() *Config {
 		for _, fields := range fields {
 			section.Fields = append(section.Fields, fields...)
 		}
-		section.Fields = append(section.Fields, Field{
-			Key:    "name",
-			Values: []*Value{{String: stringPtr(pluginName)}},
-		})
 		cfg.Sections = append(cfg.Sections, section)
 	}
 
@@ -667,10 +783,6 @@ func (yg *yamlGrammar) dumpConfig() *Config {
 		for _, fields := range fields {
 			section.Fields = append(section.Fields, fields...)
 		}
-		section.Fields = append(section.Fields, Field{
-			Key:    "name",
-			Values: []*Value{{String: stringPtr(pluginName)}},
-		})
 		cfg.Sections = append(cfg.Sections, section)
 	}
 
@@ -689,10 +801,6 @@ func (yg *yamlGrammar) dumpConfig() *Config {
 		for _, fields := range fields {
 			section.Fields = append(section.Fields, fields...)
 		}
-		section.Fields = append(section.Fields, Field{
-			Key:    "name",
-			Values: []*Value{{String: stringPtr(pluginName)}},
-		})
 		cfg.Sections = append(cfg.Sections, section)
 	}
 

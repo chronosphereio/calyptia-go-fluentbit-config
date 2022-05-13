@@ -1,0 +1,13 @@
+{
+  "pipeline": {
+    "inputs": [
+      {
+        "tcp": {
+          "Name": "tcp",
+          "Port": 6667,
+          "Tag": "foobar"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "service": {
+    "flush_interval": 1,
+    "log_level": "error"
+  },
+  "pipeline": {
+    "inputs": [
+      {
+        "dummy": {
+          "name": "dummy",
+          "rate": 5
+        }
+      },
+      {
+        "dummy": {
+          "dummy": "{\"FOO\": \"BAR\"}",
+          "name": "dummy",
+          "rate": 1
+        }
+      },
+      {
+        "tail": {
+          "name": "tail",
+          "tag": "kube.*",
+          "mem_buf_limit": "4.8M"
+        }
+      }
+    ],
+    "filters": [
+      {
+        "record_modifier": {
+          "match": "*",
+          "name": "record_modifier",
+          "record": "powered_by calyptia"
+        }
+      }
+    ],
+    "outputs": [
+      {
+        "stdout": {
+          "match": "*",
+          "name": "stdout"
+        }
+      },
+      {
+        "exit": {
+          "flush_count": 10,
+          "match": "*",
+          "name": "exit"
+        }
+      }
+    ]
+  }
+}
