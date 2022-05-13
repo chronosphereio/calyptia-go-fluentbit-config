@@ -14,6 +14,7 @@ import (
 
 var (
 	DefaultLexerRules = []lexer.Rule{
+		{"TemplateVariable", `\{\{[^\}]+\}\}`, nil},
 		{"JsonObject", `\{[^\}]+\}`, nil},
 		{"DateTime", `\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d(\.\d+)?`, nil},
 		{"Date", `\d\d\d\d-\d\d-\d\d`, nil},
@@ -58,22 +59,33 @@ type Field struct {
 }
 
 type Value struct {
-	JsonObject *string  `@JsonObject`
-	DateTime   *string  `| @DateTime`
-	Date       *string  `| @Date`
-	Time       *string  `| @Time`
-	TimeFormat *string  `| @TimeFormat`
-	Number     *int64   `| @Number`
-	Float      *float64 `| @Float`
-	Topic      *string  `| @Topic`
-	Regex      *string  `| @Regex`
-	String     *string  `| @Ident`
-	Bool       *bool    `| (@"true" | "false")`
-	List       []string `| @List`
+	JsonObject       *string  `@JsonObject`
+	TemplateVariable *string  `| @TemplateVariable`
+	DateTime         *string  `| @DateTime`
+	Date             *string  `| @Date`
+	Time             *string  `| @Time`
+	TimeFormat       *string  `| @TimeFormat`
+	Number           *int64   `| @Number`
+	Float            *float64 `| @Float`
+	Topic            *string  `| @Topic`
+	Regex            *string  `| @Regex`
+	String           *string  `| @Ident`
+	Bool             *bool    `| (@"true" | "false")`
+	List             []string `| @List`
 }
 
 func (a *Value) Equals(b *Value) bool {
-	if a.String != nil {
+	if a.JsonObject != nil {
+		if b.JsonObject == nil {
+			return false
+		}
+		return *a.JsonObject == *b.JsonObject
+	} else if a.TemplateVariable != nil {
+		if b.TemplateVariable == nil {
+			return false
+		}
+		return *a.TemplateVariable == *b.TemplateVariable
+	} else if a.String != nil {
 		if b.String == nil {
 			return false
 		}
@@ -129,6 +141,10 @@ func (a *Value) Equals(b *Value) bool {
 
 func (v *Value) Value() interface{} {
 	switch {
+	case v.TemplateVariable != nil:
+		return *v.TemplateVariable
+	case v.JsonObject != nil:
+		return *v.JsonObject
 	case v.String != nil:
 		return *v.String
 	case v.DateTime != nil:
@@ -200,11 +216,15 @@ func floatPtr(f float64) *float64 {
 
 func (c *Config) addSection(sectype ConfigSectionType, e *Entry) {
 	var plugin string
+	var ok bool
 	section := ConfigSection{Type: sectype}
 
 	for _, field := range e.Section.Fields {
 		if strings.ToLower(field.Key) == "name" {
-			plugin = *field.Value.String
+			plugin, ok = field.Value.Value().(string)
+			if !ok {
+				plugin = ""
+			}
 		}
 		section.Fields = append(section.Fields, *field)
 	}
@@ -509,6 +529,8 @@ func (fs Fields) MarshalJSON() ([]byte, error) {
 			val.Write([]byte(fmt.Sprintf("%0.6f", *field.Value.Float)))
 		case field.Value.JsonObject != nil:
 			val.Write([]byte(strconv.Quote(*field.Value.JsonObject)))
+		case field.Value.TemplateVariable != nil:
+			val.Write([]byte(strconv.Quote(*field.Value.TemplateVariable)))
 		default:
 			return nil, fmt.Errorf("unknown typed: %+v", field)
 		}
@@ -532,14 +554,17 @@ func (fs *Fields) UnmarshalJSON(b []byte) error {
 	fields := make(Fields, 0)
 
 	dec := json.NewDecoder(bytes.NewReader(b))
+	dec.UseNumber()
+
 	t, err := dec.Token()
 	if err != nil {
 		return err
 	}
-	dec.UseNumber()
 
 	if t != json.Delim('{') {
-		return fmt.Errorf("unable to parse fields")
+		return fmt.Errorf(
+			"unable to find starting field delimiters, found instead: %+v (%d)",
+			t, dec.InputOffset())
 	}
 	for dec.More() {
 		k, err := dec.Token()
@@ -617,7 +642,11 @@ func getPluginNameParameter(cfg ConfigSection) string {
 	//}
 	for _, field := range cfg.Fields {
 		if strings.ToLower(field.Key) == "name" {
-			return *field.Value.String
+			plugin, ok := field.Value.Value().(string)
+			if !ok {
+				return ""
+			}
+			return plugin
 		}
 	}
 	return ""
@@ -825,6 +854,18 @@ func ParseJSON(data []byte) (*Config, error) {
 	var g yamlGrammar
 	err := json.Unmarshal(data, &g)
 	if err != nil {
+		switch err.(type) {
+		case *json.UnmarshalTypeError:
+			fmt.Println("unmarshal type error")
+		case *json.UnmarshalFieldError:
+			fmt.Println("unmarshal field error")
+		case *json.InvalidUTF8Error:
+			fmt.Println("syntax error")
+		case *json.InvalidUnmarshalError:
+			fmt.Println("invalid unmarshal error")
+		default:
+			fmt.Printf("unknown error: %T\n", err)
+		}
 		return nil, err
 	}
 

@@ -826,7 +826,7 @@ func TestINItoJSON(t *testing.T) {
 					return
 				}
 
-				fmt.Sprint(diff)
+				fmt.Print(diff)
 
 				t.Error("JSON does not match")
 				return
