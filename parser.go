@@ -55,7 +55,7 @@ type Section struct {
 type Field struct {
 	Key   string  `@Ident`
 	Value *Value  ` @@`
-	End   *string ` @EOL`
+	End   *string ` @EOL*`
 }
 
 type Value struct {
