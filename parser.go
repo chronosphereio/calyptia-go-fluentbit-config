@@ -21,6 +21,7 @@ var (
 		{"Time", `\d\d:\d\d:\d\d(\.\d+)?`},
 		{"TimeFormat", `((%([aAbBhcCdeDHIjmMnprRStTUwWxXyYLz]|E[cCxXyY]|O[deHImMSUwWy]))(\:|\/| |\-|T|Z|\.|))+`},
 		{"Address", `\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}`},
+		{"Unit", `[-+]?(\d*\.)?\d+([kKmMgG])`},
 		{"Float", `[-+]?(\d*\.)?\d+`},
 		{"Number", `[-+]?(\d*)?\d+`},
 		{"Ident", `[a-zA-Z_\.\*\-0-9\/\{\}]+`},
@@ -67,6 +68,7 @@ type Value struct {
 	Date             *string  `| @Date`
 	Time             *string  `| @Time`
 	TimeFormat       *string  `| @TimeFormat`
+	Unit             *string  `| @Unit`
 	Number           *int64   `| @Number`
 	Float            *float64 `| @Float`
 	Topic            *string  `| @Topic`
@@ -535,6 +537,8 @@ func (fs Fields) MarshalJSON() ([]byte, error) {
 			val.Write([]byte(strconv.Quote(*field.Value.TemplateVariable)))
 		case field.Value.Address != nil:
 			val.Write([]byte(strconv.Quote(*field.Value.Address)))
+		case field.Value.Unit != nil:
+			val.Write([]byte(strconv.Quote(*field.Value.Unit)))
 		default:
 			return nil, fmt.Errorf("unknown typed: %+v", field)
 		}
