@@ -638,11 +638,11 @@ type yamlGrammarPipeline struct {
 	Filters []map[string]Fields `yaml:"filters,omitempty" json:"filters,omitempty"`
 	Parsers []map[string]Fields `yaml:"parsers,omitempty" json:"parsers,omitempty"`
 	Outputs []map[string]Fields `yaml:"outputs,omitempty" json:"outputs,omitempty"`
-	Customs []map[string]Fields `yaml:"customs,omitempty" json:"customs,omitempty"`
 }
 
 type yamlGrammar struct {
 	Service  map[string]interface{} `yaml:"service,omitempty" json:"service,omitempty"`
+	Customs  []map[string]Fields    `yaml:"customs,omitempty" json:"customs,omitempty"`
 	Pipeline yamlGrammarPipeline    `yaml:"pipeline" json:"pipeline"`
 }
 
@@ -673,12 +673,12 @@ func getPluginNameParameter(cfg ConfigSection) string {
 func (cfg *Config) dumpYamlGrammar() *yamlGrammar {
 	yg := yamlGrammar{
 		Service: make(map[string]interface{}),
+		Customs: make([]map[string]Fields, 0),
 		Pipeline: yamlGrammarPipeline{
 			Inputs:  make([]map[string]Fields, 0),
 			Filters: make([]map[string]Fields, 0),
 			Outputs: make([]map[string]Fields, 0),
 			Parsers: make([]map[string]Fields, 0),
-			Customs: make([]map[string]Fields, 0),
 		},
 	}
 
@@ -723,7 +723,7 @@ func (cfg *Config) dumpYamlGrammar() *yamlGrammar {
 			case ParserSection:
 				yg.Pipeline.Parsers = append(yg.Pipeline.Parsers, sectionmap)
 			case CustomSection:
-				yg.Pipeline.Customs = append(yg.Pipeline.Customs, sectionmap)
+				yg.Customs = append(yg.Customs, sectionmap)
 			}
 		}
 	}
@@ -833,7 +833,7 @@ func (yg *yamlGrammar) dumpConfig() *Config {
 		cfg.Sections = append(cfg.Sections, section)
 	}
 
-	for _, fields := range yg.Pipeline.Customs {
+	for _, fields := range yg.Customs {
 		pluginName := getPluginName(fields)
 		pluginIndex, ok := cfg.PluginIndex[pluginName]
 		if !ok {
