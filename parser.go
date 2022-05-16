@@ -22,7 +22,7 @@ var (
 		{"TimeFormat", `((%([aAbBhcCdeDHIjmMnprRStTUwWxXyYLz]|E[cCxXyY]|O[deHImMSUwWy]))(\:|\/| |\-|T|Z|\.|))+`},
 		{"Address", `\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}`},
 		{"Unit", `[-+]?(\d*\.)?\d+([kKmMgG])`},
-		{"Float", `[-+]?(\d*\.)?\d+`},
+		{"Float", `[-+]?\d*\.\d+`},
 		{"Number", `[-+]?\d+`},
 		{"Ident", `[a-zA-Z_\.\*\-0-9]+`},
 		{"List", `([a-zA-Z_\.\*\-0-9\/]+ )+[a-zA-Z_\.\*\-0-9\/]+`},
