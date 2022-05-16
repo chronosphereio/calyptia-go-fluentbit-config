@@ -1,13 +1,13 @@
 {
 	"pipeline": {
 		"inputs": [
-			{"tcp.0": {
+			{"tcp": {
 				"Name": "tcp",
-				"Port": "5556"
+				"Port": 5556
 			}},
-			{"tcp.1": {
+			{"tcp": {
 				"Name": "tcp",
-				"Port": "5557"
+				"Port": 5557
 			}}			
 		]
 	}

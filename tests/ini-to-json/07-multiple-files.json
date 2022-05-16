@@ -6,17 +6,17 @@
 				"NameB": "{{files}}",
 				"NameC": "{{files...}}",
 				"NameD": "{{nofiles.test}}",
-				"NameE": "{{files.nope}}",
+				"NameE": "{files.nope}",
 				"Name": "{{files.name}}",
-				"Listen": "{{files.test}}",
+				"Listen": "{{files.testing}}",
 				"Port": 24224
 			}},
 			{"tail": {
 				"Name": "tail",
 				"Tag": "tail.01",
-				"Path": "/var/system.log"
+				"Path": "/var/log/system.log"
 			}}
-		]
+		],
 		"outputs": [
 			{"s3": {
 				"Name": "s3",

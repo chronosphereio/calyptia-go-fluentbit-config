@@ -24,9 +24,9 @@ var (
 		{"Unit", `[-+]?(\d*\.)?\d+([kKmMgG])`},
 		{"Float", `[-+]?(\d*\.)?\d+`},
 		{"Number", `[-+]?(\d*)?\d+`},
-		{"Ident", `[a-zA-Z_\.\*\-0-9\/\{\}]+`},
+		{"Ident", `[a-zA-Z_\.\*\-0-9]+`},
 		{"List", `([a-zA-Z_\.\*\-0-9\/]+ )+[a-zA-Z_\.\*\-0-9\/]+`},
-		{"String", `[a-zA-Z_\.\*\-0-9\/]+`},
+		{"String", `[a-zA-Z_\.\*\-0-9\/\$\%\\\/]+`},
 		{"Punct", `\[|]|[-!()+/*=,]`},
 		{"Regex", `\^[^\n]+\$`},
 		{"Topic", `\$[a-zA-Z0-9_\.\/\*\-]+`},
@@ -73,7 +73,7 @@ type Value struct {
 	Float            *float64 `| @Float`
 	Topic            *string  `| @Topic`
 	Regex            *string  `| @Regex`
-	String           *string  `| @Ident`
+	String           *string  `| @Ident | @String`
 	Bool             *bool    `| (@"true" | "false")`
 	List             []string `| @List`
 }
