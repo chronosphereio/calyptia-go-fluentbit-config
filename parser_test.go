@@ -869,6 +869,10 @@ func TestJSONtoINI(t *testing.T) {
 				return
 			}
 
+			if expected[len(expected)-1] != '\n' {
+				expected = append(expected, '\n')
+			}
+
 			if !bytes.Equal(ini, expected) {
 				t.Errorf("INI does not match: \n'%s' => \n'%s'\n",
 					string(ini), string(expected))
