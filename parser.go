@@ -90,6 +90,15 @@ func (vs Values) ToString() string {
 	return strings.Join(vals, " ")
 }
 
+func (fields Fields) hasField(name string) bool {
+	for _, field := range fields {
+		if strings.EqualFold(name, field.Key) {
+			return true
+		}
+	}
+	return false
+}
+
 func (a *Value) Equals(b *Value) bool {
 	if a.JsonObject != nil {
 		if b.JsonObject == nil {
@@ -736,6 +745,19 @@ func (cfg *Config) dumpYamlGrammar() *yamlGrammar {
 					Values: field.Values,
 				})
 			}
+
+			// deal with the weird quirk in the fluent-bit yaml
+			// format where the name property is implicit and declared
+			// as the key of the property array.
+			if !sectionmap[sectionName].hasField("name") {
+				sectionmap[sectionName] = append(sectionmap[sectionName], Field{
+					Key: "Name",
+					Values: []Value{{
+						String: &sectionName,
+					}},
+				})
+			}
+
 			switch section.Type {
 			case InputSection:
 				yg.Pipeline.Inputs = append(yg.Pipeline.Inputs, sectionmap)
