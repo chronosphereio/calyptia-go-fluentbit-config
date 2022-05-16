@@ -416,11 +416,10 @@ func (fs *Fields) UnmarshalYAML(unmarshal func(v interface{}) error) error {
 	for k, v := range kv {
 		switch t := v.(type) {
 		case string:
-			str := v.(string)
 			fields = append(fields, Field{
 				Key: k,
 				Value: &Value{
-					String: &str,
+					String: &t,
 				},
 			})
 		case int:
@@ -432,19 +431,24 @@ func (fs *Fields) UnmarshalYAML(unmarshal func(v interface{}) error) error {
 				},
 			})
 		case int64:
-			i := v.(int64)
 			fields = append(fields, Field{
 				Key: k,
 				Value: &Value{
-					Number: &i,
+					Number: &t,
 				},
 			})
 		case float64:
-			f := v.(float64)
 			fields = append(fields, Field{
 				Key: k,
 				Value: &Value{
-					Float: &f,
+					Float: &t,
+				},
+			})
+		case bool:
+			fields = append(fields, Field{
+				Key: k,
+				Value: &Value{
+					Bool: &t,
 				},
 			})
 		default:
@@ -584,13 +588,12 @@ func (fs *Fields) UnmarshalJSON(b []byte) error {
 			return err
 		}
 
-		switch v.(type) {
+		switch t := v.(type) {
 		case string:
-			str := v.(string)
 			fields = append(fields, Field{
 				Key: k.(string),
 				Value: &Value{
-					String: &str,
+					String: &t,
 				},
 			})
 		case json.Number:
@@ -614,6 +617,13 @@ func (fs *Fields) UnmarshalJSON(b []byte) error {
 					},
 				})
 			}
+		case bool:
+			fields = append(fields, Field{
+				Key: k.(string),
+				Value: &Value{
+					Bool: &t,
+				},
+			})
 		default:
 			return fmt.Errorf("unknown type: %+v", v)
 		}
