@@ -1,0 +1,14 @@
+{
+	"pipeline": {
+		"inputs": [
+			{"tcp": {
+				"Name": "tcp",
+				"Port": 5556
+			}},
+			{"tcp": {
+				"Name": "tcp",
+				"Port": 5557
+			}}			
+		]
+	}
+}

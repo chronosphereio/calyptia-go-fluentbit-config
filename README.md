@@ -85,6 +85,13 @@ func (v *Value) Value() interface{}
 The `Equals` receiver can be used to compare two `Value`s, and the `Value`
 receiver can be used to return an interface{} which can be type switched.
 
+To more easily manage multiple values the Values type, `type Values []Value`, has a
+receiver method that turns all the values into a single string.
+
+```
+func (vs Values) ToString() string
+```
+
 ## example usage
 ```go
 import (
@@ -100,7 +107,7 @@ for _, section := range cfg.Sections {
 	if section.Type == fbitconf.FilterSection {
 		for _, field := section.Fields {
 			if field.Key == "Name" {
-				fmt.Printf("filter: %s\n", field.Key)
+				fmt.Printf("filter: %s\n", field.Values.ToString())
 			}
 		}
 	}

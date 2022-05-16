@@ -1,0 +1,42 @@
+{
+	"pipeline": {
+		"inputs": [
+			{"nutella": {
+				"Name": "nutella",
+				"Listen": "0.0.0.0",
+				"Port": 24224
+			}},
+			{"forward": {
+				"Name": "forward",
+				"Listen": "0.0.0.0",
+				"Port": 24224
+			}},
+			{"syslog": {
+				"Name": "syslog",
+				"Parser": "syslog-rfc3164",
+				"Listen": "0.0.0.0",
+				"Port": 5140,
+				"Mode": "tcp"
+			}},
+			{"syslog": {
+				"Name": "syslog",
+				"Parser": "syslog-rfc3164",
+				"Listen": "0.0.0.0",
+				"Port": 5140,
+				"Mode": "udp"
+			}},
+			{"tail": {
+				"Name": "tail",
+				"Tag": "tail.01",
+				"Path": "/var/log/system.log"
+			}}
+		],
+		"outputs": [
+			{"s3": {
+				"Name": "s3",
+				"Match": "*",
+				"bucket": "your-bucket"
+			}}
+		]
+	}
+}

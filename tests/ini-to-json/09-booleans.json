@@ -1,0 +1,24 @@
+{
+	"pipeline": {
+		"outputs": [
+			{"s3": {
+				"Name": "s3",
+				"Json_date_key": "date",
+				"Total_file_size": "100M",
+				"Upload_chunk_size": 5242880,
+				"Upload_timeout": "10m",
+				"Bucket": "test",
+				"Region": "us-east-1",
+				"Store_dir": "/tmp/fluent-bit/s3",
+				"S3_key_format": "/fluent-bit-logs/$TAG/%Y/%m/%d/%H/%M/%S",
+				"S3_key_format_tag_delimiters": ".",
+				"Auto_retry_requests": "true",
+				"Use_put_object": "false",
+				"Send_content_md5": "false",
+				"Preserve_data_ordering": "false",
+				"Static_file_path": "false",
+				"Match": "*"
+			}}
+		]
+	}
+}

@@ -1,0 +1,14 @@
+{
+	"pipeline": {
+		"filters": [
+			{"rewrite_tag": {
+				"Name": "rewrite_tag",
+				"Rule": "$topic simple simple false"
+			}},
+			{"rewrite_tag": {
+				"Name": "rewrite_tag",
+				"Rule": "$topic ^(?<host>[^ ]*)$ foobar false"
+			}}
+		]
+	}
+}

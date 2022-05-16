@@ -1,0 +1,23 @@
+{
+	"pipeline": {
+		"inputs": [
+			{"forward": {
+				"Name": "forward",
+				"Listen": "0.0.0.0",
+				"Port": 24224
+			}},
+			{"tail": {
+				"Name": "tail",
+				"Tag": "tail.01",
+				"Path": "/var/log/system.log"
+			}}
+		],
+		"outputs": [
+			{"s3": {
+				"Name": "s3",
+				"Match": "*",
+				"bucket": "your-bucket"
+			}}
+		]
+	}
+}
