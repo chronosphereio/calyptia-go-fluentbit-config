@@ -1,6 +1,6 @@
 {
   "service": {
-    "flush_interval": 1,
+    "flush_interval": 1.000000,
     "log_level": "error"
   },
   "pipeline": {

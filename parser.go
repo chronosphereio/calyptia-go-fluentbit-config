@@ -686,9 +686,9 @@ type yamlGrammarPipeline struct {
 }
 
 type yamlGrammar struct {
-	Service  map[string]interface{} `yaml:"service,omitempty" json:"service,omitempty"`
-	Customs  []map[string]Fields    `yaml:"customs,omitempty" json:"customs,omitempty"`
-	Pipeline yamlGrammarPipeline    `yaml:"pipeline" json:"pipeline"`
+	Service  Fields              `yaml:"service,omitempty" json:"service,omitempty"`
+	Customs  []map[string]Fields `yaml:"customs,omitempty" json:"customs,omitempty"`
+	Pipeline yamlGrammarPipeline `yaml:"pipeline" json:"pipeline"`
 }
 
 func getPluginName(fields map[string]Fields) string {
@@ -710,7 +710,7 @@ func getPluginNameParameter(cfg ConfigSection) string {
 
 func (cfg *Config) dumpYamlGrammar() *yamlGrammar {
 	yg := yamlGrammar{
-		Service: make(map[string]interface{}),
+		Service: make(Fields, 0),
 		Customs: make([]map[string]Fields, 0),
 		Pipeline: yamlGrammarPipeline{
 			Inputs:  make([]map[string]Fields, 0),
@@ -723,26 +723,7 @@ func (cfg *Config) dumpYamlGrammar() *yamlGrammar {
 	for _, section := range cfg.Sections {
 		if section.Type == ServiceSection {
 			for _, field := range section.Fields {
-				if len(field.Values) == 1 {
-					switch true {
-					case field.Values[0].String != nil:
-						yg.Service[field.Key] = *field.Values[0].String
-					case field.Values[0].DateTime != nil:
-						yg.Service[field.Key] = *field.Values[0].DateTime
-					case field.Values[0].Date != nil:
-						yg.Service[field.Key] = *field.Values[0].Date
-					case field.Values[0].Time != nil:
-						yg.Service[field.Key] = *field.Values[0].Time
-					case field.Values[0].Bool != nil:
-						yg.Service[field.Key] = *field.Values[0].Bool
-					case field.Values[0].Number != nil:
-						yg.Service[field.Key] = *field.Values[0].Number
-					case field.Values[0].Float != nil:
-						yg.Service[field.Key] = *field.Values[0].Float
-					}
-				} else {
-					yg.Service[field.Key] = field.Values.ToString()
-				}
+				yg.Service = append(yg.Service, field)
 			}
 		} else {
 			sectionName := getPluginNameParameter(section)
@@ -784,22 +765,8 @@ func (yg *yamlGrammar) dumpConfig() *Config {
 			Type:   ServiceSection,
 			Fields: make([]Field, 0),
 		}
-		for k, v := range yg.Service {
-			value := make([]Value, 1)
-			switch v.(type) {
-			case string:
-				value[0].String = stringPtr(v.(string))
-			case int:
-				value[0].Number = numberPtr(int64(v.(int)))
-			case int64:
-				value[0].Number = numberPtr(v.(int64))
-			case float64:
-				value[0].Float = floatPtr(v.(float64))
-			}
-			service.Fields = append(service.Fields, Field{
-				Key:    k,
-				Values: value,
-			})
+		for _, field := range yg.Service {
+			service.Fields = append(service.Fields, field)
 		}
 		cfg.Sections = append(cfg.Sections, service)
 	}
