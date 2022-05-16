@@ -52,80 +52,80 @@ pipeline:
 					{
 						Type: ServiceSection,
 						Fields: []Field{
-							{Key: "flush_interval", Value: &Value{
+							{Key: "flush_interval", Values: []Value{{
 								Number: numberPtr(1),
-							}},
-							{Key: "log_level", Value: &Value{
+							}}},
+							{Key: "log_level", Values: []Value{{
 								String: stringPtr("error"),
-							}},
+							}}},
 						},
 					},
 					{
 						Type: InputSection,
 						Fields: []Field{
-							{Key: "name", Value: &Value{
+							{Key: "name", Values: []Value{{
 								String: stringPtr("dummy"),
-							}},
-							{Key: "rate", Value: &Value{
+							}}},
+							{Key: "rate", Values: []Value{{
 								Number: numberPtr(5),
-							}},
+							}}},
 						},
 					},
 					{
 						Type: InputSection,
 						ID:   "dummy.1",
 						Fields: []Field{
-							{Key: "name", Value: &Value{
+							{Key: "name", Values: []Value{{
 								String: stringPtr("dummy"),
-							}},
-							{Key: "dummy", Value: &Value{
+							}}},
+							{Key: "dummy", Values: []Value{{
 								String: stringPtr(`{"FOO": "BAR"}`),
-							}},
-							{Key: "rate", Value: &Value{
+							}}},
+							{Key: "rate", Values: []Value{{
 								Number: numberPtr(1),
-							}},
+							}}},
 						},
 					},
 					{
 						Type: FilterSection,
 						ID:   "record_modifier.0",
 						Fields: []Field{
-							{Key: "name", Value: &Value{
+							{Key: "name", Values: []Value{{
 								String: stringPtr("record_modifier"),
-							}},
-							{Key: "match", Value: &Value{
+							}}},
+							{Key: "match", Values: []Value{{
 								String: stringPtr("*"),
-							}},
-							{Key: "record", Value: &Value{
+							}}},
+							{Key: "record", Values: []Value{{
 								String: stringPtr("powered_by calyptia"),
-							}},
+							}}},
 						},
 					},
 					{
 						Type: OutputSection,
 						ID:   "stdout.0",
 						Fields: []Field{
-							{Key: "name", Value: &Value{
+							{Key: "name", Values: []Value{{
 								String: stringPtr("stdout"),
-							}},
-							{Key: "match", Value: &Value{
+							}}},
+							{Key: "match", Values: []Value{{
 								String: stringPtr("*"),
-							}},
+							}}},
 						},
 					},
 					{
 						Type: OutputSection,
 						ID:   "exit.1",
 						Fields: []Field{
-							{Key: "name", Value: &Value{
+							{Key: "name", Values: []Value{{
 								String: stringPtr("exit"),
-							}},
-							{Key: "match", Value: &Value{
+							}}},
+							{Key: "match", Values: []Value{{
 								String: stringPtr("*"),
-							}},
-							{Key: "flush_count", Value: &Value{
+							}}},
+							{Key: "flush_count", Values: []Value{{
 								Number: numberPtr(10),
-							}},
+							}}},
 						},
 					},
 				},
@@ -238,7 +238,7 @@ func TestParseJSON(t *testing.T) {
 					{
 						Type: ServiceSection,
 						Fields: []Field{
-							{Key: "flush_interval", Value: &Value{
+							{Key: "flush_interval", Values: []Value{{
 								String:   nil,
 								DateTime: nil,
 								Date:     nil,
@@ -247,8 +247,8 @@ func TestParseJSON(t *testing.T) {
 								Number:   numberPtr(1),
 								Float:    nil,
 								List:     nil,
-							}},
-							{Key: "log_level", Value: &Value{
+							}}},
+							{Key: "log_level", Values: []Value{{
 								String:   stringPtr("error"),
 								DateTime: nil,
 								Date:     nil,
@@ -257,13 +257,13 @@ func TestParseJSON(t *testing.T) {
 								Number:   nil,
 								Float:    nil,
 								List:     nil,
-							}},
+							}}},
 						},
 					},
 					{
 						Type: InputSection,
 						Fields: []Field{
-							{Key: "name", Value: &Value{
+							{Key: "name", Values: []Value{{
 								String:   stringPtr("dummy"),
 								DateTime: nil,
 								Date:     nil,
@@ -272,67 +272,66 @@ func TestParseJSON(t *testing.T) {
 								Number:   nil,
 								Float:    nil,
 								List:     nil,
-							}},
-							{Key: "rate", Value: &Value{
+							}}},
+							{Key: "rate", Values: []Value{{
 								Number: numberPtr(5),
-							}},
+							}}},
 						},
 					},
 					{
 						Type: InputSection,
 						Fields: []Field{
-							{Key: "name", Value: &Value{
+							{Key: "name", Values: []Value{{
 								String: stringPtr("dummy"),
-							}},
-							{Key: "dummy", Value: &Value{
+							}}},
+							{Key: "dummy", Values: []Value{{
 								String: stringPtr(`{"FOO": "BAR"}`),
-							}},
-							{
-								Key: "rate", Value: &Value{
-									Number: numberPtr(1),
-								}},
+							}}},
+							{Key: "rate", Values: []Value{{
+								Number: numberPtr(1),
+							}}},
 						},
 					},
 					{
 						Type: FilterSection,
 						ID:   "record_modifier.0",
 						Fields: []Field{
-							{Key: "name", Value: &Value{
+							{Key: "name", Values: []Value{{
 								String: stringPtr("record_modifier"),
-							}},
-							{Key: "match", Value: &Value{
+							}}},
+							{Key: "match", Values: []Value{{
 								String: stringPtr("*"),
-							}},
-							{Key: "record", Value: &Value{
+							}}},
+							{Key: "record", Values: []Value{{
 								String: stringPtr("powered_by calyptia"),
-							}},
+							}}},
 						},
 					},
 					{
 						Type: OutputSection,
 						ID:   "stdout.0",
 						Fields: []Field{
-							{Key: "name", Value: &Value{
+							{Key: "name", Values: []Value{{
 								String: stringPtr("stdout"),
-							}},
-							{Key: "match", Value: &Value{
+							}}},
+							{Key: "match", Values: []Value{{
 								String: stringPtr("*"),
-							}},
+							}}},
 						},
 					},
 					{
 						Type: OutputSection,
 						ID:   "exit.1",
 						Fields: []Field{
-							{Key: "name", Value: &Value{
+							{Key: "name", Values: []Value{{
 								String: stringPtr("exit"),
-							}},
-							{Key: "match", Value: &Value{
+							}}},
+							{Key: "match", Values: []Value{{
 								String: stringPtr("*"),
-							}},
-							{Key: "flush_count", Value: &Value{
+							}}},
+							{Key: "flush_count", Values: []Value{{
 								Number: numberPtr(10),
-							}},
+							}}},
 						},
 					},
 				},
@@ -413,35 +412,34 @@ func TestNewConfigFromBytes(t *testing.T) {
 				Sections: []ConfigSection{{
 					Type: InputSection,
 					Fields: []Field{
-						{Key: "name", Value: &Value{
+						{Key: "name", Values: []Value{{
 							String: stringPtr("tail"),
-						}},
-						{Key: "tag", Value: &Value{
+						}}},
+						{Key: "tag", Values: []Value{{
 							String: stringPtr("kube.*"),
-						}},
-						{Key: "mem_buf_limit", Value: &Value{
+						}}},
+						{Key: "mem_buf_limit", Values: []Value{{
 							String: stringPtr("4.8M"),
-						}},
+						}}},
 					},
 				}, {
 					Type: ParserSection,
 					Fields: []Field{
-						{Key: "Name",
-							Value: &Value{
-								String: stringPtr("apache2"),
-							}},
-						{Key: "Format", Value: &Value{
+						{Key: "Name", Values: []Value{{
+							String: stringPtr("apache2"),
+						}}},
+						{Key: "Format", Values: []Value{{
 							String: stringPtr("regex"),
-						}},
-						{Key: "Regex", Value: &Value{
+						}}},
+						{Key: "Regex", Values: []Value{{
 							Regex: stringPtr(`^(?<host>[^ ]*) [^ ]* (?<user>[^ ]*) \[(?<time>[^\]]*)\] "(?<method>\S+)(?: +(?<path>[^ ]*) +\S*)?" (?<code>[^ ]*) (?<size>[^ ]*)(?: "(?<referer>[^\"]*)" "(?<agent>.*)")?$`),
-						}},
-						{Key: "Time_Key", Value: &Value{
+						}}},
+						{Key: "Time_Key", Values: []Value{{
 							String: stringPtr("time"),
-						}},
-						{Key: "Time_Format", Value: &Value{
+						}}},
+						{Key: "Time_Format", Values: []Value{{
 							TimeFormat: stringPtr("%d/%b/%Y:%H:%M:%S %z"),
-						}},
+						}}},
 					},
 				}},
 			},
@@ -459,7 +457,7 @@ func TestNewConfigFromBytes(t *testing.T) {
 					Fields: []Field{
 						{
 							Key: "Name",
-							Value: &Value{
+							Values: []Value{{
 								String:   stringPtr("rewrite_tag"),
 								DateTime: nil,
 								Date:     nil,
@@ -468,10 +466,10 @@ func TestNewConfigFromBytes(t *testing.T) {
 								Number:   nil,
 								Float:    nil,
 								List:     nil,
-							}},
+							}}},
 						{
 							Key: "Field",
-							Value: &Value{
+							Values: []Value{{
 								String:   stringPtr("1 2 3 4"),
 								DateTime: nil,
 								Date:     nil,
@@ -480,7 +478,7 @@ func TestNewConfigFromBytes(t *testing.T) {
 								Number:   nil,
 								Float:    nil,
 								List:     nil,
-							}},
+							}}},
 					},
 				}},
 			},
@@ -502,28 +500,28 @@ func TestNewConfigFromBytes(t *testing.T) {
 				Sections: []ConfigSection{{
 					Type: InputSection,
 					Fields: []Field{
-						{Key: "name", Value: &Value{
+						{Key: "name", Values: []Value{{
 							String: stringPtr("tail"),
-						}},
-						{Key: "tag", Value: &Value{
+						}}},
+						{Key: "tag", Values: []Value{{
 							String: stringPtr("kube.*"),
-						}},
-						{Key: "mem_buf_limit", Value: &Value{
+						}}},
+						{Key: "mem_buf_limit", Values: []Value{{
 							String: stringPtr("4.8M"),
-						}},
+						}}},
 					},
 				}, {
 					Type: InputSection,
 					Fields: []Field{
-						{Key: "Name", Value: &Value{
+						{Key: "Name", Values: []Value{{
 							String: stringPtr("rewrite_tag"),
-						}},
-						{Key: "Match", Value: &Value{
+						}}},
+						{Key: "Match", Values: []Value{{
 							String: stringPtr("mqtt"),
-						}},
-						{Key: "Rule", Value: &Value{
+						}}},
+						{Key: "Rule", Values: []Value{{
 							String: stringPtr("topic tele sonoff true"),
-						}},
+						}}},
 					},
 				}},
 			},
@@ -544,28 +542,28 @@ func TestNewConfigFromBytes(t *testing.T) {
 				Sections: []ConfigSection{{
 					Type: InputSection,
 					Fields: []Field{
-						{Key: "name", Value: &Value{
+						{Key: "name", Values: []Value{{
 							String: stringPtr("tail"),
-						}},
-						{Key: "tag", Value: &Value{
+						}}},
+						{Key: "tag", Values: []Value{{
 							String: stringPtr("tail.01"),
-						}},
-						{Key: "Path", Value: &Value{
+						}}},
+						{Key: "Path", Values: []Value{{
 							String: stringPtr("/var/log/system.log"),
-						}},
+						}}},
 					},
 				}, {
 					Type: OutputSection,
 					Fields: []Field{
-						{Key: "name", Value: &Value{
+						{Key: "name", Values: []Value{{
 							String: stringPtr("s3"),
-						}},
-						{Key: "Match", Value: &Value{
+						}}},
+						{Key: "Match", Values: []Value{{
 							String: stringPtr("*"),
-						}},
-						{Key: "bucket", Value: &Value{
+						}}},
+						{Key: "bucket", Values: []Value{{
 							String: stringPtr("your-bucket"),
-						}},
+						}}},
 					},
 				}},
 			},
@@ -591,39 +589,39 @@ func TestNewConfigFromBytes(t *testing.T) {
 				Sections: []ConfigSection{{
 					Type: InputSection,
 					Fields: []Field{
-						{Key: "Name", Value: &Value{
+						{Key: "Name", Values: []Value{{
 							String: stringPtr("tcp"),
-						}},
-						{Key: "Port", Value: &Value{
+						}}},
+						{Key: "Port", Values: []Value{{
 							String: stringPtr("5556"),
-							List:   nil,
+							List:   nil},
 						}},
-						{Key: "Tag", Value: &Value{
+						{Key: "Tag", Values: []Value{{
 							String: stringPtr("foobar"),
-						}},
+						}}},
 					},
 				}, {
 					Type: InputSection,
 					Fields: []Field{
-						{Key: "Name", Value: &Value{
+						{Key: "Name", Values: []Value{{
 							String: stringPtr("tcp"),
-						}},
-						{Key: "Port", Value: &Value{
+						}}},
+						{Key: "Port", Values: []Value{{
 							String: stringPtr("5557"),
-						}},
-						{Key: "Tag", Value: &Value{
+						}}},
+						{Key: "Tag", Values: []Value{{
 							String: stringPtr("foobat"),
-						}},
+						}}},
 					},
 				}, {
 					Type: OutputSection,
 					Fields: []Field{
-						{Key: "name", Value: &Value{
+						{Key: "name", Values: []Value{{
 							String: stringPtr("stdout"),
-						}},
-						{Key: "Match", Value: &Value{
+						}}},
+						{Key: "Match", Values: []Value{{
 							String: stringPtr("*"),
-						}},
+						}}},
 					},
 				}},
 			},
@@ -651,46 +649,46 @@ func TestNewConfigFromBytes(t *testing.T) {
 				Sections: []ConfigSection{{
 					Type: ParserSection,
 					Fields: []Field{
-						{Key: "Name", Value: &Value{
+						{Key: "Name", Values: []Value{{
 							String: stringPtr("syslog-rfc3164-local"),
-						}},
-						{Key: "Format", Value: &Value{
+						}}},
+						{Key: "Format", Values: []Value{{
 							String: stringPtr("regex"),
-						}},
-						{Key: "Regex", Value: &Value{
+						}}},
+						{Key: "Regex", Values: []Value{{
 							Regex: stringPtr(`^\<(?<pri>[0-9]+)\>(?<time>[^ ]* {1,2}[^ ]* [^ ]*) (?<ident>[a-zA-Z0-9_\/\.\-]*)(?:\[(?<pid>[0-9]+)\])?(?:[^\:]*\:)? *(?<message>.*)$`),
-						}},
-						{Key: "Time_Key", Value: &Value{
+						}}},
+						{Key: "Time_Key", Values: []Value{{
 							String: stringPtr("time"),
-						}},
-						{Key: "Time_Format", Value: &Value{
+						}}},
+						{Key: "Time_Format", Values: []Value{{
 							TimeFormat: stringPtr("%b %d %H:%M:%S"),
-						}},
-						{Key: "Time_Keep", Value: &Value{
+						}}},
+						{Key: "Time_Keep", Values: []Value{{
 							String: stringPtr("On"),
-						}},
+						}}},
 					},
 				}, {
 					Type: ParserSection,
 					Fields: []Field{
-						{Key: "Name", Value: &Value{
+						{Key: "Name", Values: []Value{{
 							String: stringPtr("mongodb"),
-						}},
-						{Key: "Format", Value: &Value{
+						}}},
+						{Key: "Format", Values: []Value{{
 							String: stringPtr("regex"),
-						}},
-						{Key: "Regex", Value: &Value{
+						}}},
+						{Key: "Regex", Values: []Value{{
 							Regex: stringPtr(`^(?<time>[^ ]*)\s+(?<severity>\w)\s+(?<component>[^ ]+)\s+\[(?<context>[^\]]+)]\s+(?<message>.*?) *(?<ms>(\d+))?(:?ms)?$`),
-						}},
-						{Key: "Time_Format", Value: &Value{
+						}}},
+						{Key: "Time_Format", Values: []Value{{
 							TimeFormat: stringPtr("%Y-%m-%dT%H:%M:%S.%L"),
-						}},
-						{Key: "Time_Keep", Value: &Value{
+						}}},
+						{Key: "Time_Keep", Values: []Value{{
 							String: stringPtr("On"),
-						}},
-						{Key: "Time_Key", Value: &Value{
+						}}},
+						{Key: "Time_Key", Values: []Value{{
 							String: stringPtr("time"),
-						}},
+						}}},
 					},
 				}},
 			},
