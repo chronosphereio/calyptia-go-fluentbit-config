@@ -12,6 +12,79 @@ import (
 	"github.com/yudai/gojsondiff/formatter"
 )
 
+func TestParseINI(t *testing.T) {
+	tt := []struct {
+		name          string
+		config        []byte
+		expected      *Config
+		expectedError bool
+	}{
+		{
+			name:          "empty ini",
+			config:        []byte(""),
+			expected:      nil,
+			expectedError: true,
+		},
+		{
+			name:          "bad short ini",
+			config:        []byte("new-configuration"),
+			expected:      nil,
+			expectedError: true,
+		},
+		{
+			name:          "single field ini",
+			config:        []byte("interval_flush 1"),
+			expected:      nil,
+			expectedError: true,
+		},
+		{
+			name:          "just an include",
+			config:        []byte("@include foobar.conf"),
+			expected:      nil,
+			expectedError: false,
+		},
+		{
+			name:          "just set a variable",
+			config:        []byte("@set foo=bar\n"),
+			expected:      nil,
+			expectedError: false,
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg, err := ParseINI(tc.config)
+			if tc.expectedError && err == nil {
+				t.Errorf("%s expected error", tc.name)
+				return
+			}
+			if tc.expectedError && err != nil {
+				return
+			}
+			if !tc.expectedError && err != nil {
+				t.Error(err)
+				return
+			}
+
+			if tc.expected != nil {
+				if want, got := len(tc.expected.Sections), len(cfg.Sections); want != got {
+					fmt.Printf("%+v\n", cfg.Sections)
+					t.Errorf("wants %v != got %v", want, got)
+					return
+				}
+
+				for idx, section := range tc.expected.Sections {
+					if want, got := len(section.Fields), len(cfg.Sections[idx].Fields); want != got {
+						t.Errorf("input[%d] wants %v != got %v", idx, want, got)
+						fmt.Printf("GOT=%+v\n", cfg.Sections[idx].Fields)
+						return
+					}
+				}
+			}
+		})
+	}
+}
+
 func TestParseYAML(t *testing.T) {
 	tt := []struct {
 		name          string

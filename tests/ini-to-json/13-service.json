@@ -1,0 +1,6 @@
+{
+	"service": {
+		"flush_interval": 1
+	},
+	"pipeline": {}
+}

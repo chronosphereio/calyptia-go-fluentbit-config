@@ -14,6 +14,8 @@ import (
 
 var (
 	DefaultLexerRules = []lexer.SimpleRule{
+		{"Include", `@[Ii][Nn][Cc][Ll][Uu][Dd][Ee]`},
+		{"Set", `@[Ss][Ee][Tt]`},
 		{"TemplateVariable", `\{\{[^\}]+\}\}`},
 		{"JsonObject", `\{[^\}]+\}`},
 		{"DateTime", `\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d(\.\d+)?`},
@@ -44,8 +46,20 @@ type ConfigGrammar struct {
 }
 
 type Entry struct {
-	Field   *Field   `  @@`
+	Include *Include `  @@`
+	Set     *Set     `| @@`
 	Section *Section `| @@`
+}
+
+type Set struct {
+	Declaration string ` @Set`
+	Lval        string ` (@Ident | @String) "="`
+	Rval        string ` @Ident | @String`
+}
+
+type Include struct {
+	Declaration string ` @Include`
+	Include     string ` @Ident | @String`
 }
 
 type Section struct {
@@ -222,6 +236,8 @@ const (
 	OutputSection
 	CustomSection
 	ParserSection
+	IncludeSection
+	SetSection
 )
 
 var ConfigSectionTypes []string = []string{
@@ -232,6 +248,8 @@ var ConfigSectionTypes []string = []string{
 	"OUTPUT",
 	"CUSTOM",
 	"PARSER",
+	"INCLUDE",
+	"SET",
 }
 
 type ConfigSection struct {
@@ -279,33 +297,63 @@ func (c *Config) addSection(sectype ConfigSectionType, e *Entry) {
 	c.Sections = append(c.Sections, section)
 }
 
+func (c *Config) addInclude(include string) {
+	c.Sections = append(c.Sections, ConfigSection{
+		Type: IncludeSection,
+		Fields: []Field{{
+			Key: "@include",
+			Values: []Value{{
+				String: stringPtr(include),
+			}},
+		}},
+	})
+}
+
+func (c *Config) addSet(lval, rval string) {
+	c.Sections = append(c.Sections, ConfigSection{
+		Type: SetSection,
+		Fields: []Field{{
+			Key: lval,
+			Values: []Value{{
+				String: stringPtr(rval),
+			}},
+		}},
+	})
+}
+
 func (c *Config) loadSectionsFromGrammar(grammar *ConfigGrammar) error {
 	for _, entry := range grammar.Entries {
-		switch entry.Section.Name {
-		case "SERVICE":
-			{
-				c.addSection(ServiceSection, entry)
+		if entry.Section != nil {
+			switch entry.Section.Name {
+			case "SERVICE":
+				{
+					c.addSection(ServiceSection, entry)
+				}
+			case "INPUT":
+				{
+					c.addSection(InputSection, entry)
+				}
+			case "FILTER":
+				{
+					c.addSection(FilterSection, entry)
+				}
+			case "OUTPUT":
+				{
+					c.addSection(OutputSection, entry)
+				}
+			case "CUSTOM":
+				{
+					c.addSection(CustomSection, entry)
+				}
+			case "PARSER":
+				{
+					c.addSection(ParserSection, entry)
+				}
 			}
-		case "INPUT":
-			{
-				c.addSection(InputSection, entry)
-			}
-		case "FILTER":
-			{
-				c.addSection(FilterSection, entry)
-			}
-		case "OUTPUT":
-			{
-				c.addSection(OutputSection, entry)
-			}
-		case "CUSTOM":
-			{
-				c.addSection(CustomSection, entry)
-			}
-		case "PARSER":
-			{
-				c.addSection(ParserSection, entry)
-			}
+		} else if entry.Include != nil {
+			c.addInclude(entry.Include.Include)
+		} else if entry.Set != nil {
+			c.addSet(entry.Set.Lval, entry.Set.Rval)
 		}
 	}
 	return nil
@@ -402,12 +450,44 @@ func (c *Config) DumpINI() ([]byte, error) {
 	ini := bytes.NewBuffer([]byte(""))
 
 	for _, section := range c.Sections {
-		ini.Write([]byte(fmt.Sprintf("[%s]\n",
-			ConfigSectionTypes[section.Type])))
+		switch section.Type {
+		case ServiceSection:
+			fallthrough
+		case InputSection:
+			fallthrough
+		case FilterSection:
+			fallthrough
+		case OutputSection:
+			fallthrough
+		case ParserSection:
+			fallthrough
+		case CustomSection:
+			ini.Write([]byte(fmt.Sprintf("[%s]\n",
+				ConfigSectionTypes[section.Type])))
 
-		for _, field := range section.Fields {
-			if err := field.dumpFieldINI(ini); err != nil {
-				return []byte(""), err
+			for _, field := range section.Fields {
+				if err := field.dumpFieldINI(ini); err != nil {
+					return []byte(""), err
+				}
+			}
+		case IncludeSection:
+			if len(section.Fields) != 1 {
+				return []byte(""), fmt.Errorf("invalid input section")
+			}
+			if len(section.Fields[0].Values) != 1 {
+				return []byte(""), fmt.Errorf("invalid input section")
+			}
+			if section.Fields[0].Values[0].String == nil {
+				return []byte(""), fmt.Errorf("invalid input section")
+			}
+			ini.Write([]byte(fmt.Sprintf("@include %s\n",
+				*section.Fields[0].Values[0].String)))
+		case SetSection:
+			for _, field := range section.Fields {
+				for _, value := range field.Values {
+					ini.Write([]byte(
+						fmt.Sprintf("@set %s = %s\n", field.Key, value.ToString())))
+				}
 			}
 		}
 	}
@@ -698,6 +778,7 @@ type yamlGrammar struct {
 	Service  Fields              `yaml:"service,omitempty" json:"service,omitempty"`
 	Customs  []map[string]Fields `yaml:"customs,omitempty" json:"customs,omitempty"`
 	Pipeline yamlGrammarPipeline `yaml:"pipeline" json:"pipeline"`
+	Includes []string            `yaml:"includes,omitempty" json:"includes,omitempty"`
 }
 
 func getPluginName(fields map[string]Fields) string {
@@ -717,7 +798,7 @@ func getPluginNameParameter(cfg ConfigSection) string {
 	return ""
 }
 
-func (cfg *Config) dumpYamlGrammar() *yamlGrammar {
+func (cfg *Config) dumpYamlGrammar() (*yamlGrammar, error) {
 	yg := yamlGrammar{
 		Service: make(Fields, 0),
 		Customs: make([]map[string]Fields, 0),
@@ -727,6 +808,7 @@ func (cfg *Config) dumpYamlGrammar() *yamlGrammar {
 			Outputs: make([]map[string]Fields, 0),
 			Parsers: make([]map[string]Fields, 0),
 		},
+		Includes: make([]string, 0),
 	}
 
 	for _, section := range cfg.Sections {
@@ -734,6 +816,12 @@ func (cfg *Config) dumpYamlGrammar() *yamlGrammar {
 			for _, field := range section.Fields {
 				yg.Service = append(yg.Service, field)
 			}
+		} else if section.Type == IncludeSection {
+			yg.Includes = append(yg.Includes,
+				*section.Fields[0].Values[0].String)
+
+		} else if section.Type == SetSection {
+			return nil, fmt.Errorf("@set is unsupported")
 		} else {
 			sectionName := getPluginNameParameter(section)
 			sectionmap := make(map[string]Fields)
@@ -773,7 +861,7 @@ func (cfg *Config) dumpYamlGrammar() *yamlGrammar {
 		}
 	}
 
-	return &yg
+	return &yg, nil
 }
 
 func (yg *yamlGrammar) dumpConfig() *Config {
@@ -882,11 +970,28 @@ func (yg *yamlGrammar) dumpConfig() *Config {
 		cfg.Sections = append(cfg.Sections, section)
 	}
 
+	for _, include := range yg.Includes {
+		section := ConfigSection{
+			Type: IncludeSection,
+			Fields: []Field{{
+				Key: "@include",
+				Values: []Value{{
+					String: stringPtr(include),
+				}},
+			}},
+		}
+		cfg.Sections = append(cfg.Sections, section)
+	}
+
 	return cfg
 }
 
 func DumpYAML(cfg *Config) ([]byte, error) {
-	return yaml.Marshal(cfg.dumpYamlGrammar())
+	if y, err := cfg.dumpYamlGrammar(); err != nil {
+		return []byte(""), err
+	} else {
+		return yaml.Marshal(y)
+	}
 }
 
 func ParseYAML(data []byte) (*Config, error) {
@@ -922,5 +1027,9 @@ func ParseJSON(data []byte) (*Config, error) {
 }
 
 func DumpJSON(cfg *Config) ([]byte, error) {
-	return json.MarshalIndent(cfg.dumpYamlGrammar(), "", "  ")
+	if j, err := cfg.dumpYamlGrammar(); err != nil {
+		return []byte(""), err
+	} else {
+		return json.MarshalIndent(j, "", "  ")
+	}
 }
