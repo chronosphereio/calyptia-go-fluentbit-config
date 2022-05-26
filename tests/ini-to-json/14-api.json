@@ -1,0 +1,29 @@
+{
+    "pipeline": {
+        "inputs": [
+            {
+                "forward": {
+                    "Name": "forward",
+                    "Listen": "0.0.0.0",
+                    "Port": 24224
+                }
+            },
+            {
+                "syslog": {
+                    "Name": "syslog",
+                    "Listen": "0.0.0.0",
+                    "Port": 5140,
+                    "Mode": "tcp"
+                }
+            },
+            {
+                "syslog.1": {
+                    "Name": "syslog.1",
+                    "Listen": "0.0.0.0",
+                    "Port": 5140,
+                    "Mode": "udp"
+                }
+            }
+        ]
+    }
+}
