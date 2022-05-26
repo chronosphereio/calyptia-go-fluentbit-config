@@ -295,30 +295,32 @@ func (c *Config) addSection(sectype ConfigSectionType, e *Entry) {
 
 func (c *Config) loadSectionsFromGrammar(grammar *ConfigGrammar) error {
 	for _, entry := range grammar.Entries {
-		switch entry.Section.Name {
-		case "SERVICE":
-			{
-				c.addSection(ServiceSection, entry)
-			}
-		case "INPUT":
-			{
-				c.addSection(InputSection, entry)
-			}
-		case "FILTER":
-			{
-				c.addSection(FilterSection, entry)
-			}
-		case "OUTPUT":
-			{
-				c.addSection(OutputSection, entry)
-			}
-		case "CUSTOM":
-			{
-				c.addSection(CustomSection, entry)
-			}
-		case "PARSER":
-			{
-				c.addSection(ParserSection, entry)
+		if entry.Section != nil {
+			switch entry.Section.Name {
+			case "SERVICE":
+				{
+					c.addSection(ServiceSection, entry)
+				}
+			case "INPUT":
+				{
+					c.addSection(InputSection, entry)
+				}
+			case "FILTER":
+				{
+					c.addSection(FilterSection, entry)
+				}
+			case "OUTPUT":
+				{
+					c.addSection(OutputSection, entry)
+				}
+			case "CUSTOM":
+				{
+					c.addSection(CustomSection, entry)
+				}
+			case "PARSER":
+				{
+					c.addSection(ParserSection, entry)
+				}
 			}
 		}
 	}
