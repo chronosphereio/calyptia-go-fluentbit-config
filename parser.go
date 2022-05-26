@@ -14,6 +14,8 @@ import (
 
 var (
 	DefaultLexerRules = []lexer.SimpleRule{
+		{"Include", `@[Ii][Nn][Cc][Ll][Uu][Dd][Ee]`},
+		{"Set", `@[Ss][Ee][Tt]`},
 		{"TemplateVariable", `\{\{[^\}]+\}\}`},
 		{"JsonObject", `\{[^\}]+\}`},
 		{"DateTime", `\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d(\.\d+)?`},
@@ -44,8 +46,20 @@ type ConfigGrammar struct {
 }
 
 type Entry struct {
-	Field   *Field   `  @@`
+	Include *Include `  @@`
+	Set     *Set     `| @@`
 	Section *Section `| @@`
+}
+
+type Set struct {
+	Declaration string ` @Set`
+	Lval        string ` (@Ident | @String) "="`
+	Rval        string ` @Ident | @String`
+}
+
+type Include struct {
+	Declaration string ` @Include`
+	Include     string ` @Ident | @String`
 }
 
 type Section struct {
