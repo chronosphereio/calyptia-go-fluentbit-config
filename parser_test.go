@@ -599,7 +599,69 @@ func TestNewConfigFromBytes(t *testing.T) {
 				}},
 			},
 		},
+		{
+			name: "test valid large configuration bug 157",
+			config: []byte(`[INPUT]
+			Name          forward
+			Host          0.0.0.0
+			Port          24284
 
+		[OUTPUT]
+			Name http
+			Match dummy.*
+			Host api.coralogix.com
+			Port 443
+			URI /logs/rest/singles
+			Header private_key Private_Key-Super-Complex-testing-123
+			Format json_lines
+			Compress On
+		`),
+			expected: Config{
+				Sections: []ConfigSection{{
+					Type: InputSection,
+					Fields: []Field{
+						{Key: "Name", Values: []Value{{
+							String: stringPtr("forward"),
+						}}},
+						{Key: "Host", Values: []Value{{
+							String: stringPtr("0.0.0.0"),
+						}}},
+						{Key: "Port", Values: []Value{{
+							String: stringPtr("24284"),
+						}}},
+					},
+				}, {
+					Type: OutputSection,
+					Fields: []Field{
+						{Key: "Name", Values: []Value{{
+							String: stringPtr("http"),
+						}}},
+						{Key: "Match", Values: []Value{{
+							String: stringPtr("dummy.*"),
+						}}},
+						{Key: "Host", Values: []Value{{
+							String: stringPtr("api.coralogix.com"),
+						}}},
+						{Key: "Port", Values: []Value{{
+							String: stringPtr("443"),
+						}}},
+						{Key: "URI", Values: []Value{{
+							String: stringPtr("/logs/rest/singles"),
+						}}},
+						{Key: "Header", Values: []Value{{
+							String: stringPtr("private_key Private_Key-Super-Complex-testing-123"),
+						}}},
+						{Key: "Format", Values: []Value{{
+							String: stringPtr("json_lines"),
+						}}},
+						{Key: "Compress", Values: []Value{{
+							String: stringPtr("On"),
+						}}},
+					},
+				}},
+			},
+			expectedError: false,
+		},
 		{
 			name: "test valid larger configuration",
 			config: []byte(`[INPUT]
