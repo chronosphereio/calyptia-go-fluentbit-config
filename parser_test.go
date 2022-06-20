@@ -612,7 +612,7 @@ func TestNewConfigFromBytes(t *testing.T) {
 			Host api.coralogix.com
 			Port 443
 			URI /logs/rest/singles
-			Header private_key Private_Key-Super-Complex-testing-123
+			Header private_key 0886464e-ccba-ff8b-83ff-4fa9c3cc0f72
 			Format json_lines
 			Compress On
 		`),
@@ -662,6 +662,70 @@ func TestNewConfigFromBytes(t *testing.T) {
 			},
 			expectedError: false,
 		},
+		{
+			name: "test valid large configuration bug 157 - 2nd case",
+			config: []byte(`[INPUT]
+			Name          forward
+			Host          0.0.0.0
+			Port          24284
+
+		[OUTPUT]
+			Name http
+			Match dummy.*
+			Host api.coralogix.com
+			Port 443
+			URI /logs/rest/singles
+			Header private_key EXPLICITLY-LONG-KEY-12345
+			Format json_lines
+			Compress On
+		`),
+			expected: Config{
+				Sections: []ConfigSection{{
+					Type: InputSection,
+					Fields: []Field{
+						{Key: "Name", Values: []Value{{
+							String: stringPtr("forward"),
+						}}},
+						{Key: "Host", Values: []Value{{
+							String: stringPtr("0.0.0.0"),
+						}}},
+						{Key: "Port", Values: []Value{{
+							String: stringPtr("24284"),
+						}}},
+					},
+				}, {
+					Type: OutputSection,
+					Fields: []Field{
+						{Key: "Name", Values: []Value{{
+							String: stringPtr("http"),
+						}}},
+						{Key: "Match", Values: []Value{{
+							String: stringPtr("dummy.*"),
+						}}},
+						{Key: "Host", Values: []Value{{
+							String: stringPtr("api.coralogix.com"),
+						}}},
+						{Key: "Port", Values: []Value{{
+							String: stringPtr("443"),
+						}}},
+						{Key: "URI", Values: []Value{{
+							String: stringPtr("/logs/rest/singles"),
+						}}},
+						{Key: "Header", Values: []Value{{
+							String: stringPtr("private_key EXPLICITLY-LONG-KEY-12345"),
+						}}},
+						{Key: "Format", Values: []Value{{
+							String: stringPtr("json_lines"),
+						}}},
+						{Key: "Compress", Values: []Value{{
+							String: stringPtr("On"),
+						}}},
+					},
+				}},
+			},
+			expectedError: false,
+		},
+
 		{
 			name: "test valid larger configuration",
 			config: []byte(`[INPUT]
@@ -831,9 +895,6 @@ func TestNewConfigFromBytes(t *testing.T) {
 		},
 	}
 
-	//stripIndentation := regexp.MustCompile("\n[\t]+")
-	//stripMultipleSpaces := regexp.MustCompile(`[\ ]{2,}`)
-
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			cfg, err := ParseINI(tc.config)
@@ -859,40 +920,7 @@ func TestNewConfigFromBytes(t *testing.T) {
 					t.Errorf("section[%d] wants %v != got %v", idx, want, got)
 					return
 				}
-
-				/*
-					for fidx, field := range section.Fields {
-						if want, got := len(field.Values), len(cfg.Sections[idx].Fields[fidx].Values); want != got {
-							t.Errorf("section[%d].fields[%s:%d] %d != got %d", idx, field.Key, fidx, want, got)
-							return
-						}
-						for vidx, value := range cfg.Sections[idx].Fields[fidx].Values {
-							if !value.Equals(field.Values[vidx]) {
-								t.Errorf("unexpected value section[%d].fields[%s]", idx, field.Key)
-								return
-							}
-						}
-					}
-				*/
 			}
-
-			/*
-				config := stripIndentation.ReplaceAll(tc.config, []byte("\n"))
-				config = stripMultipleSpaces.ReplaceAll(config, []byte(" "))
-
-				if ini, err := cfg.DumpINI(); err != nil {
-					t.Error(err)
-					return
-				} else {
-					ini = stripIndentation.ReplaceAll(ini, []byte("\n"))
-					ini = stripMultipleSpaces.ReplaceAll(ini, []byte(""))
-					if !bytes.Equal(ini, config) {
-						fmt.Printf("\n'%s'\n != \n'%s'\n", string(config), string(ini))
-						t.Errorf("unable to reconstitute INI")
-					}
-					return
-				}
-			*/
 		})
 	}
 }
