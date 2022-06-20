@@ -25,6 +25,7 @@ var (
 		{"Address", `\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}`},
 		{"Unit", `[-+]?(\d*\.)?\d+([kKmMgG])`},
 		{"Float", `[-+]?\d*\.\d+`},
+		{"UUID", `^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}`},
 		{"Number", `[-+]?\d+`},
 		{"Ident", `[a-zA-Z_\.\*\-0-9]+`},
 		{"List", `([a-zA-Z_\.\*\-0-9\/]+ )+[a-zA-Z_\.\*\-0-9\/]+`},
@@ -77,6 +78,7 @@ type Field struct {
 type Value struct {
 	JsonObject       *string  `@JsonObject`
 	TemplateVariable *string  `| @TemplateVariable`
+	Uuid             *string  `| @UUID`
 	Address          *string  `| @Address`
 	DateTime         *string  `| @DateTime`
 	Date             *string  `| @Date`
