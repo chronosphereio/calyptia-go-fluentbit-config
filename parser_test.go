@@ -712,7 +712,7 @@ func TestNewConfigFromBytes(t *testing.T) {
 							String: stringPtr("/logs/rest/singles"),
 						}}},
 						{Key: "Header", Values: []Value{{
-							String: stringPtr("private_key Private_Key-Super-Complex-testing-123"),
+							String: stringPtr("private_key EXPLICITLY-LONG-KEY-12345"),
 						}}},
 						{Key: "Format", Values: []Value{{
 							String: stringPtr("json_lines"),
