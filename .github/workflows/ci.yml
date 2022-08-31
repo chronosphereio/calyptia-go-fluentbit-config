@@ -14,9 +14,9 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.17
+          go-version: 1.19
       - name: Test
-        run: go test -race ./...
+        run: go test -race -v ./...
 
   goreleaser:
     name: goreleaser
@@ -26,7 +26,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.17
+          go-version: 1.19
 
       - uses: goreleaser/goreleaser-action@v2
         if: startsWith(github.ref, 'refs/tags/v')
