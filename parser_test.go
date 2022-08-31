@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -774,12 +774,12 @@ func TestNewConfigFromBytes(t *testing.T) {
 					Name tcp
 					Port 5556
 					Tag  foobar
-		
+
 				[INPUT]
 					Name tcp
 					Port 5557
 					Tag  foobat
-		
+
 				[OUTPUT]
 					Name  stdout
 					Match *
@@ -937,7 +937,7 @@ func TestINItoJSON(t *testing.T) {
 		ininame := inifile[:len(inifile)-len(filepath.Ext(inifile))]
 
 		t.Run(fmt.Sprintf("ini_%s", inifile), func(t *testing.T) {
-			config, err := ioutil.ReadFile(inipath)
+			config, err := os.ReadFile(inipath)
 			if err != nil {
 				t.Error(err)
 				return
@@ -955,7 +955,7 @@ func TestINItoJSON(t *testing.T) {
 				return
 			}
 
-			expected, err := ioutil.ReadFile(fmt.Sprintf("tests/ini-to-json/%s.json", ininame))
+			expected, err := os.ReadFile(fmt.Sprintf("tests/ini-to-json/%s.json", ininame))
 			if err != nil {
 				t.Error(err)
 				return
@@ -1008,7 +1008,7 @@ func TestJSONtoINI(t *testing.T) {
 		jsonname := jsonfile[:len(jsonfile)-len(filepath.Ext(jsonfile))]
 
 		t.Run(fmt.Sprintf("ini_%s", jsonfile), func(t *testing.T) {
-			config, err := ioutil.ReadFile(jsonpath)
+			config, err := os.ReadFile(jsonpath)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1026,7 +1026,7 @@ func TestJSONtoINI(t *testing.T) {
 				return
 			}
 
-			expected, err := ioutil.ReadFile(fmt.Sprintf("tests/ini-to-json/%s.ini", jsonname))
+			expected, err := os.ReadFile(fmt.Sprintf("tests/ini-to-json/%s.ini", jsonname))
 			if err != nil {
 				t.Error(err)
 				return
