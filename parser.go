@@ -220,7 +220,7 @@ func (v *Value) ToString() string {
 	case float64:
 		return fmt.Sprintf("%0.6f", t)
 	case bool:
-		if t == true {
+		if t {
 			return "true"
 		}
 		return "false"
@@ -271,10 +271,6 @@ func stringPtr(s string) *string {
 
 func numberPtr(n int64) *int64 {
 	return &n
-}
-
-func floatPtr(f float64) *float64 {
-	return &f
 }
 
 func (c *Config) addSection(sectype ConfigSectionType, e *Entry) {
@@ -1013,10 +1009,6 @@ func ParseJSON(data []byte) (*Config, error) {
 		switch err.(type) {
 		case *json.UnmarshalTypeError:
 			fmt.Println("unmarshal type error")
-		case *json.UnmarshalFieldError:
-			fmt.Println("unmarshal field error")
-		case *json.InvalidUTF8Error:
-			fmt.Println("syntax error")
 		case *json.InvalidUnmarshalError:
 			fmt.Println("invalid unmarshal error")
 		default:

@@ -1,0 +1,259 @@
+package fluentbit_config
+
+import (
+	_ "embed"
+	"encoding/json"
+	"fmt"
+	"os"
+	"strconv"
+	"strings"
+
+	"code.cloudfoundry.org/bytefmt"
+)
+
+//go:embed schemas/1-9-7-with-ports.json
+var rawSchema []byte
+
+var DefaultSchema = func() Schema {
+	var vs Schema
+	err := json.Unmarshal(rawSchema, &vs)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "could not parse fluent-bit schema: %v\n", err)
+		os.Exit(1)
+	}
+
+	return vs
+}()
+
+type Schema struct {
+	FluentBit SchemaFluentBit `json:"fluent-bit"`
+	Customs   []SchemaSection `json:"customs"`
+	Inputs    []SchemaSection `json:"inputs"`
+	Filters   []SchemaSection `json:"filters"`
+	Outputs   []SchemaSection `json:"outputs"`
+}
+
+type SchemaFluentBit struct {
+	Version       string `json:"version"`
+	SchemaVersion string `json:"schema_version"`
+	OS            string `json:"os"`
+}
+
+type SchemaSection struct {
+	Type        string           `json:"type"`
+	Name        string           `json:"name"`
+	Description string           `json:"description"`
+	Properties  SchemaProperties `json:"properties"`
+}
+
+type SchemaProperties struct {
+	Options []SchemaOptions `json:"options"`
+
+	// Networking is only present in outputs.
+	Networking []SchemaOptions `json:"networking"`
+	// NetworkTLS is only present in outputs.
+	NetworkTLS []SchemaOptions `json:"network_tls"`
+}
+
+type SchemaOptions struct {
+	Name        string       `json:"name"`
+	Description string       `json:"description"`
+	Default     *interface{} `json:"default,omitempty"`
+	Type        string       `json:"type"`
+}
+
+// Validate with the default schema.
+func (cfg *Config) Validate() error {
+	return cfg.ValidateWithSchema(DefaultSchema)
+}
+
+// ValidateWithSchema validates that the config satisfies
+// all properties defined on the schema.
+// That is if the schema says the the input plugin "cpu"
+// has a property named "pid" that is of integer type,
+// it must be a valid integer.
+func (cfg *Config) ValidateWithSchema(schema Schema) error {
+	for _, section := range cfg.Sections {
+		schemaSection, ok := findSchemaSection(schema, section)
+		if !ok {
+			continue
+		}
+
+		for _, field := range section.Fields {
+			opts, ok := findSchemaOptions(schemaSection.Properties, field.Key)
+			if !ok {
+				continue
+			}
+
+			if !validProp(opts, field) {
+				return fmt.Errorf("%s: expected %q to be a valid %s; got %q", schemaSection.Name, opts.Name, opts.Type, field.Values.ToString())
+			}
+		}
+	}
+
+	return nil
+}
+
+func findSchemaSection(schema Schema, configSection ConfigSection) (SchemaSection, bool) {
+	var out SchemaSection
+
+	pluginName := getPluginNameParameter(configSection)
+
+	resolve := func(ss []SchemaSection) (SchemaSection, bool) {
+		for _, section := range ss {
+			if strings.EqualFold(section.Name, pluginName) {
+				return section, true
+			}
+		}
+
+		return out, false
+	}
+
+	switch configSection.Type {
+	case InputSection:
+		return resolve(schema.Inputs)
+	case FilterSection:
+		return resolve(schema.Filters)
+	case OutputSection:
+		return resolve(schema.Outputs)
+	}
+
+	return out, false
+}
+
+func findSchemaOptions(pp SchemaProperties, propertyName string) (SchemaOptions, bool) {
+	var out SchemaOptions
+
+	for _, opts := range pp.Options {
+		if strings.EqualFold(opts.Name, propertyName) {
+			return opts, true
+		}
+	}
+
+	for _, opts := range pp.Networking {
+		if strings.EqualFold(opts.Name, propertyName) {
+			return opts, true
+		}
+	}
+
+	for _, opts := range pp.NetworkTLS {
+		if strings.EqualFold(opts.Name, propertyName) {
+			return opts, true
+		}
+	}
+
+	return out, false
+}
+
+func validProp(opts SchemaOptions, prop Field) bool {
+	switch opts.Type {
+	case "deprecated":
+		// TODO: review whether "deprecated" is still valid and just ignored,
+		// or totally invalid.
+		return true
+	case "string":
+		return len(prop.Values) != 0
+	case "boolean":
+		return validBoolean(prop)
+	case "integer":
+		return validInteger(prop)
+	case "double":
+		return validDouble(prop)
+	case "time":
+		// TODO: stricter time validator once we know the full rules.
+		return len(prop.Values) != 0
+	case "size":
+		return validByteSize(prop)
+	case "prefixed string":
+		// TODO: stricter time validator once we know the full rules.
+		return len(prop.Values) != 0
+	case "multiple comma delimited strings":
+		return len(prop.Values) != 0
+	case "space delimited strings (minimum 1)":
+		return validSpaceDelimitedString(prop, 1)
+	case "space delimited strings (minimum 2)":
+		return validSpaceDelimitedString(prop, 2)
+	case "space delimited strings (minimum 3)":
+		return validSpaceDelimitedString(prop, 3)
+	case "space delimited strings (minimum 4)":
+		return validSpaceDelimitedString(prop, 4)
+	}
+
+	// valid by default
+	return true
+}
+
+func validBoolean(prop Field) bool {
+	if len(prop.Values) != 1 {
+		return false
+	}
+	val := prop.Values[0]
+	// it could have been caught as a string.
+	// mostly due to "on" and "off" being treated as booleans too.
+	if val.String != nil {
+		s := *val.String
+		return strings.EqualFold(s, "true") ||
+			strings.EqualFold(s, "false") ||
+			strings.EqualFold(s, "on") ||
+			strings.EqualFold(s, "off")
+	}
+	return val.Bool != nil
+}
+
+func validInteger(prop Field) bool {
+	if len(prop.Values) != 1 {
+		return false
+	}
+	val := prop.Values[0]
+	// it could have been caught as a string.
+	if val.String != nil {
+		_, err := strconv.ParseInt(*val.String, 10, 64)
+		return err == nil
+	}
+	return val.Number != nil
+}
+
+func validDouble(prop Field) bool {
+	if len(prop.Values) != 1 {
+		return false
+	}
+	val := prop.Values[0]
+	// it could have been caught as a string.
+	if val.String != nil {
+		_, err := strconv.ParseFloat(*val.String, 64)
+		return err == nil
+	}
+	return val.Float != nil
+}
+
+func validByteSize(prop Field) bool {
+	if len(prop.Values) == 0 {
+		return false
+	}
+	// plain numeric bytes without unit.
+	if len(prop.Values) == 1 && prop.Values[0].Number != nil {
+		return true
+	}
+
+	// try with bytes parser.
+	_, err := bytefmt.ToBytes(prop.Values.ToString())
+	if err == nil {
+		return true
+	}
+
+	// case when numer and unit were split by space.
+	if len(prop.Values) == 2 && prop.Values[0].Number != nil && prop.Values[1].Unit != nil {
+		return true
+	}
+
+	// case when numer and unit were split by space, but unit was detected as string.
+	if len(prop.Values) == 2 && prop.Values[0].Number != nil && prop.Values[1].String != nil {
+		return true
+	}
+
+	return len(prop.Values) == 1 && prop.Values[0].Unit != nil
+}
+
+func validSpaceDelimitedString(prop Field, min int) bool {
+	return len(strings.Fields(prop.Values.ToString())) >= min
+}
