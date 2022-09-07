@@ -12,6 +12,16 @@ func TestConfig_Validate(t *testing.T) {
 		want string
 	}{
 		{
+			name: "service_with_cloud_variable",
+			ini: `
+				[SERVICE]
+					Parsers_File {{ files.parszerz }}
+				[INPUT]
+					Name            forward
+					Buffer_Max_Size {{ secrets.size }}
+			`,
+		},
+		{
 			name: "input_cpu_pid_float",
 			ini: `
 				[INPUT]

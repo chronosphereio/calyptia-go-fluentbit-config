@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -174,9 +175,14 @@ func (cfg *Config) Validate() error {
 // it must be a valid integer.
 func (cfg *Config) ValidateWithSchema(schema Schema) error {
 	for _, section := range cfg.Sections {
+		if !unsupportedSchemaSection(section.Type) {
+			// TODO: support all sections on schema.
+			continue
+		}
+
 		schemaSections, ok := findSchemaSections(schema, section.Type)
 		if !ok {
-			return fmt.Errorf("unknown section %q", section.Type)
+			return fmt.Errorf("unknown section %q", ConfigSectionTypes[section.Type])
 		}
 
 		pluginName := getPluginNameParameter(section)
@@ -186,6 +192,10 @@ func (cfg *Config) ValidateWithSchema(schema Schema) error {
 		}
 
 		for _, field := range section.Fields {
+			if isCloudVariable(field.Values) {
+				continue
+			}
+
 			if isCommonProperty(field.Key) {
 				if len(field.Values) == 0 {
 					return fmt.Errorf("%s: expected %q to be a valid string; got %q", schemaSection.Name, field.Key, field.Values.ToString())
@@ -206,6 +216,19 @@ func (cfg *Config) ValidateWithSchema(schema Schema) error {
 	}
 
 	return nil
+}
+
+func unsupportedSchemaSection(typ ConfigSectionType) bool {
+	list := [...]ConfigSectionType{CustomSection, InputSection, FilterSection, OutputSection}
+	var supported bool
+	for _, got := range list {
+		if typ == got {
+			supported = true
+			break
+		}
+	}
+
+	return supported
 }
 
 func findSchemaSections(schema Schema, typ ConfigSectionType) ([]SchemaSection, bool) {
@@ -240,6 +263,16 @@ func isCommonProperty(name string) bool {
 		}
 	}
 	return false
+}
+
+var (
+	reCloudSecretVariable = regexp.MustCompile(`{{\s*secrets\.\w+\s*}}`)
+	reCloudFileVariable   = regexp.MustCompile(`{{\s*files\.[0-9A-Za-z]+(?:-[A-Za-z]{3,4}|)+\s*}}`)
+)
+
+func isCloudVariable(vals Values) bool {
+	return reCloudSecretVariable.MatchString(vals.ToString()) ||
+		reCloudFileVariable.MatchString(vals.ToString())
 }
 
 func findSchemaOptions(pp SchemaProperties, propertyName string) (SchemaOptions, bool) {
