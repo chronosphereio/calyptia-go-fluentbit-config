@@ -266,13 +266,16 @@ func isCommonProperty(name string) bool {
 }
 
 var (
+	// reCloudSecretVariable matches `{{ secrets.example }}`
 	reCloudSecretVariable = regexp.MustCompile(`{{\s*secrets\.\w+\s*}}`)
-	reCloudFileVariable   = regexp.MustCompile(`{{\s*files\.[0-9A-Za-z]+(?:-[A-Za-z]{3,4}|)+\s*}}`)
+	// reCloudFileVariable matches `{{ files.example }}`
+	reCloudFileVariable = regexp.MustCompile(`{{\s*files\.[0-9A-Za-z]+(?:-[A-Za-z]{3,4}|)+\s*}}`)
 )
 
 func isCloudVariable(vals Values) bool {
-	return reCloudSecretVariable.MatchString(vals.ToString()) ||
-		reCloudFileVariable.MatchString(vals.ToString())
+	s := vals.ToString()
+	return reCloudSecretVariable.MatchString(s) ||
+		reCloudFileVariable.MatchString(s)
 }
 
 func findSchemaOptions(pp SchemaProperties, propertyName string) (SchemaOptions, bool) {
