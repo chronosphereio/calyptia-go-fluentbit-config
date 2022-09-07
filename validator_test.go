@@ -236,6 +236,40 @@ func TestConfig_Validate(t *testing.T) {
 					path foo
 			`,
 		},
+		// TODO: fix parser not uncluding unknown sections.
+		// {
+		// 	name: "unknown_section",
+		// 	ini: `
+		// 		[NOPE]
+		// 			Name test
+		// 	`,
+		// 	want: "unknown section \"NOPE\"",
+		// },
+		{
+			name: "unknown_plugin",
+			ini: `
+				[INPUT]
+					Name nope
+			`,
+			want: "unknown plugin \"nope\"",
+		},
+		{
+			name: "lts_gsuite_reporter_unknown_property",
+			ini: `
+				[INPUT]
+					Name gsuite-reporter
+					nope test
+			`,
+			want: "gsuite-reporter: unknown property \"nope\"",
+		},
+		{
+			name: "lts_gsuite_reporter_pull_interval",
+			ini: `
+				[INPUT]
+					Name 		  gsuite-reporter
+					pull_interval 10s
+			`,
+		},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {

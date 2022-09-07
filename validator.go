@@ -15,15 +15,115 @@ import (
 var rawSchema []byte
 
 var DefaultSchema = func() Schema {
-	var vs Schema
-	err := json.Unmarshal(rawSchema, &vs)
+	var s Schema
+	err := json.Unmarshal(rawSchema, &s)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "could not parse fluent-bit schema: %v\n", err)
 		os.Exit(1)
 	}
 
-	return vs
+	s.InjectLTSPlugins()
+
+	return s
 }()
+
+func (s *Schema) InjectLTSPlugins() {
+	// See https://github.com/calyptia/core-images/blob/main/container/plugins/plugins.json
+	s.Inputs = append(s.Inputs, SchemaSection{
+		// See https://github.com/calyptia/lts-advanced-plugin-s3-replay
+		Type:        "input",
+		Name:        "go-s3-replay-plugin",
+		Description: "Calyptia LTS advanced plugin providing logs replay from s3",
+		Properties: SchemaProperties{
+			Options: []SchemaOptions{
+				{
+					Name: "aws_access_key",
+					Type: "string",
+				},
+				{
+					Name: "aws_secret_key",
+					Type: "string",
+				},
+				{
+					Name: "aws_bucket_name",
+					Type: "string",
+				},
+				{
+					Name:        "aws_s3_endpoint",
+					Type:        "string",
+					Description: "Either aws_s3_endpoint or aws_bucket_region has to be provided",
+				},
+				{
+					Name:        "aws_bucket_region",
+					Type:        "string",
+					Description: "Either aws_s3_endpoint or aws_bucket_region has to be provided",
+				},
+				{
+					Name:        "logs",
+					Type:        "string",
+					Description: "Log pattern",
+				},
+			},
+		},
+	}, SchemaSection{
+		// See https://github.com/calyptia/lts-advanced-plugin-dummy
+		Type:        "input",
+		Name:        "gdummy",
+		Description: "dummy GO!",
+	}, SchemaSection{
+		// See https://github.com/calyptia/lts-advanced-plugin-gsuite-reporter
+		Type:        "input",
+		Name:        "gsuite-reporter",
+		Description: "A Calyptia LTS advanced plugin providing activity streams from Gsuite",
+		Properties: SchemaProperties{
+			Options: []SchemaOptions{
+				{
+					Name:        "access_token",
+					Type:        "string",
+					Description: "Set either access_token or creds_file",
+				},
+				{
+					Name:        "creds_file",
+					Type:        "string",
+					Description: "Service account or refresh token. It must set subject if this is not empty",
+				},
+				{
+					Name:        "subject",
+					Type:        "string",
+					Description: "Email of the user to impersonate",
+				},
+				{
+					Name:        "pull_interval",
+					Type:        "string",
+					Description: "Must be >= 1s",
+					Default:     "30s",
+				},
+				{
+					Name:        "data_dir",
+					Type:        "string",
+					Description: "Directory to store data. It holds a 1MB cache",
+					Default:     "/data/storage",
+				},
+				{
+					Name:        "telemetry",
+					Type:        "boolean",
+					Description: "Enable telemetry on Gsuite API",
+				},
+				{
+					Name:        "application_name",
+					Type:        "string",
+					Description: "See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#ApplicationName",
+				},
+				{
+					Name:        "user_key",
+					Type:        "string",
+					Description: "Profile ID or the user email for which the data should be filtered. Can be `all` for all information, or `userKey` for a user's unique Google Workspace profile ID or their primary email address",
+					Default:     "all",
+				},
+			},
+		},
+	})
+}
 
 type Schema struct {
 	FluentBit SchemaFluentBit `json:"fluent-bit"`
@@ -56,10 +156,10 @@ type SchemaProperties struct {
 }
 
 type SchemaOptions struct {
-	Name        string       `json:"name"`
-	Description string       `json:"description"`
-	Default     *interface{} `json:"default,omitempty"`
-	Type        string       `json:"type"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Default     any    `json:"default,omitempty"`
+	Type        string `json:"type"`
 }
 
 // Validate with the default schema.
@@ -74,15 +174,29 @@ func (cfg *Config) Validate() error {
 // it must be a valid integer.
 func (cfg *Config) ValidateWithSchema(schema Schema) error {
 	for _, section := range cfg.Sections {
-		schemaSection, ok := findSchemaSection(schema, section)
+		schemaSections, ok := findSchemaSections(schema, section.Type)
 		if !ok {
-			continue
+			return fmt.Errorf("unknown section %q", section.Type)
+		}
+
+		pluginName := getPluginNameParameter(section)
+		schemaSection, ok := findSchemaSection(schemaSections, pluginName)
+		if !ok {
+			return fmt.Errorf("unknown plugin %q", pluginName)
 		}
 
 		for _, field := range section.Fields {
+			if isCommonProperty(field.Key) {
+				if len(field.Values) == 0 {
+					return fmt.Errorf("%s: expected %q to be a valid string; got %q", schemaSection.Name, field.Key, field.Values.ToString())
+				}
+
+				continue
+			}
+
 			opts, ok := findSchemaOptions(schemaSection.Properties, field.Key)
 			if !ok {
-				continue
+				return fmt.Errorf("%s: unknown property %q", schemaSection.Name, field.Key)
 			}
 
 			if !validProp(opts, field) {
@@ -94,31 +208,38 @@ func (cfg *Config) ValidateWithSchema(schema Schema) error {
 	return nil
 }
 
-func findSchemaSection(schema Schema, configSection ConfigSection) (SchemaSection, bool) {
-	var out SchemaSection
-
-	pluginName := getPluginNameParameter(configSection)
-
-	resolve := func(ss []SchemaSection) (SchemaSection, bool) {
-		for _, section := range ss {
-			if strings.EqualFold(section.Name, pluginName) {
-				return section, true
-			}
-		}
-
-		return out, false
-	}
-
-	switch configSection.Type {
+func findSchemaSections(schema Schema, typ ConfigSectionType) ([]SchemaSection, bool) {
+	switch typ {
+	case CustomSection:
+		return schema.Customs, true
 	case InputSection:
-		return resolve(schema.Inputs)
+		return schema.Inputs, true
 	case FilterSection:
-		return resolve(schema.Filters)
+		return schema.Filters, true
 	case OutputSection:
-		return resolve(schema.Outputs)
+		return schema.Outputs, true
 	}
 
-	return out, false
+	return nil, false
+}
+
+func findSchemaSection(ss []SchemaSection, pluginName string) (SchemaSection, bool) {
+	for _, section := range ss {
+		if strings.EqualFold(section.Name, pluginName) {
+			return section, true
+		}
+	}
+
+	return SchemaSection{}, false
+}
+
+func isCommonProperty(name string) bool {
+	for _, got := range [...]string{"Name", "Alias", "Tag", "Match", "Match_Regex"} {
+		if strings.EqualFold(name, got) {
+			return true
+		}
+	}
+	return false
 }
 
 func findSchemaOptions(pp SchemaProperties, propertyName string) (SchemaOptions, bool) {
