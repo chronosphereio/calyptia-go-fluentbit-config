@@ -175,7 +175,7 @@ func (cfg *Config) Validate() error {
 // it must be a valid integer.
 func (cfg *Config) ValidateWithSchema(schema Schema) error {
 	for _, section := range cfg.Sections {
-		if !unsupportedSchemaSection(section.Type) {
+		if !supportedSchemaSection(section.Type) {
 			// TODO: support all sections on schema.
 			continue
 		}
@@ -218,7 +218,7 @@ func (cfg *Config) ValidateWithSchema(schema Schema) error {
 	return nil
 }
 
-func unsupportedSchemaSection(typ ConfigSectionType) bool {
+func supportedSchemaSection(typ ConfigSectionType) bool {
 	list := [...]ConfigSectionType{CustomSection, InputSection, FilterSection, OutputSection}
 	var supported bool
 	for _, got := range list {
