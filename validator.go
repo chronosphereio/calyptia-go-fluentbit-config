@@ -174,15 +174,29 @@ func (cfg *Config) Validate() error {
 // it must be a valid integer.
 func (cfg *Config) ValidateWithSchema(schema Schema) error {
 	for _, section := range cfg.Sections {
-		schemaSection, ok := findSchemaSection(schema, section)
+		schemaSections, ok := findSchemaSections(schema, section.Type)
 		if !ok {
-			continue
+			return fmt.Errorf("unknown section %q", section.Type)
+		}
+
+		pluginName := getPluginNameParameter(section)
+		schemaSection, ok := findSchemaSection(schemaSections, pluginName)
+		if !ok {
+			return fmt.Errorf("unknown plugin %q", pluginName)
 		}
 
 		for _, field := range section.Fields {
+			if isCommonProperty(field.Key) {
+				if len(field.Values) == 0 {
+					return fmt.Errorf("%s: expected %q to be a valid string; got %q", schemaSection.Name, field.Key, field.Values.ToString())
+				}
+
+				continue
+			}
+
 			opts, ok := findSchemaOptions(schemaSection.Properties, field.Key)
 			if !ok {
-				continue
+				return fmt.Errorf("%s: unknown property %q", schemaSection.Name, field.Key)
 			}
 
 			if !validProp(opts, field) {
@@ -194,31 +208,38 @@ func (cfg *Config) ValidateWithSchema(schema Schema) error {
 	return nil
 }
 
-func findSchemaSection(schema Schema, configSection ConfigSection) (SchemaSection, bool) {
-	var out SchemaSection
-
-	pluginName := getPluginNameParameter(configSection)
-
-	resolve := func(ss []SchemaSection) (SchemaSection, bool) {
-		for _, section := range ss {
-			if strings.EqualFold(section.Name, pluginName) {
-				return section, true
-			}
-		}
-
-		return out, false
-	}
-
-	switch configSection.Type {
+func findSchemaSections(schema Schema, typ ConfigSectionType) ([]SchemaSection, bool) {
+	switch typ {
+	case CustomSection:
+		return schema.Customs, true
 	case InputSection:
-		return resolve(schema.Inputs)
+		return schema.Inputs, true
 	case FilterSection:
-		return resolve(schema.Filters)
+		return schema.Filters, true
 	case OutputSection:
-		return resolve(schema.Outputs)
+		return schema.Outputs, true
 	}
 
-	return out, false
+	return nil, false
+}
+
+func findSchemaSection(ss []SchemaSection, pluginName string) (SchemaSection, bool) {
+	for _, section := range ss {
+		if strings.EqualFold(section.Name, pluginName) {
+			return section, true
+		}
+	}
+
+	return SchemaSection{}, false
+}
+
+func isCommonProperty(name string) bool {
+	for _, got := range [...]string{"Name", "Alias", "Tag", "Match", "Match_Regex"} {
+		if strings.EqualFold(name, got) {
+			return true
+		}
+	}
+	return false
 }
 
 func findSchemaOptions(pp SchemaProperties, propertyName string) (SchemaOptions, bool) {
