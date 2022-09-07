@@ -265,12 +265,8 @@ type Config struct {
 	Sections    []ConfigSection
 }
 
-func stringPtr(s string) *string {
-	return &s
-}
-
-func numberPtr(n int64) *int64 {
-	return &n
+func ptr[T any](v T) *T {
+	return &v
 }
 
 func (c *Config) addSection(sectype ConfigSectionType, e *Entry) {
@@ -301,7 +297,7 @@ func (c *Config) addInclude(include string) {
 		Fields: []Field{{
 			Key: "@include",
 			Values: []Value{{
-				String: stringPtr(include),
+				String: ptr(include),
 			}},
 		}},
 	})
@@ -313,7 +309,7 @@ func (c *Config) addSet(lval, rval string) {
 		Fields: []Field{{
 			Key: lval,
 			Values: []Value{{
-				String: stringPtr(rval),
+				String: ptr(rval),
 			}},
 		}},
 	})
@@ -974,7 +970,7 @@ func (yg *yamlGrammar) dumpConfig() *Config {
 			Fields: []Field{{
 				Key: "@include",
 				Values: []Value{{
-					String: stringPtr(include),
+					String: ptr(include),
 				}},
 			}},
 		}
