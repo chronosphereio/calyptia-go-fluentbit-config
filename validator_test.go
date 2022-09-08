@@ -280,6 +280,24 @@ func TestConfig_Validate(t *testing.T) {
 					pull_interval 10s
 			`,
 		},
+		{
+			name: "output_http_with_host_and_port",
+			ini: `
+				[OUTPUT]
+					Name http
+					Host api.example.org
+					Port 443
+			`,
+		},
+		// TODO: fix parser
+		// {
+		// 	name: "output_http_header",
+		// 	ini: `
+		// 		[OUTPUT]
+		// 			Name   http
+		// 			Header private_key 008(test)
+		// 	`,
+		// },
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
