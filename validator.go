@@ -180,38 +180,8 @@ func (cfg *Config) ValidateWithSchema(schema Schema) error {
 			continue
 		}
 
-		schemaSections, ok := findSchemaSections(schema, section.Type)
-		if !ok {
-			return fmt.Errorf("unknown section %q", ConfigSectionTypes[section.Type])
-		}
-
-		pluginName := getPluginNameParameter(section)
-		schemaSection, ok := findSchemaSection(schemaSections, pluginName)
-		if !ok {
-			return fmt.Errorf("unknown plugin %q", pluginName)
-		}
-
-		for _, field := range section.Fields {
-			if isCloudVariable(field.Values) {
-				continue
-			}
-
-			if isCommonProperty(field.Key) {
-				if len(field.Values) == 0 {
-					return fmt.Errorf("%s: expected %q to be a valid string; got %q", schemaSection.Name, field.Key, field.Values.ToString())
-				}
-
-				continue
-			}
-
-			opts, ok := findSchemaOptions(schemaSection.Properties, field.Key)
-			if !ok {
-				return fmt.Errorf("%s: unknown property %q", schemaSection.Name, field.Key)
-			}
-
-			if !validProp(opts, field) {
-				return fmt.Errorf("%s: expected %q to be a valid %s; got %q", schemaSection.Name, opts.Name, opts.Type, field.Values.ToString())
-			}
+		if err := section.ValidateWithSchema(schema); err != nil {
+			return err
 		}
 	}
 
@@ -254,6 +224,53 @@ func findSchemaSection(ss []SchemaSection, pluginName string) (SchemaSection, bo
 	}
 
 	return SchemaSection{}, false
+}
+
+func (section ConfigSection) Validate() error {
+	return section.ValidateWithSchema(DefaultSchema)
+}
+
+func (section ConfigSection) ValidateWithSchema(schema Schema) error {
+	if !supportedSchemaSection(section.Type) {
+		// TODO: support all sections on schema.
+		return fmt.Errorf("unsupported plugin kind %q", ConfigSectionTypes[section.Type])
+	}
+
+	schemaSections, ok := findSchemaSections(schema, section.Type)
+	if !ok {
+		return fmt.Errorf("unknown section %q", ConfigSectionTypes[section.Type])
+	}
+
+	pluginName := getPluginNameParameter(section)
+	schemaSection, ok := findSchemaSection(schemaSections, pluginName)
+	if !ok {
+		return fmt.Errorf("unknown plugin %q", pluginName)
+	}
+
+	for _, field := range section.Fields {
+		if isCloudVariable(field.Values) {
+			continue
+		}
+
+		if isCommonProperty(field.Key) {
+			if len(field.Values) == 0 {
+				return fmt.Errorf("%s: expected %q to be a valid string; got %q", schemaSection.Name, field.Key, field.Values.ToString())
+			}
+
+			continue
+		}
+
+		opts, ok := findSchemaOptions(schemaSection.Properties, field.Key)
+		if !ok {
+			return fmt.Errorf("%s: unknown property %q", schemaSection.Name, field.Key)
+		}
+
+		if !validProp(opts, field) {
+			return fmt.Errorf("%s: expected %q to be a valid %s; got %q", schemaSection.Name, opts.Name, opts.Type, field.Values.ToString())
+		}
+	}
+
+	return nil
 }
 
 func isCommonProperty(name string) bool {

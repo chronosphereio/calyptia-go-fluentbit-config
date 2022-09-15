@@ -329,3 +329,71 @@ func TestConfig_Validate(t *testing.T) {
 		})
 	}
 }
+
+func TestConfigSection_Validate(t *testing.T) {
+	tt := []struct {
+		name  string
+		kind  ConfigSectionType
+		props map[string]string
+		want  string
+	}{
+		{
+			name: "input_cpu_pid_float",
+			kind: InputSection,
+			props: map[string]string{
+				"name": "cpu",
+				"pid":  "3.4",
+			},
+			want: `cpu: expected "pid" to be a valid integer; got "3.4"`,
+		},
+		{
+			name: "input_cpu_pid_integer",
+			kind: InputSection,
+			props: map[string]string{
+				"name": "cpu",
+				"pid":  "5",
+			},
+		},
+		{
+			name: "unsupported_kind",
+			kind: NoneSection,
+			want: `unsupported plugin kind "NONE"`,
+		},
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			fields := Fields{}
+			for k, v := range tc.props {
+				v := v
+				fields = append(fields, Field{
+					Key:    k,
+					Values: Values{{String: &v}},
+				})
+			}
+			section := ConfigSection{
+				Type:   tc.kind,
+				Fields: fields,
+			}
+
+			err := section.Validate()
+			if tc.want == "" && err == nil {
+				return
+			}
+
+			if tc.want == "" && err != nil {
+				t.Error(err)
+				return
+			}
+
+			if tc.want != "" && err == nil {
+				t.Errorf("expected error:\n%s\ngot: nil\n", tc.want)
+				return
+			}
+
+			if tc.want != err.Error() {
+				t.Errorf("expected error:\n%s\ngot:\n%s\n", tc.want, err.Error())
+				return
+			}
+		})
+	}
+}
