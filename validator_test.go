@@ -359,6 +359,14 @@ func TestConfigSection_Validate(t *testing.T) {
 			kind: NoneSection,
 			want: `unsupported plugin kind "NONE"`,
 		},
+		{
+			name: "input_forward_buffer_max_size_size",
+			kind: InputSection,
+			props: map[string]string{
+				"Name":            "forward",
+				"buffer_max_size": "61440000",
+			},
+		},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
