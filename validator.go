@@ -409,6 +409,12 @@ func validByteSize(prop Field) bool {
 		return true
 	}
 
+	// try with number as string
+	if len(prop.Values) == 1 && prop.Values[0].String != nil {
+		_, err := strconv.ParseInt(*prop.Values[0].String, 10, 64)
+		return err == nil
+	}
+
 	// try with bytes parser.
 	_, err := bytefmt.ToBytes(prop.Values.ToString())
 	if err == nil {
