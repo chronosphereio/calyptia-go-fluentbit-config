@@ -1,6 +1,0 @@
-{
-	"pipeline": {},
-	"includes": [
-		"foobar.conf"
-	]
-}
