@@ -1,0 +1,15 @@
+{
+    "pipeline": {
+        "inputs": [
+            {
+                "tail": {
+                    "Name": "tail",
+                    "Path": "/var/log/containers/*.log",
+                    "Tag": "containers",
+                    "multiline.parser": "docker , cri",
+                    "Skip_Long_Lines": "On"
+                }
+            }
+        ]
+    }
+}
