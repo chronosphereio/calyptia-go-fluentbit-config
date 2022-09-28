@@ -176,12 +176,19 @@ func (a *Value) Equals(b *Value) bool {
 			return false
 		}
 		return *a.Float == *b.Float
+	} else if a.Address != nil {
+		if b.Address == nil {
+			return false
+		}
+		return *a.Address == *b.Address
 	}
 	return false
 }
 
 func (v *Value) Value() interface{} {
 	switch {
+	case v.Address != nil:
+		return *v.Address
 	case v.TemplateVariable != nil:
 		return *v.TemplateVariable
 	case v.JsonObject != nil:
@@ -411,8 +418,8 @@ func (value *Value) dumpValueINI(ini *bytes.Buffer) error {
 	return nil
 }
 
-func (values Values) dumpValueINI(ini *bytes.Buffer) error {
-	for _, value := range values {
+func (vs Values) dumpValueINI(ini *bytes.Buffer) error {
+	for _, value := range vs {
 		if err := value.dumpValueINI(ini); err != nil {
 			return err
 		}
@@ -526,16 +533,16 @@ func ParseINI(data []byte) (*Config, error) {
 
 type Fields []Field
 
-func (fs *Fields) UnmarshalYAML(unmarshal func(v interface{}) error) error {
+func (fields *Fields) UnmarshalYAML(unmarshal func(v interface{}) error) error {
 	kv := make(map[string]interface{})
 	if err := unmarshal(&kv); err != nil {
 		return err
 	}
-	fields := make([]Field, 0)
+	newFields := make([]Field, 0)
 	for k, v := range kv {
 		switch t := v.(type) {
 		case string:
-			fields = append(fields, Field{
+			newFields = append(newFields, Field{
 				Key: k,
 				Values: []Value{{
 					String: &t,
@@ -543,28 +550,28 @@ func (fs *Fields) UnmarshalYAML(unmarshal func(v interface{}) error) error {
 			})
 		case int:
 			i := int64(v.(int))
-			fields = append(fields, Field{
+			newFields = append(newFields, Field{
 				Key: k,
 				Values: []Value{{
 					Number: &i,
 				}},
 			})
 		case int64:
-			fields = append(fields, Field{
+			newFields = append(newFields, Field{
 				Key: k,
 				Values: []Value{{
 					Number: &t,
 				}},
 			})
 		case float64:
-			fields = append(fields, Field{
+			newFields = append(newFields, Field{
 				Key: k,
 				Values: []Value{{
 					Float: &t,
 				}},
 			})
 		case bool:
-			fields = append(fields, Field{
+			newFields = append(newFields, Field{
 				Key: k,
 				Values: []Value{{
 					Bool: &t,
@@ -574,14 +581,14 @@ func (fs *Fields) UnmarshalYAML(unmarshal func(v interface{}) error) error {
 			return fmt.Errorf("unknown type: %+v: %+v", t, v)
 		}
 	}
-	*fs = fields
+	*fields = newFields
 
 	return nil
 }
 
-func (fs Fields) MarshalYAML() (interface{}, error) {
+func (fields Fields) MarshalYAML() (interface{}, error) {
 	fmap := make(map[string]interface{})
-	for _, field := range fs {
+	for _, field := range fields {
 		if len(field.Values) == 1 {
 			switch true {
 			case field.Values[0].String != nil:
@@ -608,11 +615,11 @@ func (fs Fields) MarshalYAML() (interface{}, error) {
 	return fmap, nil
 }
 
-func (fs Fields) MarshalJSON() ([]byte, error) {
+func (fields Fields) MarshalJSON() ([]byte, error) {
 	bfields := bytes.NewBuffer([]byte(""))
 	bfields.Write([]byte("{"))
 
-	for fidx, field := range fs {
+	for fidx, field := range fields {
 		bfields.Write([]byte(fmt.Sprintf("\"%s\": ", field.Key)))
 		val := bytes.NewBuffer([]byte(""))
 		isstr := false
@@ -681,7 +688,7 @@ func (fs Fields) MarshalJSON() ([]byte, error) {
 			bfields.Write(val.Bytes())
 		}
 
-		if fidx < len(fs)-1 {
+		if fidx < len(fields)-1 {
 			bfields.Write([]byte(", "))
 		}
 	}
@@ -690,8 +697,8 @@ func (fs Fields) MarshalJSON() ([]byte, error) {
 	return bfields.Bytes(), nil
 }
 
-func (fs *Fields) UnmarshalJSON(b []byte) error {
-	fields := make(Fields, 0)
+func (fields *Fields) UnmarshalJSON(b []byte) error {
+	newFields := make(Fields, 0)
 
 	dec := json.NewDecoder(bytes.NewReader(b))
 	dec.UseNumber()
@@ -718,7 +725,7 @@ func (fs *Fields) UnmarshalJSON(b []byte) error {
 
 		switch t := v.(type) {
 		case string:
-			fields = append(fields, Field{
+			newFields = append(newFields, Field{
 				Key: k.(string),
 				Values: []Value{{
 					String: &t,
@@ -731,14 +738,14 @@ func (fs *Fields) UnmarshalJSON(b []byte) error {
 				if err != nil {
 					return err
 				}
-				fields = append(fields, Field{
+				newFields = append(newFields, Field{
 					Key: k.(string),
 					Values: []Value{{
 						Float: &f,
 					}},
 				})
 			} else {
-				fields = append(fields, Field{
+				newFields = append(newFields, Field{
 					Key: k.(string),
 					Values: []Value{{
 						Number: &i,
@@ -746,7 +753,7 @@ func (fs *Fields) UnmarshalJSON(b []byte) error {
 				})
 			}
 		case bool:
-			fields = append(fields, Field{
+			newFields = append(newFields, Field{
 				Key: k.(string),
 				Values: []Value{{
 					Bool: &t,
@@ -757,7 +764,7 @@ func (fs *Fields) UnmarshalJSON(b []byte) error {
 		}
 	}
 
-	*fs = fields
+	*fields = newFields
 	return nil
 }
 
