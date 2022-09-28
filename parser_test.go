@@ -778,7 +778,7 @@ func TestNewConfigFromBytes(t *testing.T) {
 				[INPUT]
 					Name tcp
 					Port 5557
-					Tag  foobat
+					Tag  foobar
 
 				[OUTPUT]
 					Name  stdout
@@ -809,7 +809,7 @@ func TestNewConfigFromBytes(t *testing.T) {
 							String: ptr("5557"),
 						}}},
 						{Key: "Tag", Values: []Value{{
-							String: ptr("foobat"),
+							String: ptr("foobar"),
 						}}},
 					},
 				}, {
@@ -826,6 +826,77 @@ func TestNewConfigFromBytes(t *testing.T) {
 			},
 			expectedError: false,
 		},
+		{
+			name: "test valid multiple outputs with hosts",
+			config: []byte(`[OUTPUT]
+					Name tcp
+					Host 172.168.0.1
+					Port 5556
+					Tag  foobar
+
+				[OUTPUT]
+					Name opensearch
+					Host 127.0.0.1
+					Port 5550
+					Tag  foobar
+
+				[OUTPUT]
+					Name gelf
+					Host api.gelf.test
+					Match *
+			`),
+			expected: Config{
+				Sections: []ConfigSection{{
+					Type: OutputSection,
+					Fields: []Field{
+						{Key: "Name", Values: []Value{{
+							String: ptr("tcp"),
+						}}},
+						{Key: "Host", Values: []Value{{
+							Address: ptr("172.168.0.1"),
+						}}},
+						{Key: "Port", Values: []Value{{
+							String: ptr("5556"),
+							List:   nil},
+						}},
+						{Key: "Tag", Values: []Value{{
+							String: ptr("foobar"),
+						}}},
+					},
+				}, {
+					Type: OutputSection,
+					Fields: []Field{
+						{Key: "Name", Values: []Value{{
+							String: ptr("opensearch"),
+						}}},
+						{Key: "Host", Values: []Value{{
+							Address: ptr("127.0.0.1"),
+						}}},
+						{Key: "Port", Values: []Value{{
+							String: ptr("5557"),
+						}}},
+						{Key: "Tag", Values: []Value{{
+							String: ptr("foobar"),
+						}}},
+					},
+				}, {
+					Type: OutputSection,
+					Fields: []Field{
+						{Key: "name", Values: []Value{{
+							String: ptr("gelf"),
+						}}},
+						{Key: "Host", Values: []Value{{
+							Address: ptr("api.gelf.test"),
+						}}},
+						{Key: "Match", Values: []Value{{
+							String: ptr("*"),
+						}}},
+					},
+				}},
+			},
+			expectedError: false,
+		},
+
 		{
 			name: "test time formats",
 			config: []byte(`
