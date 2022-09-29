@@ -1,6 +1,6 @@
 {
   "fluent-bit": {
-    "version": "1.9.7",
+    "version": "1.9",
     "schema_version": "1",
     "os": "linux"
   },
@@ -156,7 +156,14 @@
       "name": "kmsg",
       "description": "Kernel Log Buffer",
       "properties": {
-        "options": []
+        "options": [
+          {
+            "name": "prio_level",
+            "description": "The log level to filter. The kernel log is dropped if its priority is more than prio_level. Allowed values are 0-8. Default is 8.",
+            "default": "8",
+            "type": "integer"
+          }
+        ]
       }
     },
     {
@@ -379,7 +386,7 @@
       "properties": {
         "options": [
           {
-            "name": "listen",
+            "name": "host",
             "description": "Listen Address",
             "default": "0.0.0.0",
             "type": "string"
@@ -484,7 +491,7 @@
       "properties": {
         "options": [
           {
-            "name": "listen",
+            "name": "host",
             "description": "Listen Address",
             "default": "0.0.0.0",
             "type": "string"
@@ -609,6 +616,12 @@
           {
             "name": "static_batch_size",
             "description": "On start, Fluent Bit might process files which already contains data, these files are called 'static' files. The configuration property in question set's the maximum number of bytes to process per iteration for the static files monitored.",
+            "default": "50M",
+            "type": "size"
+          },
+          {
+            "name": "event_batch_size",
+            "description": "When Fluent Bit is processing files in event based mode the amount ofdata available for consumption could be too much and cause the input plugin to over extend and smother other pluginsThe configuration property sets the maximum number of bytes to process per iteration for the files monitored (in event mode).",
             "default": "50M",
             "type": "size"
           },
@@ -835,7 +848,7 @@
       "properties": {
         "options": [
           {
-            "name": "listen",
+            "name": "host",
             "description": "Listen Address",
             "default": "0.0.0.0",
             "type": "string"
@@ -886,7 +899,7 @@
       "properties": {
         "options": [
           {
-            "name": "listen",
+            "name": "host",
             "description": "Listen Address",
             "default": "0.0.0.0",
             "type": "string"
@@ -954,7 +967,7 @@
       "properties": {
         "options": [
           {
-            "name": "listen",
+            "name": "host",
             "description": "Listen Address",
             "default": "0.0.0.0",
             "type": "string"
@@ -994,12 +1007,20 @@
     },
     {
       "type": "input",
+      "name": "event_test",
+      "description": "Event tests for input plugins",
+      "properties": {
+        "options": []
+      }
+    },
+    {
+      "type": "input",
       "name": "nginx_metrics",
       "description": "Nginx status metrics",
       "properties": {
         "options": [
           {
-            "name": "listen",
+            "name": "host",
             "description": "Listen Address",
             "default": "0.0.0.0",
             "type": "string"
@@ -1092,7 +1113,7 @@
       "properties": {
         "options": [
           {
-            "name": "listen",
+            "name": "host",
             "description": "Listen Address",
             "default": "0.0.0.0",
             "type": "string"
@@ -1189,12 +1210,108 @@
     },
     {
       "type": "input",
+      "name": "udp",
+      "description": "UDP",
+      "properties": {
+        "options": [
+          {
+            "name": "host",
+            "description": "Listen Address",
+            "default": "0.0.0.0",
+            "type": "string"
+          },
+          {
+            "name": "port",
+            "description": "Listen Port",
+            "default": "0",
+            "type": "integer"
+          },
+          {
+            "name": "format",
+            "description": "Set the format: json or none",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "separator",
+            "description": "Set separator",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "chunk_size",
+            "description": "Set the chunk size",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "buffer_size",
+            "description": "Set the buffer size",
+            "default": null,
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "type": "input",
+      "name": "exec_wasi",
+      "description": "Exec WASI Input",
+      "properties": {
+        "options": [
+          {
+            "name": "wasi_path",
+            "description": "Set the path of WASM program to execute",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "accessible_paths",
+            "description": "Specifying paths to be accessible from a WASM program.Default value is current working directory",
+            "default": ".",
+            "type": "multiple comma delimited strings"
+          },
+          {
+            "name": "parser",
+            "description": "Set a parser",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "interval_sec",
+            "description": "Set the collector interval",
+            "default": "1",
+            "type": "integer"
+          },
+          {
+            "name": "interval_nsec",
+            "description": "Set the collector interval (nanoseconds)",
+            "default": "0",
+            "type": "integer"
+          },
+          {
+            "name": "buf_size",
+            "description": "Set the buffer size",
+            "default": "4096",
+            "type": "size"
+          },
+          {
+            "name": "bool",
+            "description": "execute the command only once",
+            "default": "false",
+            "type": "boolean"
+          }
+        ]
+      }
+    },
+    {
+      "type": "input",
       "name": "tcp",
       "description": "TCP",
       "properties": {
         "options": [
           {
-            "name": "listen",
+            "name": "host",
             "description": "Listen Address",
             "default": "0.0.0.0",
             "type": "string"
@@ -1239,7 +1356,7 @@
       "properties": {
         "options": [
           {
-            "name": "listen",
+            "name": "host",
             "description": "Listen Address",
             "default": "0.0.0.0",
             "type": "string"
@@ -1266,7 +1383,7 @@
       "properties": {
         "options": [
           {
-            "name": "listen",
+            "name": "host",
             "description": "Listen Address",
             "default": "0.0.0.0",
             "type": "string"
@@ -1966,13 +2083,13 @@
           {
             "name": "Preserve_Key",
             "description": "Keep original Key_Name field in the parsed result. If false, the field will be removed.",
-            "default": null,
+            "default": "false",
             "type": "boolean"
           },
           {
             "name": "Reserve_Data",
             "description": "Keep all other original fields in the parsed result. If false, all other original fields will be removed.",
-            "default": null,
+            "default": "false",
             "type": "boolean"
           },
           {
@@ -2225,6 +2342,33 @@
           }
         ]
       }
+    },
+    {
+      "type": "filter",
+      "name": "wasm",
+      "description": "WASM program filter",
+      "properties": {
+        "options": [
+          {
+            "name": "wasm_path",
+            "description": "Set the wasm path to execute",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "accessible_paths",
+            "description": "Specifying paths to be accessible from a WASM program.Default value is current working directory",
+            "default": ".",
+            "type": "multiple comma delimited strings"
+          },
+          {
+            "name": "function_name",
+            "description": "Set the function name in wasm to execute",
+            "default": null,
+            "type": "string"
+          }
+        ]
+      }
     }
   ],
   "outputs": [
@@ -2306,6 +2450,12 @@
             "name": "net.keepalive_idle_timeout",
             "description": "Set maximum time allowed for an idle Keepalive connection",
             "default": "30s",
+            "type": "time"
+          },
+          {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
             "type": "time"
           },
           {
@@ -2562,6 +2712,223 @@
             "type": "time"
           },
           {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
+            "type": "time"
+          },
+          {
+            "name": "net.connect_timeout",
+            "description": "Set maximum time allowed to establish a connection, this time includes the TLS handshake",
+            "default": "10s",
+            "type": "time"
+          },
+          {
+            "name": "net.connect_timeout_log_error",
+            "description": "On connection timeout, specify if it should log an error. When disabled, the timeout is logged as a debug message",
+            "default": "true",
+            "type": "boolean"
+          },
+          {
+            "name": "net.source_address",
+            "description": "Specify network address to bind for data traffic",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "net.keepalive_max_recycle",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "default": "2000",
+            "type": "integer"
+          }
+        ],
+        "network_tls": [
+          {
+            "name": "tls",
+            "description": "Enable or disable TLS/SSL support",
+            "default": "off",
+            "type": "boolean"
+          },
+          {
+            "name": "tls.verify",
+            "description": "Force certificate validation",
+            "default": "on",
+            "type": "boolean"
+          },
+          {
+            "name": "tls.debug",
+            "description": "Set TLS debug verbosity level. It accept the following values: 0 (No debug), 1 (Error), 2 (State change), 3 (Informational) and 4 Verbose",
+            "default": "1",
+            "type": "integer"
+          },
+          {
+            "name": "tls.ca_file",
+            "description": "Absolute path to CA certificate file",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "tls.ca_path",
+            "description": "Absolute path to scan for certificate files",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "tls.crt_file",
+            "description": "Absolute path to Certificate file",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "tls.key_file",
+            "description": "Absolute path to private Key file",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "tls.key_passwd",
+            "description": "Optional password for tls.key_file file",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "tls.vhost",
+            "description": "Hostname to be used for TLS SNI extension",
+            "default": null,
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "type": "output",
+      "name": "azure_kusto",
+      "description": "Send events to Kusto (Azure Data Explorer)",
+      "properties": {
+        "options": [
+          {
+            "name": "host",
+            "description": "Host Address",
+            "default": "",
+            "type": "string"
+          },
+          {
+            "name": "port",
+            "description": "host Port",
+            "default": "0",
+            "type": "integer"
+          },
+          {
+            "name": "tenant_id",
+            "description": "Set the tenant ID of the AAD application used for authentication",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "client_id",
+            "description": "Set the client ID (Application ID) of the AAD application used for authentication",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "client_secret",
+            "description": "Set the client secret (Application Password) of the AAD application used for authentication",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "ingestion_endpoint",
+            "description": "Set the Kusto cluster's ingestion endpoint URL (e.g. https://ingest-mycluster.eastus.kusto.windows.net)",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "database_name",
+            "description": "Set the database name",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "table_name",
+            "description": "Set the table name",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "ingestion_mapping_reference",
+            "description": "Set the ingestion mapping reference",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "log_key",
+            "description": "The key name of event payload",
+            "default": "log",
+            "type": "string"
+          },
+          {
+            "name": "include_tag_key",
+            "description": "If enabled, tag is appended to output. The key name is used 'tag_key' property.",
+            "default": "true",
+            "type": "boolean"
+          },
+          {
+            "name": "tag_key",
+            "description": "The key name of tag. If 'include_tag_key' is false, This property is ignored",
+            "default": "tag",
+            "type": "string"
+          },
+          {
+            "name": "include_time_key",
+            "description": "If enabled, time is appended to output. The key name is used 'time_key' property.",
+            "default": "true",
+            "type": "boolean"
+          },
+          {
+            "name": "time_key",
+            "description": "The key name of the time. If 'include_time_key' is false, This property is ignored",
+            "default": "timestamp",
+            "type": "string"
+          }
+        ],
+        "networking": [
+          {
+            "name": "net.dns.mode",
+            "description": "Select the primary DNS connection type (TCP or UDP)",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "net.dns.resolver",
+            "description": "Select the primary DNS resolver type (LEGACY or ASYNC)",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "net.dns.prefer_ipv4",
+            "description": "Prioritize IPv4 DNS results when trying to establish a connection",
+            "default": "false",
+            "type": "boolean"
+          },
+          {
+            "name": "net.keepalive",
+            "description": "Enable or disable Keepalive support",
+            "default": "true",
+            "type": "boolean"
+          },
+          {
+            "name": "net.keepalive_idle_timeout",
+            "description": "Set maximum time allowed for an idle Keepalive connection",
+            "default": "30s",
+            "type": "time"
+          },
+          {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
+            "type": "time"
+          },
+          {
             "name": "net.connect_timeout",
             "description": "Set maximum time allowed to establish a connection, this time includes the TLS handshake",
             "default": "10s",
@@ -2776,6 +3143,12 @@
             "name": "net.keepalive_idle_timeout",
             "description": "Set maximum time allowed for an idle Keepalive connection",
             "default": "30s",
+            "type": "time"
+          },
+          {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
             "type": "time"
           },
           {
@@ -3040,6 +3413,12 @@
             "type": "time"
           },
           {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
+            "type": "time"
+          },
+          {
             "name": "net.connect_timeout",
             "description": "Set maximum time allowed to establish a connection, this time includes the TLS handshake",
             "default": "10s",
@@ -3222,6 +3601,12 @@
             "name": "http_passwd",
             "description": "Password for user defined in HTTP_User",
             "default": "",
+            "type": "string"
+          },
+          {
+            "name": "compress",
+            "description": "Set payload compression mechanism. Option available is 'gzip'",
+            "default": null,
             "type": "string"
           },
           {
@@ -3410,6 +3795,12 @@
             "name": "net.keepalive_idle_timeout",
             "description": "Set maximum time allowed for an idle Keepalive connection",
             "default": "30s",
+            "type": "time"
+          },
+          {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
             "type": "time"
           },
           {
@@ -3741,6 +4132,12 @@
             "name": "net.keepalive_idle_timeout",
             "description": "Set maximum time allowed for an idle Keepalive connection",
             "default": "30s",
+            "type": "time"
+          },
+          {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
             "type": "time"
           },
           {
@@ -4081,6 +4478,12 @@
             "type": "time"
           },
           {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
+            "type": "time"
+          },
+          {
             "name": "net.connect_timeout",
             "description": "Set maximum time allowed to establish a connection, this time includes the TLS handshake",
             "default": "10s",
@@ -4334,6 +4737,12 @@
             "type": "time"
           },
           {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
+            "type": "time"
+          },
+          {
             "name": "net.connect_timeout",
             "description": "Set maximum time allowed to establish a connection, this time includes the TLS handshake",
             "default": "10s",
@@ -4518,6 +4927,12 @@
             "name": "net.keepalive_idle_timeout",
             "description": "Set maximum time allowed for an idle Keepalive connection",
             "default": "30s",
+            "type": "time"
+          },
+          {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
             "type": "time"
           },
           {
@@ -4768,6 +5183,12 @@
             "type": "time"
           },
           {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
+            "type": "time"
+          },
+          {
             "name": "net.connect_timeout",
             "description": "Set maximum time allowed to establish a connection, this time includes the TLS handshake",
             "default": "10s",
@@ -5009,6 +5430,12 @@
             "type": "time"
           },
           {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
+            "type": "time"
+          },
+          {
             "name": "net.connect_timeout",
             "description": "Set maximum time allowed to establish a connection, this time includes the TLS handshake",
             "default": "10s",
@@ -5142,6 +5569,12 @@
             "type": "time"
           },
           {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
+            "type": "time"
+          },
+          {
             "name": "net.connect_timeout",
             "description": "Set maximum time allowed to establish a connection, this time includes the TLS handshake",
             "default": "10s",
@@ -5240,6 +5673,12 @@
             "name": "net.keepalive_idle_timeout",
             "description": "Set maximum time allowed for an idle Keepalive connection",
             "default": "30s",
+            "type": "time"
+          },
+          {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
             "type": "time"
           },
           {
@@ -5631,6 +6070,12 @@
             "type": "time"
           },
           {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
+            "type": "time"
+          },
+          {
             "name": "net.connect_timeout",
             "description": "Set maximum time allowed to establish a connection, this time includes the TLS handshake",
             "default": "10s",
@@ -5857,6 +6302,12 @@
             "type": "time"
           },
           {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
+            "type": "time"
+          },
+          {
             "name": "net.connect_timeout",
             "description": "Set maximum time allowed to establish a connection, this time includes the TLS handshake",
             "default": "10s",
@@ -5993,6 +6444,12 @@
             "name": "net.keepalive_idle_timeout",
             "description": "Set maximum time allowed for an idle Keepalive connection",
             "default": "30s",
+            "type": "time"
+          },
+          {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
             "type": "time"
           },
           {
@@ -6279,6 +6736,12 @@
             "type": "time"
           },
           {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
+            "type": "time"
+          },
+          {
             "name": "net.connect_timeout",
             "description": "Set maximum time allowed to establish a connection, this time includes the TLS handshake",
             "default": "10s",
@@ -6516,6 +6979,12 @@
             "description": "Set a custom kubernetes regex filter",
             "default": "(?<pod_name>[a-z0-9](?:[-a-z0-9]*[a-z0-9])?(?:\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*)_(?<namespace_name>[^_]+)_(?<container_name>.+)-(?<docker_id>[a-z0-9]{64})\\.log$",
             "type": "string"
+          },
+          {
+            "name": "resource_labels",
+            "description": "Set the resource labels",
+            "default": null,
+            "type": "multiple comma delimited strings"
           }
         ],
         "networking": [
@@ -6547,6 +7016,12 @@
             "name": "net.keepalive_idle_timeout",
             "description": "Set maximum time allowed for an idle Keepalive connection",
             "default": "30s",
+            "type": "time"
+          },
+          {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
             "type": "time"
           },
           {
@@ -6830,6 +7305,12 @@
             "type": "time"
           },
           {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
+            "type": "time"
+          },
+          {
             "name": "net.connect_timeout",
             "description": "Set maximum time allowed to establish a connection, this time includes the TLS handshake",
             "default": "10s",
@@ -7032,6 +7513,12 @@
             "name": "net.keepalive_idle_timeout",
             "description": "Set maximum time allowed for an idle Keepalive connection",
             "default": "30s",
+            "type": "time"
+          },
+          {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
             "type": "time"
           },
           {
@@ -7386,6 +7873,12 @@
             "type": "time"
           },
           {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
+            "type": "time"
+          },
+          {
             "name": "net.connect_timeout",
             "description": "Set maximum time allowed to establish a connection, this time includes the TLS handshake",
             "default": "10s",
@@ -7594,6 +8087,12 @@
             "name": "net.keepalive_idle_timeout",
             "description": "Set maximum time allowed for an idle Keepalive connection",
             "default": "30s",
+            "type": "time"
+          },
+          {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
             "type": "time"
           },
           {
@@ -8087,6 +8586,12 @@
             "type": "time"
           },
           {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
+            "type": "time"
+          },
+          {
             "name": "net.connect_timeout",
             "description": "Set maximum time allowed to establish a connection, this time includes the TLS handshake",
             "default": "10s",
@@ -8229,6 +8734,12 @@
             "name": "net.keepalive_idle_timeout",
             "description": "Set maximum time allowed for an idle Keepalive connection",
             "default": "30s",
+            "type": "time"
+          },
+          {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
             "type": "time"
           },
           {
@@ -8402,6 +8913,12 @@
             "name": "net.keepalive_idle_timeout",
             "description": "Set maximum time allowed for an idle Keepalive connection",
             "default": "30s",
+            "type": "time"
+          },
+          {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
             "type": "time"
           },
           {
@@ -8679,6 +9196,12 @@
             "name": "net.keepalive_idle_timeout",
             "description": "Set maximum time allowed for an idle Keepalive connection",
             "default": "30s",
+            "type": "time"
+          },
+          {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
             "type": "time"
           },
           {

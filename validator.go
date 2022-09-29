@@ -12,7 +12,7 @@ import (
 	"code.cloudfoundry.org/bytefmt"
 )
 
-//go:embed schemas/1-9-7-with-ports.json
+//go:embed schemas/1.9.json
 var rawSchema []byte
 
 var DefaultSchema = func() Schema {
