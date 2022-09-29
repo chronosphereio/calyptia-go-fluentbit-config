@@ -281,6 +281,15 @@ func TestConfig_Validate(t *testing.T) {
 			`,
 		},
 		{
+			name: "input_http_with_host_and_port",
+			ini: `
+				[INPUT]
+					Name http
+					Host api.example.org
+					Port 443
+			`,
+		},
+		{
 			name: "output_http_with_host_and_port",
 			ini: `
 				[OUTPUT]
