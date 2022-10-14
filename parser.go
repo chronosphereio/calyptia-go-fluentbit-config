@@ -39,6 +39,14 @@ var (
 	}
 )
 
+type ConfigFormat string
+
+const (
+	ConfigFormatINI  ConfigFormat = "ini"
+	ConfigFormatJSON ConfigFormat = "json"
+	ConfigFormatYAML ConfigFormat = "yaml"
+)
+
 type ConfigGrammar struct {
 	Pos     lexer.Position
 	Start   string   `@EOL*`
@@ -185,40 +193,40 @@ func (a *Value) Equals(b *Value) bool {
 	return false
 }
 
-func (v *Value) Value() interface{} {
+func (a *Value) Value() interface{} {
 	switch {
-	case v.Address != nil:
-		return *v.Address
-	case v.TemplateVariable != nil:
-		return *v.TemplateVariable
-	case v.JsonObject != nil:
-		return *v.JsonObject
-	case v.String != nil:
-		return *v.String
-	case v.DateTime != nil:
-		return *v.DateTime
-	case v.Date != nil:
-		return *v.Date
-	case v.Time != nil:
-		return *v.Time
-	case v.TimeFormat != nil:
-		return *v.TimeFormat
-	case v.Topic != nil:
-		return *v.Topic
-	case v.Regex != nil:
-		return *v.Regex
-	case v.Bool != nil:
-		return *v.Bool
-	case v.Number != nil:
-		return *v.Number
-	case v.Float != nil:
-		return *v.Float
+	case a.Address != nil:
+		return *a.Address
+	case a.TemplateVariable != nil:
+		return *a.TemplateVariable
+	case a.JsonObject != nil:
+		return *a.JsonObject
+	case a.String != nil:
+		return *a.String
+	case a.DateTime != nil:
+		return *a.DateTime
+	case a.Date != nil:
+		return *a.Date
+	case a.Time != nil:
+		return *a.Time
+	case a.TimeFormat != nil:
+		return *a.TimeFormat
+	case a.Topic != nil:
+		return *a.Topic
+	case a.Regex != nil:
+		return *a.Regex
+	case a.Bool != nil:
+		return *a.Bool
+	case a.Number != nil:
+		return *a.Number
+	case a.Float != nil:
+		return *a.Float
 	}
 	return nil
 }
 
-func (v *Value) ToString() string {
-	val := v.Value()
+func (a *Value) ToString() string {
+	val := a.Value()
 	switch t := val.(type) {
 	case string:
 		return t
@@ -367,7 +375,7 @@ func NewFromBytes(data []byte, skipProperties ...string) (*Config, error) {
 	return ParseINI(data)
 }
 
-func (value *Value) dumpValueINI(ini *bytes.Buffer) error {
+func (a *Value) dumpValueINI(ini *bytes.Buffer) error {
 	// ... this might be better served with an interface
 	// and type switching
 	// type Value struct {
@@ -384,31 +392,31 @@ func (value *Value) dumpValueINI(ini *bytes.Buffer) error {
 	// 	List       []*Value `| "[" ( @@ ( "," @@ )* )? "]"`
 	// }
 	switch true {
-	case value.String != nil:
-		ini.Write([]byte(*value.String))
-	case value.DateTime != nil:
-		ini.Write([]byte(*value.DateTime))
-	case value.Date != nil:
-		ini.Write([]byte(*value.Date))
-	case value.Time != nil:
-		ini.Write([]byte(*value.Time))
-	case value.TimeFormat != nil:
-		ini.Write([]byte(*value.TimeFormat))
-	case value.Topic != nil:
-		ini.Write([]byte(fmt.Sprintf("$%s", *value.Topic)))
-	case value.Regex != nil:
-		ini.Write([]byte(*value.Regex))
-	case value.Bool != nil:
-		if *value.Bool {
+	case a.String != nil:
+		ini.Write([]byte(*a.String))
+	case a.DateTime != nil:
+		ini.Write([]byte(*a.DateTime))
+	case a.Date != nil:
+		ini.Write([]byte(*a.Date))
+	case a.Time != nil:
+		ini.Write([]byte(*a.Time))
+	case a.TimeFormat != nil:
+		ini.Write([]byte(*a.TimeFormat))
+	case a.Topic != nil:
+		ini.Write([]byte(fmt.Sprintf("$%s", *a.Topic)))
+	case a.Regex != nil:
+		ini.Write([]byte(*a.Regex))
+	case a.Bool != nil:
+		if *a.Bool {
 			ini.Write([]byte("on"))
 		} else {
 			ini.Write([]byte("off"))
 		}
-	case value.Number != nil:
-		ini.Write([]byte(fmt.Sprintf("%d", int(*value.Number))))
-	case value.Float != nil:
-		ini.Write([]byte(fmt.Sprintf("%0.6f", *value.Float)))
-	case value.List != nil:
+	case a.Number != nil:
+		ini.Write([]byte(fmt.Sprintf("%d", int(*a.Number))))
+	case a.Float != nil:
+		ini.Write([]byte(fmt.Sprintf("%0.6f", *a.Float)))
+	case a.List != nil:
 		//for _, v := range value.List {
 		//if err := v.dumpValueINI(ini); err != nil {
 		//	return err
@@ -440,14 +448,23 @@ func (f *Field) dumpFieldINI(ini *bytes.Buffer) error {
 	return nil
 }
 
-func (c *Config) DumpINI() ([]byte, error) {
-	// type Config struct {
-	// Inputs      map[string][]Field
-	// Filters     map[string][]Field
-	// Customs     map[string][]Field
-	// Outputs     map[string][]Field
-	// Parsers     map[string][]Field
+func (c *Config) DumpAs(configFormat ConfigFormat) ([]byte, error) {
+	switch configFormat {
+	case ConfigFormatYAML:
+		return DumpYAML(c)
+	case ConfigFormatJSON:
+		return DumpJSON(c)
+	case ConfigFormatINI:
+		return DumpINI(c)
+	}
+	return nil, fmt.Errorf("cannot dump config to unknown format: %s", configFormat)
+}
 
+func (c *Config) DumpINI() ([]byte, error) {
+	return DumpINI(c)
+}
+
+func DumpINI(c *Config) ([]byte, error) {
 	ini := bytes.NewBuffer([]byte(""))
 
 	for _, section := range c.Sections {
@@ -799,7 +816,7 @@ func getPluginNameParameter(cfg ConfigSection) string {
 	return ""
 }
 
-func (cfg *Config) dumpYamlGrammar() (*yamlGrammar, error) {
+func (c *Config) dumpYamlGrammar() (*yamlGrammar, error) {
 	yg := yamlGrammar{
 		Service: make(Fields, 0),
 		Customs: make([]map[string]Fields, 0),
@@ -812,7 +829,7 @@ func (cfg *Config) dumpYamlGrammar() (*yamlGrammar, error) {
 		Includes: make([]string, 0),
 	}
 
-	for _, section := range cfg.Sections {
+	for _, section := range c.Sections {
 		if section.Type == ServiceSection {
 			for _, field := range section.Fields {
 				yg.Service = append(yg.Service, field)
