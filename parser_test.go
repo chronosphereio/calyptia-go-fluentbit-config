@@ -1020,7 +1020,7 @@ func TestINItoJSON(t *testing.T) {
 				return
 			}
 
-			jsonconfig, err := DumpJSON(cfg)
+			jsonconfig, err := cfg.DumpAs(ConfigFormatJSON)
 			if err != nil {
 				t.Error(err)
 				return
@@ -1091,7 +1091,7 @@ func TestJSONtoINI(t *testing.T) {
 				return
 			}
 
-			ini, err := cfg.DumpINI()
+			ini, err := cfg.DumpAs(ConfigFormatINI)
 			if err != nil {
 				t.Error(err)
 				return

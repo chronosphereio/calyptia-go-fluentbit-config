@@ -164,8 +164,8 @@ type SchemaOptions struct {
 }
 
 // Validate with the default schema.
-func (cfg *Config) Validate() error {
-	return cfg.ValidateWithSchema(DefaultSchema)
+func (c *Config) Validate() error {
+	return c.ValidateWithSchema(DefaultSchema)
 }
 
 // ValidateWithSchema validates that the config satisfies
@@ -173,8 +173,8 @@ func (cfg *Config) Validate() error {
 // That is if the schema says the the input plugin "cpu"
 // has a property named "pid" that is of integer type,
 // it must be a valid integer.
-func (cfg *Config) ValidateWithSchema(schema Schema) error {
-	for _, section := range cfg.Sections {
+func (c *Config) ValidateWithSchema(schema Schema) error {
+	for _, section := range c.Sections {
 		if !supportedSchemaSection(section.Type) {
 			// TODO: support all sections on schema.
 			continue
