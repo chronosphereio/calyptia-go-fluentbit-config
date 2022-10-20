@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/calyptia/go-fluentbit-conf/classic"
+	"gopkg.in/yaml.v3"
 )
 
 func main() {
@@ -16,16 +17,22 @@ func main() {
 
 func run() error {
 	conf, err := classic.Parse(`
-		[INPUT]
-			Name dummy
-			rate 10.4
+		[FILTER]
+			Name   record_modifier
+			Match  *
+			Record hostname ${HOSTNAME}
+			Record product Awesome_Tool
 	`)
 	if err != nil {
 		return err
 	}
 
-	// fmt.Printf("%#v\n", conf)
-	// litter.Dump(conf)
-	fmt.Println(conf.String())
+	b, err := yaml.Marshal(conf)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("%s\n", string(b))
+	fmt.Println(classic.String(conf))
 	return nil
 }

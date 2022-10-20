@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"strings"
 	"unicode/utf8"
+
+	fluentbitconf "github.com/calyptia/go-fluentbit-conf"
 )
 
 // reSpaces matches more than one consecutive spaces.
@@ -14,7 +16,77 @@ import (
 var reSpaces = regexp.MustCompile(`\s+`)
 
 // Parse a classic fluent-bit config.
-func Parse(text string) (Config, error) {
+func Parse(text string) (fluentbitconf.Config, error) {
+	var out fluentbitconf.Config
+
+	c, err := parse(text)
+	if err != nil {
+		return out, err
+	}
+
+	addByName := func(props Properties, dest *[]fluentbitconf.ByName) {
+		if nameVal, ok := props.Get("Name"); ok {
+			if name, ok := nameVal.(string); ok {
+				config := fluentbitconf.Properties{}
+				for _, p := range props {
+					// Case when the property could be repeated. Example:
+					// 	[FILTER]
+					// 		Name record_modifier
+					// 		Match *
+					// 		Record hostname ${HOSTNAME}
+					// 		Record product Awesome_Tool
+					if v, ok := config.Get(p.Name); ok {
+						if s, ok := v.([]any); ok {
+							s = append(s, p.Value)
+							config.Set(p.Name, s)
+						} else {
+							config.Set(p.Name, []any{v, p.Value})
+						}
+					} else {
+						config.Set(p.Name, p.Value)
+					}
+				}
+				*dest = append(*dest, fluentbitconf.ByName{
+					name: config,
+				})
+			}
+		}
+	}
+
+	for _, entry := range c.Entries {
+		switch entry.Kind {
+		case EntryKindCommand:
+			if strings.EqualFold(entry.AsCommand.Name, "SET") {
+				if out.Env == nil {
+					out.Env = fluentbitconf.Properties{}
+				}
+				out.Env.Set(splitCommand(entry.AsCommand.Instruction))
+			}
+		case EntryKindSection:
+			switch {
+			case strings.EqualFold(entry.AsSection.Name, "SERVICE"):
+				if out.Service == nil {
+					out.Service = fluentbitconf.Properties{}
+				}
+				for _, p := range entry.AsSection.Properties {
+					out.Service.Set(p.Name, p.Value)
+				}
+			case strings.EqualFold(entry.AsSection.Name, "CUSTOM"):
+				addByName(entry.AsSection.Properties, &out.Customs)
+			case strings.EqualFold(entry.AsSection.Name, "INPUT"):
+				addByName(entry.AsSection.Properties, &out.Pipeline.Inputs)
+			case strings.EqualFold(entry.AsSection.Name, "FILTER"):
+				addByName(entry.AsSection.Properties, &out.Pipeline.Filters)
+			case strings.EqualFold(entry.AsSection.Name, "OUTPUT"):
+				addByName(entry.AsSection.Properties, &out.Pipeline.Outputs)
+			}
+		}
+	}
+
+	return out, nil
+}
+
+func parse(text string) (Config, error) {
 	var config Config
 
 	lines := strings.Split(text, "\n")
@@ -116,10 +188,11 @@ func addSectionProperty(sec *Section, line string) error {
 		return fmt.Errorf("invalid property: %w", err)
 	}
 
-	sec.Properties = append(sec.Properties, Property{
-		Name:  name,
-		Value: valueFromString(value),
-	})
+	if sec.Properties == nil {
+		sec.Properties = Properties{}
+	}
+	sec.Properties.Add(name, anyFromString(value))
+
 	return nil
 }
 
@@ -143,9 +216,15 @@ func (c *Config) addCommand(line string) error {
 
 func splitKeyVal(s string) (string, string, error) {
 	parts := reSpaces.Split(s, 2)
-	switch len(parts) {
-	case 0, 1:
+	if len(parts) != 2 {
 		return "", "", errors.New("expected at least two strings separated by a space")
 	}
 	return parts[0], parts[1], nil
+}
+
+func splitCommand(text string) (string, string) {
+	name, val, _ := strings.Cut(text, "=")
+	name = strings.TrimSpace(name)
+	val = strings.TrimSpace(val)
+	return name, val
 }
