@@ -416,6 +416,10 @@ func (a *Value) dumpValueINI(ini *bytes.Buffer) error {
 		ini.Write([]byte(fmt.Sprintf("%d", int(*a.Number))))
 	case a.Float != nil:
 		ini.Write([]byte(fmt.Sprintf("%0.6f", *a.Float)))
+	case a.JsonObject != nil:
+		ini.Write([]byte(*a.JsonObject))
+	case a.Address != nil:
+		ini.Write([]byte(*a.Address))
 	case a.List != nil:
 		//for _, v := range value.List {
 		//if err := v.dumpValueINI(ini); err != nil {

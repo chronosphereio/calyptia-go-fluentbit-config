@@ -1,0 +1,29 @@
+{
+  "pipeline":{
+    "inputs":[
+      {
+        "dummy":{
+          "dummy":"{\"message\":\"dummy\"}",
+          "rate":1,
+          "samples":0,
+          "start_time_sec":-1,
+          "start_time_nsec":-1,
+          "Name":"dummy",
+          "tag":"dummy.2a227ce1-6a50-4ad2-ba37-9e436c454116"
+        }
+      }
+    ],
+    "outputs":[
+      {
+        "http":{
+          "host":"calyptia-vivo",
+          "port":5489,
+          "uri":"/console",
+          "format":"json",
+          "Name":"http",
+          "Match":"*"
+        }
+      }
+    ]
+  }
+}
