@@ -769,6 +769,24 @@ func TestNewConfigFromBytes(t *testing.T) {
 			expectedError: false,
 		},
 		{
+			name: "test output with url",
+			config: []byte(`[OUTPUT]
+    base_uri https://log-api.newrelic.com/log/v1
+`),
+			expected: Config{
+				Sections: []ConfigSection{
+					{
+						Type: OutputSection,
+						Fields: []Field{
+							{Key: "base_url", Values: []Value{{
+								String: ptr("https://log-api.newrelic.com/log/v1"),
+							}}},
+						},
+					},
+				},
+			},
+		},
+		{
 			name: "test valid multiple inputs",
 			config: []byte(`[INPUT]
 					Name tcp
@@ -896,7 +914,6 @@ func TestNewConfigFromBytes(t *testing.T) {
 			},
 			expectedError: false,
 		},
-
 		{
 			name: "test time formats",
 			config: []byte(`
