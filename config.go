@@ -56,7 +56,7 @@ func (p *Properties) Set(key string, value any) {
 
 	for k := range *p {
 		if strings.EqualFold(k, key) {
-			(*p)[key] = value
+			(*p)[k] = value
 			return
 		}
 	}
