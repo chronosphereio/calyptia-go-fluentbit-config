@@ -10,7 +10,33 @@ import (
 // Properties list.
 type Properties []Property
 
-// MarshalYAML implements yaml.Marshaler interface.
+// AsMap output.
+// It will merge properties with the same key into a slice.
+func (pp Properties) AsMap() map[string]any {
+	if pp == nil {
+		return nil
+	}
+
+	out := map[string]any{}
+	for _, p := range pp {
+		if v, ok := out[p.Key]; ok {
+			// If key already exists, we try to convert it to a slice
+			// and append to it.
+			if s, ok := v.([]any); ok {
+				s = append(s, p.Value)
+				out[p.Key] = s
+			} else {
+				out[p.Key] = []any{v, p.Value}
+			}
+		} else {
+			out[p.Key] = p.Value
+		}
+	}
+	return out
+}
+
+// MarshalYAML implements yaml.Marshaler interface
+// to marshall a sorted list of properties into an object.
 func (pp Properties) MarshalYAML() (any, error) {
 	if pp == nil {
 		return nil, nil
@@ -39,7 +65,8 @@ func (pp Properties) MarshalYAML() (any, error) {
 	return node, nil
 }
 
-// UnmarshalYAML implements yaml.Unmarshaler interface.
+// UnmarshalYAML implements yaml.Unmarshaler interface
+// to unmarshal an object into a sorted list of properties.
 func (pp *Properties) UnmarshalYAML(node *yaml.Node) error {
 	d := len(node.Content)
 	if d%2 != 0 {
