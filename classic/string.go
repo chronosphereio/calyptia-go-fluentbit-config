@@ -37,7 +37,7 @@ func String(conf fluentbitconf.Config) string {
 	}
 
 	for k, v := range conf.Env {
-		_, _ = fmt.Fprintf(&sb, "@SET %s=%s", k, stringFromAny(v))
+		_, _ = fmt.Fprintf(&sb, "@SET %s=%s\n", k, stringFromAny(v))
 	}
 
 	if len(conf.Service) != 0 {
