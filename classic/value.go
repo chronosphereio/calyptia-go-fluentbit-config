@@ -6,7 +6,8 @@ import (
 	"strings"
 )
 
-// anyFromString can return bool, float64 and string.
+// anyFromString used to convert property values from the classic config
+// to any type.
 func anyFromString(s string) any {
 	// not using strconv since the boolean parser is not very strict
 	// and allows: 1, t, T, 0, f, F.
@@ -25,7 +26,8 @@ func anyFromString(s string) any {
 	return s
 }
 
-// stringFromAny accepts bool, float64 and string.
+// stringFromAny -
+// TODO: Handle more data types.
 func stringFromAny(v any) string {
 	switch t := v.(type) {
 	case float64:

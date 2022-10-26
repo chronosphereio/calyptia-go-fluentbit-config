@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"text/tabwriter"
 	"unicode/utf8"
 
-	fluentbitconf "github.com/calyptia/go-fluentbit-conf"
+	"github.com/calyptia/go-fluentbit-conf/property"
 )
 
 // reSpaces matches more than one consecutive spaces.
@@ -15,81 +16,8 @@ import (
 // from the text config.
 var reSpaces = regexp.MustCompile(`\s+`)
 
-// Parse a classic fluent-bit config.
-func Parse(text string) (fluentbitconf.Config, error) {
-	var out fluentbitconf.Config
-
-	c, err := parse(text)
-	if err != nil {
-		return out, err
-	}
-
-	addByName := func(props Properties, dest *[]fluentbitconf.ByName) {
-		if nameVal, ok := props.Get("Name"); ok {
-			if name, ok := nameVal.(string); ok {
-				config := fluentbitconf.Properties{}
-				for _, p := range props {
-					// Case when the property could be repeated. Example:
-					// 	[FILTER]
-					// 		Name record_modifier
-					// 		Match *
-					// 		Record hostname ${HOSTNAME}
-					// 		Record product Awesome_Tool
-					if v, ok := config.Get(p.Name); ok {
-						if s, ok := v.([]any); ok {
-							s = append(s, p.Value)
-							config.Set(p.Name, s)
-						} else {
-							config.Set(p.Name, []any{v, p.Value})
-						}
-					} else {
-						config.Set(p.Name, p.Value)
-					}
-				}
-				*dest = append(*dest, fluentbitconf.ByName{
-					name: config,
-				})
-			}
-		}
-	}
-
-	for _, entry := range c.Entries {
-		switch entry.Kind {
-		case EntryKindCommand:
-			if strings.EqualFold(entry.AsCommand.Name, "SET") {
-				if out.Env == nil {
-					out.Env = fluentbitconf.Properties{}
-				}
-				out.Env.Set(splitCommand(entry.AsCommand.Instruction))
-			}
-		case EntryKindSection:
-			switch {
-			case strings.EqualFold(entry.AsSection.Name, "SERVICE"):
-				if out.Service == nil {
-					out.Service = fluentbitconf.Properties{}
-				}
-				for _, p := range entry.AsSection.Properties {
-					out.Service.Set(p.Name, p.Value)
-				}
-			case strings.EqualFold(entry.AsSection.Name, "CUSTOM"):
-				addByName(entry.AsSection.Properties, &out.Customs)
-			case strings.EqualFold(entry.AsSection.Name, "INPUT"):
-				addByName(entry.AsSection.Properties, &out.Pipeline.Inputs)
-			case strings.EqualFold(entry.AsSection.Name, "FILTER"):
-				addByName(entry.AsSection.Properties, &out.Pipeline.Filters)
-			case strings.EqualFold(entry.AsSection.Name, "OUTPUT"):
-				addByName(entry.AsSection.Properties, &out.Pipeline.Outputs)
-			}
-		}
-	}
-
-	return out, nil
-}
-
-func parse(text string) (Config, error) {
-	var config Config
-
-	lines := strings.Split(text, "\n")
+func (c *Classic) UnmarshalText(text []byte) error {
+	lines := strings.Split(string(text), "\n")
 
 	var currentSection *Section
 
@@ -99,7 +27,7 @@ func parse(text string) (Config, error) {
 		}
 
 		sec := *currentSection
-		config.Entries = append(config.Entries, Entry{
+		c.Entries = append(c.Entries, Entry{
 			Kind:      EntryKindSection,
 			AsSection: &sec,
 		})
@@ -110,7 +38,7 @@ func parse(text string) (Config, error) {
 	for i, line := range lines {
 		lineNumber := uint(i + 1)
 		if !utf8.ValidString(line) {
-			return config, NewError("invalid utf8 string", lineNumber)
+			return NewError("invalid utf8 string", lineNumber)
 		}
 
 		line = strings.TrimSpace(line)
@@ -129,9 +57,15 @@ func parse(text string) (Config, error) {
 		if strings.HasPrefix(line, "@") {
 			flushCurrentSection()
 
-			if err := config.addCommand(line); err != nil {
-				return config, NewError(err.Error(), lineNumber)
+			cmd, err := newCommand(line)
+			if err != nil {
+				return NewError(err.Error(), lineNumber)
 			}
+
+			c.Entries = append(c.Entries, Entry{
+				Kind:      EntryKindCommand,
+				AsCommand: cmd,
+			})
 
 			continue
 		}
@@ -141,43 +75,83 @@ func parse(text string) (Config, error) {
 			flushCurrentSection()
 
 			if !strings.HasSuffix(line, "]") {
-				return config, NewError("expected section to end with \"]\"", lineNumber)
+				return NewError("expected section to end with \"]\"", lineNumber)
 			}
 
-			sec, err := newSection(line)
+			var err error
+			currentSection, err = newSection(line)
 			if err != nil {
-				return config, NewError(err.Error(), lineNumber)
+				return NewError(err.Error(), lineNumber)
 			}
-
-			currentSection = &sec
 
 			continue
 		}
 
 		if currentSection == nil {
-			return config, NewError(fmt.Sprintf("unexpected entry %q; expected beginning of section", line), lineNumber)
+			return NewError(fmt.Sprintf("unexpected entry %q; expected beginning of section", line), lineNumber)
 		}
 
 		// property within section
 		if err := addSectionProperty(currentSection, line); err != nil {
-			return config, NewError(err.Error(), lineNumber)
+			return NewError(err.Error(), lineNumber)
 		}
 	}
 
 	flushCurrentSection()
 
-	return config, nil
+	return nil
 }
 
-func newSection(line string) (Section, error) {
+func (c Classic) MarshalText() ([]byte, error) {
+	var sb strings.Builder
+
+	for _, entry := range c.Entries {
+		switch entry.Kind {
+		case EntryKindCommand:
+			_, err := fmt.Fprintf(&sb, "@%s %s\n", entry.AsCommand.Name, entry.AsCommand.Instruction)
+			if err != nil {
+				return nil, err
+			}
+		case EntryKindSection:
+			_, err := fmt.Fprintf(&sb, "[%s]\n", entry.AsSection.Name)
+			if err != nil {
+				return nil, err
+			}
+			tw := tabwriter.NewWriter(&sb, 0, 4, 1, ' ', 0)
+			for _, p := range entry.AsSection.Properties {
+				if s, ok := p.Value.([]any); ok {
+					for _, v := range s {
+						_, err := fmt.Fprintf(tw, "    %s\t%s\n", p.Key, stringFromAny(v))
+						if err != nil {
+							return nil, err
+						}
+					}
+				} else {
+					_, err := fmt.Fprintf(tw, "    %s\t%s\n", p.Key, stringFromAny(p.Value))
+					if err != nil {
+						return nil, err
+					}
+				}
+			}
+			err = tw.Flush()
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	return []byte(sb.String()), nil
+}
+
+func newSection(line string) (*Section, error) {
 	sectionName := strings.Trim(line, "[]")
 	sectionName = strings.TrimSpace(sectionName)
 
 	if sectionName == "" {
-		return Section{}, errors.New("expected section name to not be empty")
+		return nil, errors.New("expected section name to not be empty")
 	}
 
-	return Section{
+	return &Section{
 		Name: sectionName,
 	}, nil
 }
@@ -189,29 +163,24 @@ func addSectionProperty(sec *Section, line string) error {
 	}
 
 	if sec.Properties == nil {
-		sec.Properties = Properties{}
+		sec.Properties = property.Properties{}
 	}
 	sec.Properties.Add(name, anyFromString(value))
 
 	return nil
 }
 
-func (c *Config) addCommand(line string) error {
+func newCommand(line string) (*Command, error) {
 	line = strings.TrimPrefix(line, "@")
 	name, instruct, err := splitKeyVal(line)
 	if err != nil {
-		return fmt.Errorf("invalid command: %w", err)
+		return nil, fmt.Errorf("invalid command: %w", err)
 	}
 
-	c.Entries = append(c.Entries, Entry{
-		Kind: EntryKindCommand,
-		AsCommand: &Command{
-			Name:        name,
-			Instruction: instruct,
-		},
-	})
-
-	return nil
+	return &Command{
+		Name:        name,
+		Instruction: instruct,
+	}, nil
 }
 
 func splitKeyVal(s string) (string, string, error) {
