@@ -5,16 +5,16 @@ import (
 )
 
 type Config struct {
-	Env      Properties `json:"env" yaml:"env"`
-	Service  Properties `json:"service" yaml:"service"`
-	Customs  []ByName   `json:"customs" yaml:"customs"`
-	Pipeline Pipeline   `json:"pipeline" yaml:"pipeline"`
+	Env      Properties `json:"env,omitempty" yaml:"env,omitempty"`
+	Service  Properties `json:"service,omitempty" yaml:"service,omitempty"`
+	Customs  []ByName   `json:"customs,omitempty" yaml:"customs,omitempty"`
+	Pipeline Pipeline   `json:"pipeline,omitempty" yaml:"pipeline,omitempty"`
 }
 
 type Pipeline struct {
-	Inputs  []ByName `json:"inputs" yaml:"inputs"`
-	Filters []ByName `json:"filters" yaml:"filters"`
-	Outputs []ByName `json:"outputs" yaml:"outputs"`
+	Inputs  []ByName `json:"inputs,omitempty" yaml:"inputs,omitempty"`
+	Filters []ByName `json:"filters,omitempty" yaml:"filters,omitempty"`
+	Outputs []ByName `json:"outputs,omitempty" yaml:"outputs,omitempty"`
 }
 
 type ByName map[string]Properties

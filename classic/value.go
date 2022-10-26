@@ -28,8 +28,6 @@ func anyFromString(s string) any {
 // stringFromAny accepts bool, float64 and string.
 func stringFromAny(v any) string {
 	switch t := v.(type) {
-	case bool:
-		return fmt.Sprintf("%v", t)
 	case float64:
 		if isInteger(t) {
 			return strconv.FormatInt(int64(t), 10)

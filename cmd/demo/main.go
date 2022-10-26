@@ -17,6 +17,9 @@ func main() {
 
 func run() error {
 	conf, err := classic.Parse(`
+		[INPUT]
+			Name dummy
+			dummy {"foo": "bar"}
 		[FILTER]
 			Name   record_modifier
 			Match  *
