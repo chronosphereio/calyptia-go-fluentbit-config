@@ -43,7 +43,7 @@ func String(conf fluentbitconf.Config) string {
 	if len(conf.Service) != 0 {
 		sb.WriteString("[SERVICE]\n")
 		tw := tabwriter.NewWriter(&sb, 0, 4, 1, ' ', 0)
-		for k, v := range conf.Env {
+		for k, v := range conf.Service {
 			_, _ = fmt.Fprintf(tw, "    %s\t%s\n", k, stringFromAny(v))
 		}
 		_ = tw.Flush()
