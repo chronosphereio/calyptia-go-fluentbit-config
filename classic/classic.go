@@ -1,6 +1,6 @@
 package classic
 
-import "github.com/calyptia/go-fluentbit-conf/property"
+import "github.com/calyptia/go-fluentbit-config/property"
 
 // Classic grammar of the legacy fluent-bit config files.
 // It resembles to INI config format files.

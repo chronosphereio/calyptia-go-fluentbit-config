@@ -8,7 +8,7 @@ import (
 	"text/tabwriter"
 	"unicode/utf8"
 
-	"github.com/calyptia/go-fluentbit-conf/property"
+	"github.com/calyptia/go-fluentbit-config/property"
 )
 
 // reSpaces matches more than one consecutive spaces.

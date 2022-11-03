@@ -1,7 +1,8 @@
-package fluentbitconf
+package fluentbitconfig
 
-import "github.com/calyptia/go-fluentbit-conf/property"
+import "github.com/calyptia/go-fluentbit-config/property"
 
+// TODO: add includes.
 type Config struct {
 	Env      property.Properties `json:"env,omitempty" yaml:"env,omitempty"`
 	Service  property.Properties `json:"service,omitempty" yaml:"service,omitempty"`
@@ -9,6 +10,7 @@ type Config struct {
 	Pipeline Pipeline            `json:"pipeline,omitempty" yaml:"pipeline,omitempty"`
 }
 
+// TODO: add parsers.
 type Pipeline struct {
 	Inputs  []ByName `json:"inputs,omitempty" yaml:"inputs,omitempty"`
 	Filters []ByName `json:"filters,omitempty" yaml:"filters,omitempty"`

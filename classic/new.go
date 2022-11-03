@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"strings"
 
-	fluentbitconf "github.com/calyptia/go-fluentbit-conf"
-	"github.com/calyptia/go-fluentbit-conf/property"
+	fluentbitconfig "github.com/calyptia/go-fluentbit-config"
+	"github.com/calyptia/go-fluentbit-config/property"
 )
 
-func (c Classic) ToConfig() fluentbitconf.Config {
-	var out fluentbitconf.Config
+func (c Classic) ToConfig() fluentbitconfig.Config {
+	var out fluentbitconfig.Config
 
-	addByName := func(props property.Properties, dest *[]fluentbitconf.ByName) {
+	addByName := func(props property.Properties, dest *[]fluentbitconfig.ByName) {
 		if nameVal, ok := props.Get("Name"); ok {
 			if name, ok := nameVal.(string); ok {
 				config := property.Properties{}
@@ -33,7 +33,7 @@ func (c Classic) ToConfig() fluentbitconf.Config {
 						config.Set(p.Key, p.Value)
 					}
 				}
-				*dest = append(*dest, fluentbitconf.ByName{
+				*dest = append(*dest, fluentbitconfig.ByName{
 					name: config,
 				})
 			}
@@ -73,7 +73,7 @@ func (c Classic) ToConfig() fluentbitconf.Config {
 	return out
 }
 
-func FromConfig(conf fluentbitconf.Config) Classic {
+func FromConfig(conf fluentbitconfig.Config) Classic {
 	var out Classic
 
 	addCommands := func(name string, props property.Properties) {
@@ -102,7 +102,7 @@ func FromConfig(conf fluentbitconf.Config) Classic {
 		})
 	}
 
-	addSections := func(name string, byNames []fluentbitconf.ByName) {
+	addSections := func(name string, byNames []fluentbitconfig.ByName) {
 		for _, byName := range byNames {
 			for _, props := range byName {
 				addSection(name, props)

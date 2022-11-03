@@ -1,0 +1,28 @@
+env:
+    FOO: bar
+    BAZ: qux
+service:
+    log_level: error
+customs:
+    - calyptia:
+        name: calyptia
+        api_key: xxx
+pipeline:
+    inputs:
+        - dummy:
+            name: dummy
+            dummy: '{"message": "hello from fluent-bit"}'
+            rate: 10
+        - random:
+            name: random
+    filters:
+        - record_modifier:
+            name: record_modifier
+            match: dummy
+            record:
+                - extra test
+                - additional test2
+    outputs:
+        - stdout:
+            name: stdout
+            match: '*'
