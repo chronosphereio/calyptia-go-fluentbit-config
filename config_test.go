@@ -43,28 +43,6 @@ func Test_Config(t *testing.T) {
 	}
 }
 
-func unique[T comparable](s []T) []T {
-	inResult := make(map[T]bool)
-	var result []T
-	for _, str := range s {
-		if _, ok := inResult[str]; !ok {
-			inResult[str] = true
-			result = append(result, str)
-		}
-	}
-	return result
-}
-
-func filter[T any](slice []T, f func(T) bool) []T {
-	var n []T
-	for _, e := range slice {
-		if f(e) {
-			n = append(n, e)
-		}
-	}
-	return n
-}
-
 func makeTestName(fp string) string {
 	s := filepath.Base(fp)
 	s = strings.TrimRight(s, filepath.Ext(s))
