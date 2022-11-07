@@ -88,7 +88,7 @@ func (c *Classic) UnmarshalText(text []byte) error {
 		}
 
 		if currentSection == nil {
-			return NewError(fmt.Sprintf("unexpected entry %q; expected beginning of section", line), lineNumber)
+			return NewError(fmt.Sprintf("unexpected entry %q", line), lineNumber)
 		}
 
 		// property within section
