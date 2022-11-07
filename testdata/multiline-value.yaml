@@ -1,4 +1,4 @@
 customs:
     - custom:
         name: custom
-        multline: '"FOO\nBAR"'
+        multiline: '"FOO\nBAR"'
