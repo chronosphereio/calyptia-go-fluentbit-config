@@ -10,6 +10,14 @@ import (
 // MarshalJSON implements json.Marshaler interface
 // to marshall a sorted list of properties into an object.
 func (pp Properties) MarshalJSON() ([]byte, error) {
+	if pp == nil {
+		return []byte(`null`), nil
+	}
+
+	if len(pp) == 0 {
+		return []byte(`{}`), nil
+	}
+
 	var buf bytes.Buffer
 	if err := buf.WriteByte('{'); err != nil {
 		return nil, err
