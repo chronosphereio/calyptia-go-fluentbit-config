@@ -1,0 +1,12 @@
+{
+    "pipeline": {
+        "inputs": [
+            {
+                "syslog": {
+                    "name": "syslog",
+                    "listen": "0.0.0.0"
+                }
+            }
+        ]
+    }
+}

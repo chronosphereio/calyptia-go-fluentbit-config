@@ -1,6 +1,7 @@
 package fluentbitconfig_test
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -32,13 +33,24 @@ func Test_Config(t *testing.T) {
 			err = yaml.Unmarshal(yamlText, &yamlConf)
 			assert.NoError(t, err)
 
-			gotYamlText, err := yaml.Marshal(classicConf.ToConfig())
+			jsonText, err := os.ReadFile(strings.Replace(name, ".conf", ".json", 1))
 			assert.NoError(t, err)
-			assert.Equal(t, string(yamlText), string(gotYamlText))
+
+			var jsonConf fluentbitconfig.Config
+			err = json.Unmarshal(jsonText, &jsonConf)
+			assert.NoError(t, err)
 
 			gotClassicText, err := classic.FromConfig(yamlConf).MarshalText()
 			assert.NoError(t, err)
 			assert.Equal(t, string(classicText), string(gotClassicText))
+
+			gotYamlText, err := yaml.Marshal(classicConf.ToConfig())
+			assert.NoError(t, err)
+			assert.Equal(t, string(yamlText), string(gotYamlText))
+
+			gotJsonText, err := json.MarshalIndent(classicConf.ToConfig(), "", "    ")
+			assert.NoError(t, err)
+			assert.Equal(t, string(jsonText), string(gotJsonText)+"\n")
 		})
 	}
 }
