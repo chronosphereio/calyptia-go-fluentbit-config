@@ -24,6 +24,7 @@ func (pp Properties) MarshalJSON() ([]byte, error) {
 	}
 
 	enc := json.NewEncoder(&buf)
+	enc.SetEscapeHTML(false)
 	for i, p := range pp {
 		if i != 0 {
 			if err := buf.WriteByte(','); err != nil {
@@ -48,7 +49,7 @@ func (pp Properties) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 
-	return buf.Bytes(), nil
+	return bytes.TrimRight(buf.Bytes(), "\n"), nil
 }
 
 // UnmarshalJSON implements json.Unmarshaler interface

@@ -62,6 +62,8 @@ func (c Classic) ToConfig() fluentbitconfig.Config {
 				addByName(entry.AsSection.Properties, &out.Customs)
 			case strings.EqualFold(entry.AsSection.Name, "INPUT"):
 				addByName(entry.AsSection.Properties, &out.Pipeline.Inputs)
+			case strings.EqualFold(entry.AsSection.Name, "PARSER"):
+				addByName(entry.AsSection.Properties, &out.Pipeline.Parsers)
 			case strings.EqualFold(entry.AsSection.Name, "FILTER"):
 				addByName(entry.AsSection.Properties, &out.Pipeline.Filters)
 			case strings.EqualFold(entry.AsSection.Name, "OUTPUT"):
@@ -114,6 +116,7 @@ func FromConfig(conf fluentbitconfig.Config) Classic {
 	addSection("SERVICE", conf.Service)
 	addSections("CUSTOM", conf.Customs)
 	addSections("INPUT", conf.Pipeline.Inputs)
+	addSections("PARSER", conf.Pipeline.Parsers)
 	addSections("FILTER", conf.Pipeline.Filters)
 	addSections("OUTPUT", conf.Pipeline.Outputs)
 

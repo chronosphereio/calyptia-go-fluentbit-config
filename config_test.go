@@ -1,6 +1,7 @@
 package fluentbitconfig_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -48,9 +49,15 @@ func Test_Config(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, string(yamlText), string(gotYamlText))
 
-			gotJsonText, err := json.MarshalIndent(classicConf.ToConfig(), "", "    ")
-			assert.NoError(t, err)
-			assert.Equal(t, string(jsonText), string(gotJsonText)+"\n")
+			var gotJsonText bytes.Buffer
+			{
+				enc := json.NewEncoder(&gotJsonText)
+				enc.SetEscapeHTML(false)
+				enc.SetIndent("", "    ")
+				err = enc.Encode(classicConf.ToConfig())
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, string(jsonText), gotJsonText.String())
 		})
 	}
 }

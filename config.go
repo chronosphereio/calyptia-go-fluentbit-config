@@ -13,6 +13,7 @@ type Config struct {
 // TODO: add parsers.
 type Pipeline struct {
 	Inputs  []ByName `json:"inputs,omitempty" yaml:"inputs,omitempty"`
+	Parsers []ByName `json:"parsers,omitempty" yaml:"parsers,omitempty"`
 	Filters []ByName `json:"filters,omitempty" yaml:"filters,omitempty"`
 	Outputs []ByName `json:"outputs,omitempty" yaml:"outputs,omitempty"`
 }
