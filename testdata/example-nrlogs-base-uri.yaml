@@ -1,0 +1,5 @@
+pipeline:
+    outputs:
+        - nrlogs:
+            name: nrlogs
+            base_uri: https://log-api.newrelic.com/log/v1
