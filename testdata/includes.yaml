@@ -1,0 +1,3 @@
+includes:
+    - some/path.ext
+    - some/another/path.ext

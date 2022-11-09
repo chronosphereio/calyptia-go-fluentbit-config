@@ -49,6 +49,10 @@ func (c Classic) ToConfig() fluentbitconfig.Config {
 				}
 				out.Env.Set(splitCommand(entry.AsCommand.Instruction))
 			}
+
+			if strings.EqualFold(entry.AsCommand.Name, "INCLUDE") {
+				out.Includes = append(out.Includes, entry.AsCommand.Instruction)
+			}
 		case EntryKindSection:
 			switch {
 			case strings.EqualFold(entry.AsSection.Name, "SERVICE"):
@@ -78,13 +82,25 @@ func (c Classic) ToConfig() fluentbitconfig.Config {
 func FromConfig(conf fluentbitconfig.Config) Classic {
 	var out Classic
 
-	addCommands := func(name string, props property.Properties) {
+	addEnvs := func(props property.Properties) {
 		for _, p := range props {
 			out.Entries = append(out.Entries, Entry{
 				Kind: EntryKindCommand,
 				AsCommand: &Command{
-					Name:        name,
+					Name:        "SET",
 					Instruction: fmt.Sprintf("%s=%s", p.Key, stringFromAny(p.Value)),
+				},
+			})
+		}
+	}
+
+	addIncludes := func(ss []string) {
+		for _, s := range ss {
+			out.Entries = append(out.Entries, Entry{
+				Kind: EntryKindCommand,
+				AsCommand: &Command{
+					Name:        "INCLUDE",
+					Instruction: s,
 				},
 			})
 		}
@@ -112,7 +128,8 @@ func FromConfig(conf fluentbitconfig.Config) Classic {
 		}
 	}
 
-	addCommands("SET", conf.Env)
+	addEnvs(conf.Env)
+	addIncludes(conf.Includes)
 	addSection("SERVICE", conf.Service)
 	addSections("CUSTOM", conf.Customs)
 	addSections("INPUT", conf.Pipeline.Inputs)

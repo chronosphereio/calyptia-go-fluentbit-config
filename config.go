@@ -5,6 +5,7 @@ import "github.com/calyptia/go-fluentbit-config/property"
 // TODO: add includes.
 type Config struct {
 	Env      property.Properties `json:"env,omitempty" yaml:"env,omitempty"`
+	Includes []string            `json:"includes,omitempty" yaml:"includes,omitempty"`
 	Service  property.Properties `json:"service,omitempty" yaml:"service,omitempty"`
 	Customs  []ByName            `json:"customs,omitempty" yaml:"customs,omitempty"`
 	Pipeline Pipeline            `json:"pipeline,omitempty" yaml:"pipeline,omitempty"`
