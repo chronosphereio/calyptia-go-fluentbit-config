@@ -29,6 +29,10 @@ func anyFromString(s string) any {
 		return v
 	}
 
+	if u, err := strconv.Unquote(s); err == nil {
+		return u
+	}
+
 	return s
 }
 

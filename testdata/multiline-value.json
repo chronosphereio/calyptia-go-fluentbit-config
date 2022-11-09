@@ -3,7 +3,7 @@
         {
             "custom": {
                 "name": "custom",
-                "multiline": "\"FOO\\nBAR\""
+                "multiline": "FOO\nBAR"
             }
         }
     ],
