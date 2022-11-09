@@ -2,16 +2,10 @@ module github.com/calyptia/go-fluentbit-config
 
 go 1.19
 
-require (
-	code.cloudfoundry.org/bytefmt v0.0.0-20211005130812-5bb3c17173e5
-	github.com/alecthomas/participle/v2 v2.0.0-alpha9
-	github.com/yudai/gojsondiff v1.0.0
-	gopkg.in/yaml.v2 v2.4.0
-)
+require gopkg.in/yaml.v3 v3.0.1
 
 require (
-	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/sergi/go-diff v1.2.0 // indirect
-	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect
-	github.com/yudai/pp v2.0.1+incompatible // indirect
+	github.com/alecthomas/assert/v2 v2.2.0 // indirect
+	github.com/alecthomas/repr v0.1.0 // indirect
+	github.com/hexops/gotextdiff v1.0.3 // indirect
 )

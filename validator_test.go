@@ -1,8 +1,11 @@
-package fluentbit_config
+package fluentbitconfig_test
 
 import (
 	_ "embed"
 	"testing"
+
+	"github.com/alecthomas/assert/v2"
+	"github.com/calyptia/go-fluentbit-config/classic"
 )
 
 func TestConfig_Validate(t *testing.T) {
@@ -28,8 +31,8 @@ func TestConfig_Validate(t *testing.T) {
 					Name cpu
 					pid  3.4
 			`,
-			// TODO: fix float not conversing its original value.
-			want: `cpu: expected "pid" to be a valid integer; got "3.400000"`,
+			// TODO: fix float not keeping its original value.
+			want: `input: cpu: expected "pid" to be a valid integer, got 3.4`,
 		},
 		{
 			name: "input_cpu_pid_bool",
@@ -38,7 +41,7 @@ func TestConfig_Validate(t *testing.T) {
 					Name cpu
 					pid  true
 			`,
-			want: `cpu: expected "pid" to be a valid integer; got "true"`,
+			want: `input: cpu: expected "pid" to be a valid integer, got true`,
 		},
 		{
 			name: "input_cpu_pid_bytes",
@@ -47,8 +50,7 @@ func TestConfig_Validate(t *testing.T) {
 					Name cpu
 					pid  1024k
 			`,
-			// TODO: fix byte size not being parsed.
-			want: `cpu: expected "pid" to be a valid integer; got ""`,
+			want: `input: cpu: expected "pid" to be a valid integer, got 1024k`,
 		},
 		{
 			name: "input_cpu_pid_string",
@@ -57,7 +59,7 @@ func TestConfig_Validate(t *testing.T) {
 					Name cpu
 					pid  foo
 			`,
-			want: `cpu: expected "pid" to be a valid integer; got "foo"`,
+			want: `input: cpu: expected "pid" to be a valid integer, got foo`,
 		},
 		{
 			name: "input_cpu_pid_integer",
@@ -74,7 +76,7 @@ func TestConfig_Validate(t *testing.T) {
 					Name        tail
 					docker_mode foo
 			`,
-			want: `tail: expected "docker_mode" to be a valid boolean; got "foo"`,
+			want: `input: tail: expected "docker_mode" to be a valid boolean, got foo`,
 		},
 		{
 			name: "input_tail_docker_mode_integer",
@@ -83,7 +85,7 @@ func TestConfig_Validate(t *testing.T) {
 					Name        tail
 					docker_mode 5
 			`,
-			want: `tail: expected "docker_mode" to be a valid boolean; got "5"`,
+			want: `input: tail: expected "docker_mode" to be a valid boolean, got 5`,
 		},
 		{
 			name: "input_tail_docker_mode_boolean",
@@ -100,7 +102,7 @@ func TestConfig_Validate(t *testing.T) {
 					Name throttle
 					rate 5
 			`,
-			want: `throttle: expected "rate" to be a valid double; got "5"`,
+			want: `filter: throttle: expected "rate" to be a valid double, got 5`,
 		},
 		{
 			name: "filter_throttle_rate_string",
@@ -109,7 +111,7 @@ func TestConfig_Validate(t *testing.T) {
 					Name throttle
 					rate foo
 			`,
-			want: `throttle: expected "rate" to be a valid double; got "foo"`,
+			want: `filter: throttle: expected "rate" to be a valid double, got foo`,
 		},
 		{
 			name: "filter_throttle_rate_double",
@@ -126,7 +128,7 @@ func TestConfig_Validate(t *testing.T) {
 					Name syslog
 					syslog_maxsize foo
 			`,
-			want: `syslog: expected "syslog_maxsize" to be a valid size; got "foo"`,
+			want: `output: syslog: expected "syslog_maxsize" to be a valid size, got foo`,
 		},
 		{
 			name: "output_syslog_syslog_maxsize_bool",
@@ -135,7 +137,7 @@ func TestConfig_Validate(t *testing.T) {
 					Name syslog
 					syslog_maxsize true
 			`,
-			want: `syslog: expected "syslog_maxsize" to be a valid size; got "true"`,
+			want: `output: syslog: expected "syslog_maxsize" to be a valid size, got true`,
 		},
 		{
 			name: "output_syslog_syslog_maxsize_no_unit",
@@ -152,8 +154,6 @@ func TestConfig_Validate(t *testing.T) {
 					Name syslog
 					syslog_maxsize 5MB
 			`,
-			// TODO: fix parser not parsing unit.
-			want: `syslog: expected "syslog_maxsize" to be a valid size; got " B"`,
 		},
 		{
 			name: "output_syslog_syslog_maxsize_size_with_space",
@@ -170,14 +170,7 @@ func TestConfig_Validate(t *testing.T) {
 					Name syslog
 					syslog_maxsize 5 bytes
 			`,
-		},
-		{
-			name: "output_syslog_syslog_maxsize_bytefmt",
-			ini: `
-				[OUTPUT]
-					Name syslog
-					syslog_maxsize 5 bytes
-			`,
+			want: `output: syslog: expected "syslog_maxsize" to be a valid size, got 5 bytes`,
 		},
 		{
 			name: "filter_record_modifier_record_space_delimited_strings_2",
@@ -186,7 +179,7 @@ func TestConfig_Validate(t *testing.T) {
 					Name record_modifier
 					record foo
 			`,
-			want: `record_modifier: expected "record" to be a valid space delimited strings (minimum 2); got "foo"`,
+			want: `filter: record_modifier: expected "record" to be a valid space delimited strings (minimum 2), got foo`,
 		},
 		{
 			name: "filter_record_modifier_record_space_delimited_strings_2",
@@ -212,23 +205,13 @@ func TestConfig_Validate(t *testing.T) {
 					path foo
 			`,
 		},
-		// TODO: fix parser not handling comma separated strings.
-		// {
-		// 	name: "input_tail_path_comma_delimited_strings",
-		// 	ini: `
-		// 		[INPUT]
-		// 			Name tail
-		// 			path foo,bar
-		// 	`,
-		// },
 		{
-			name: "input_systemd_path_no_string",
+			name: "input_tail_path_comma_delimited_strings",
 			ini: `
 				[INPUT]
-					Name systemd
-					path
+					Name tail
+					path foo,bar
 			`,
-			want: `systemd: expected "path" to be a valid string; got ""`,
 		},
 		{
 			name: "input_systemd_path_bool",
@@ -237,6 +220,7 @@ func TestConfig_Validate(t *testing.T) {
 					Name systemd
 					path true
 			`,
+			want: `input: systemd: expected "path" to be a valid string, got true`,
 		},
 		{
 			name: "input_systemd_path_string",
@@ -261,7 +245,7 @@ func TestConfig_Validate(t *testing.T) {
 				[INPUT]
 					Name nope
 			`,
-			want: "unknown plugin \"nope\"",
+			want: `input: unknown plugin "nope"`,
 		},
 		{
 			name: "lts_gsuite_reporter_unknown_property",
@@ -270,7 +254,7 @@ func TestConfig_Validate(t *testing.T) {
 					Name gsuite-reporter
 					nope test
 			`,
-			want: "gsuite-reporter: unknown property \"nope\"",
+			want: `input: gsuite-reporter: unknown property "nope"`,
 		},
 		{
 			name: "lts_gsuite_reporter_pull_interval",
@@ -298,101 +282,22 @@ func TestConfig_Validate(t *testing.T) {
 					Port 443
 			`,
 		},
-		// TODO: fix parser
-		// {
-		// 	name: "output_http_header",
-		// 	ini: `
-		// 		[OUTPUT]
-		// 			Name   http
-		// 			Header private_key 008(test)
-		// 	`,
-		// },
-	}
-	for _, tc := range tt {
-		t.Run(tc.name, func(t *testing.T) {
-			cfg, err := ParseINI([]byte(tc.ini))
-			if err != nil {
-				t.Errorf("parsing ini: %v\n", err)
-				return
-			}
-
-			err = cfg.Validate()
-			if tc.want == "" && err == nil {
-				return
-			}
-
-			if tc.want == "" && err != nil {
-				t.Error(err)
-				return
-			}
-
-			if tc.want != "" && err == nil {
-				t.Errorf("expected error:\n%s\ngot: nil\n", tc.want)
-				return
-			}
-
-			if tc.want != err.Error() {
-				t.Errorf("expected error:\n%s\ngot:\n%s\n", tc.want, err.Error())
-				return
-			}
-		})
-	}
-}
-
-func TestConfigSection_Validate(t *testing.T) {
-	tt := []struct {
-		name  string
-		kind  ConfigSectionType
-		props map[string]string
-		want  string
-	}{
 		{
-			name: "input_cpu_pid_float",
-			kind: InputSection,
-			props: map[string]string{
-				"name": "cpu",
-				"pid":  "3.4",
-			},
-			want: `cpu: expected "pid" to be a valid integer; got "3.4"`,
-		},
-		{
-			name: "input_cpu_pid_integer",
-			kind: InputSection,
-			props: map[string]string{
-				"name": "cpu",
-				"pid":  "5",
-			},
-		},
-		{
-			name: "unsupported_kind",
-			kind: NoneSection,
-			want: `unsupported plugin kind "NONE"`,
-		},
-		{
-			name: "input_forward_buffer_max_size_size",
-			kind: InputSection,
-			props: map[string]string{
-				"Name":            "forward",
-				"buffer_max_size": "61440000",
-			},
+			name: "output_http_header",
+			ini: `
+				[OUTPUT]
+					Name   http
+					Header private_key 008(test)
+			`,
 		},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			fields := Fields{}
-			for k, v := range tc.props {
-				v := v
-				fields = append(fields, Field{
-					Key:    k,
-					Values: Values{{String: &v}},
-				})
-			}
-			section := ConfigSection{
-				Type:   tc.kind,
-				Fields: fields,
-			}
+			var classicConf classic.Classic
+			err := classicConf.UnmarshalText([]byte(tc.ini))
+			assert.NoError(t, err)
 
-			err := section.Validate()
+			err = classicConf.ToConfig().Validate()
 			if tc.want == "" && err == nil {
 				return
 			}

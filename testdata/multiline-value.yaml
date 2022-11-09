@@ -1,0 +1,6 @@
+customs:
+    - custom:
+        name: custom
+        multiline: |-
+            FOO
+            BAR

@@ -1,0 +1,12 @@
+{
+    "pipeline": {
+        "inputs": [
+            {
+                "syslog": {
+                    "name": "syslog",
+                    "port": 5140
+                }
+            }
+        ]
+    }
+}
