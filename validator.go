@@ -64,15 +64,16 @@ func ValidateSectionWithSchema(kind SectionKind, props property.Properties, sche
 		return errors.New("missing \"name\" property")
 	}
 
-	// If the names takes a cloud variable, it won't be on the schema,
+	// If the name takes a cloud variable, it won't be on the schema,
 	// so we allow it.
 	// TODO: review whether is valid that the `name` property can take a
 	// cloud variable syntax.
+	//
 	// Example:
 	// 	[INPUT]
 	// 		Name {{files.myinput}}
 	//
-	// Maybe we can pass over the actual value.
+	// Maybe we can pass-over the actual value.
 	if isCloudVariable(name) {
 		return nil
 	}
