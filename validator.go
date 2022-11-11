@@ -1,10 +1,13 @@
 package fluentbitconfig
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/calyptia/go-fluentbit-config/property"
 )
 
 // Validate with the default schema.
@@ -18,49 +21,11 @@ func (c Config) Validate() error {
 // has a property named "pid" that is of integer type,
 // it must be a valid integer.
 func (c Config) ValidateWithSchema(schema Schema) error {
-	validate := func(kind string, byNames []ByName, schemaSections []SchemaSection) error {
+	validate := func(kind SectionKind, byNames []ByName) error {
 		for _, byName := range byNames {
-			for name, props := range byName {
-				var foundPlugin bool
-				for _, schemaSection := range schemaSections {
-					if !strings.EqualFold(name, schemaSection.Name) {
-						continue
-					}
-
-					for _, p := range props {
-						if isCommonProperty(p.Key) {
-							continue
-						}
-
-						if isCloudVariable(p.Value) {
-							continue
-						}
-
-						var foundProp bool
-						for _, schemaOptions := range schemaSection.Properties.All() {
-							if !strings.EqualFold(p.Key, schemaOptions.Name) {
-								continue
-							}
-
-							if !valid(schemaOptions, p.Value) {
-								return fmt.Errorf("%s: %s: expected %q to be a valid %s, got %v", kind, name, p.Key, schemaOptions.Type, p.Value)
-							}
-
-							foundProp = true
-							break
-						}
-
-						if !foundProp {
-							return fmt.Errorf("%s: %s: unknown property %q", kind, name, p.Key)
-						}
-					}
-
-					foundPlugin = true
-					break
-				}
-
-				if !foundPlugin {
-					return fmt.Errorf("%s: unknown plugin %q", kind, name)
+			for _, props := range byName {
+				if err := ValidateSectionWithSchema(kind, props, schema); err != nil {
+					return err
 				}
 			}
 		}
@@ -69,23 +34,69 @@ func (c Config) ValidateWithSchema(schema Schema) error {
 		return nil
 	}
 
-	if err := validate("custom", c.Customs, schema.Customs); err != nil {
+	if err := validate(SectionKindCustom, c.Customs); err != nil {
 		return err
 	}
 
-	if err := validate("input", c.Pipeline.Inputs, schema.Inputs); err != nil {
+	if err := validate(SectionKindInput, c.Pipeline.Inputs); err != nil {
 		return err
 	}
 
-	if err := validate("filter", c.Pipeline.Filters, schema.Filters); err != nil {
+	if err := validate(SectionKindFilter, c.Pipeline.Filters); err != nil {
 		return err
 	}
 
-	if err := validate("output", c.Pipeline.Outputs, schema.Outputs); err != nil {
+	if err := validate(SectionKindOutput, c.Pipeline.Outputs); err != nil {
 		return err
 	}
 
 	// valid by default
+	return nil
+}
+
+func ValidateSection(kind SectionKind, props property.Properties) error {
+	return ValidateSectionWithSchema(kind, props, DefaultSchema)
+}
+
+func ValidateSectionWithSchema(kind SectionKind, props property.Properties, schema Schema) error {
+	name := Name(props)
+	if name == "" {
+		return errors.New("missing \"name\" property")
+	}
+
+	// If the names takes a cloud variable, it won't be on the schema,
+	// so we allow it.
+	// TODO: review whether is valid that the `name` property can take a
+	// cloud variable syntax.
+	// Example:
+	// 	[INPUT]
+	// 		Name {{files.myinput}}
+	//
+	// Maybe we can pass over the actual value.
+	if isCloudVariable(name) {
+		return nil
+	}
+
+	section, ok := schema.findSection(kind, name)
+	if !ok {
+		return fmt.Errorf("%s: unknown plugin %q", kind, name)
+	}
+
+	for _, p := range props {
+		if isCommonProperty(p.Key) || isCloudVariable(p.Key) || isCloudVariable(p.Value) {
+			continue
+		}
+
+		opts, ok := section.findOptions(p.Key)
+		if !ok {
+			return fmt.Errorf("%s: %s: unknown property %q", kind, name, p.Key)
+		}
+
+		if !valid(opts, p.Value) {
+			return fmt.Errorf("%s: %s: expected %q to be a valid %s, got %v", kind, name, p.Key, opts.Type, p.Value)
+		}
+	}
+
 	return nil
 }
 
