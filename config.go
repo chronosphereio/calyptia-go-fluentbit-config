@@ -1,6 +1,10 @@
 package fluentbitconfig
 
-import "github.com/calyptia/go-fluentbit-config/property"
+import (
+	"fmt"
+
+	"github.com/calyptia/go-fluentbit-config/property"
+)
 
 type Config struct {
 	Env      property.Properties `json:"env,omitempty" yaml:"env,omitempty"`
@@ -18,3 +22,17 @@ type Pipeline struct {
 }
 
 type ByName map[string]property.Properties
+
+// Name from properties.
+func Name(props property.Properties) string {
+	nameVal, ok := props.Get("name")
+	if !ok {
+		return ""
+	}
+
+	if name, ok := nameVal.(string); ok {
+		return name
+	}
+
+	return fmt.Sprintf("%v", nameVal)
+}

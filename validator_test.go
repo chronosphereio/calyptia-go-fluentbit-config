@@ -31,7 +31,6 @@ func TestConfig_Validate(t *testing.T) {
 					Name cpu
 					pid  3.4
 			`,
-			// TODO: fix float not keeping its original value.
 			want: `input: cpu: expected "pid" to be a valid integer, got 3.4`,
 		},
 		{

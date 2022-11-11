@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 )
 
 //go:embed schemas/1.9.json
@@ -53,7 +54,17 @@ type SchemaProperties struct {
 	NetworkTLS []SchemaOptions `json:"network_tls"`
 }
 
-func (pp SchemaProperties) All() []SchemaOptions {
+func (sec SchemaSection) findOptions(name string) (SchemaOptions, bool) {
+	for _, opts := range sec.Properties.all() {
+		if strings.EqualFold(opts.Name, name) {
+			return opts, true
+		}
+	}
+
+	return SchemaOptions{}, false
+}
+
+func (pp SchemaProperties) all() []SchemaOptions {
 	var out []SchemaOptions
 	out = append(out, pp.Options...)
 	out = append(out, pp.Networking...)
@@ -66,6 +77,36 @@ type SchemaOptions struct {
 	Description string `json:"description"`
 	Default     any    `json:"default,omitempty"`
 	Type        string `json:"type"`
+}
+
+func (s Schema) findSection(kind SectionKind, name string) (SchemaSection, bool) {
+	sections, ok := s.findSections(kind)
+	if !ok {
+		return SchemaSection{}, false
+	}
+
+	for _, section := range sections {
+		if strings.EqualFold(section.Name, name) {
+			return section, true
+		}
+	}
+
+	return SchemaSection{}, false
+}
+
+func (s Schema) findSections(kind SectionKind) ([]SchemaSection, bool) {
+	switch kind {
+	case SectionKindCustom:
+		return s.Customs, true
+	case SectionKindInput:
+		return s.Inputs, true
+	case SectionKindFilter:
+		return s.Filters, true
+	case SectionKindOutput:
+		return s.Outputs, true
+	default:
+		return nil, false
+	}
 }
 
 func (s *Schema) InjectLTSPlugins() {
