@@ -1,0 +1,11 @@
+{
+    "customs": [
+        {
+            "empty_string": {
+                "name": "empty_string",
+                "value": ""
+            }
+        }
+    ],
+    "pipeline": {}
+}
