@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
-	"github.com/calyptia/go-fluentbit-config/classic"
+	fluentbitconfig "github.com/calyptia/go-fluentbit-config"
 )
 
 func TestConfig_Validate(t *testing.T) {
@@ -292,11 +292,11 @@ func TestConfig_Validate(t *testing.T) {
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			var classicConf classic.Classic
-			err := classicConf.UnmarshalText([]byte(tc.ini))
+			var classicConf fluentbitconfig.Config
+			err := classicConf.UnmarshalClassic([]byte(tc.ini))
 			assert.NoError(t, err)
 
-			err = classicConf.ToConfig().Validate()
+			err = classicConf.Validate()
 			if tc.want == "" && err == nil {
 				return
 			}

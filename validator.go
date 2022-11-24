@@ -10,6 +10,8 @@ import (
 	"github.com/calyptia/go-fluentbit-config/property"
 )
 
+var ErrMissingName = errors.New("missing name property")
+
 // Validate with the default schema.
 func (c Config) Validate() error {
 	return c.ValidateWithSchema(DefaultSchema)
@@ -61,7 +63,7 @@ func ValidateSection(kind SectionKind, props property.Properties) error {
 func ValidateSectionWithSchema(kind SectionKind, props property.Properties, schema Schema) error {
 	name := Name(props)
 	if name == "" {
-		return errors.New("missing \"name\" property")
+		return ErrMissingName
 	}
 
 	// If the name takes a cloud variable, it won't be on the schema,
