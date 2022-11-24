@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
+
 	fluentbitconfig "github.com/calyptia/go-fluentbit-config"
 )
 

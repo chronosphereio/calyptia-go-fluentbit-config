@@ -9,8 +9,9 @@ import (
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
-	fluentbitconfig "github.com/calyptia/go-fluentbit-config"
 	"gopkg.in/yaml.v3"
+
+	fluentbitconfig "github.com/calyptia/go-fluentbit-config"
 )
 
 func Test_Config(t *testing.T) {
