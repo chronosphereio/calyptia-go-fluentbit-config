@@ -9,9 +9,9 @@ import (
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
-	fluentbitconfig "github.com/calyptia/go-fluentbit-config"
-	"github.com/calyptia/go-fluentbit-config/classic"
 	"gopkg.in/yaml.v3"
+
+	fluentbitconfig "github.com/calyptia/go-fluentbit-config"
 )
 
 func Test_Config(t *testing.T) {
@@ -23,8 +23,8 @@ func Test_Config(t *testing.T) {
 			classicText, err := os.ReadFile(name)
 			assert.NoError(t, err)
 
-			var classicConf classic.Classic
-			err = classicConf.UnmarshalText(classicText)
+			var classicConf fluentbitconfig.Config
+			err = classicConf.UnmarshalClassic(classicText)
 			assert.NoError(t, err)
 
 			yamlText, err := os.ReadFile(strings.Replace(name, ".conf", ".yaml", 1))
@@ -41,22 +41,23 @@ func Test_Config(t *testing.T) {
 			err = json.Unmarshal(jsonText, &jsonConf)
 			assert.NoError(t, err)
 
-			gotClassicText, err := classic.FromConfig(yamlConf).MarshalText()
+			gotClassicText, err := yamlConf.DumpAsClassic()
 			assert.NoError(t, err)
-			assert.Equal(t, string(classicText), string(gotClassicText))
+			assert.Equal(t, string(classicText), gotClassicText)
 
-			gotYamlText, err := yaml.Marshal(classicConf.ToConfig())
+			gotYamlText, err := classicConf.DumpAsYAML()
 			assert.NoError(t, err)
-			assert.Equal(t, string(yamlText), string(gotYamlText))
+			assert.Equal(t, string(yamlText), gotYamlText)
 
 			var gotJsonText bytes.Buffer
 			{
 				enc := json.NewEncoder(&gotJsonText)
 				enc.SetEscapeHTML(false)
 				enc.SetIndent("", "    ")
-				err = enc.Encode(classicConf.ToConfig())
+				err = enc.Encode(classicConf)
 				assert.NoError(t, err)
 			}
+			assert.NoError(t, err)
 			assert.Equal(t, string(jsonText), gotJsonText.String())
 		})
 	}
