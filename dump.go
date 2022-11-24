@@ -19,6 +19,19 @@ const (
 	FormatJSON    = "json"
 )
 
+func ParseAs(raw string, format Format) (Config, error) {
+	var out Config
+	switch strings.ToLower(string(format)) {
+	case "", "ini", "conf", "classic":
+		return out, out.UnmarshalClassic([]byte(raw))
+	case "yml", "yaml":
+		return out, yaml.Unmarshal([]byte(raw), &out)
+	case "json":
+		return out, json.Unmarshal([]byte(raw), &out)
+	}
+	return out, ErrFormatUnknown
+}
+
 func (c Config) DumpAs(format Format) (string, error) {
 	switch strings.ToLower(string(format)) {
 	case "", "ini", "conf", "classic":
