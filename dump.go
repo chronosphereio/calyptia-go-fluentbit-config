@@ -21,7 +21,7 @@ const (
 
 func (c Config) DumpAs(format Format) (string, error) {
 	switch strings.ToLower(string(format)) {
-	case "", "ini", "classic":
+	case "", "ini", "conf", "classic":
 		return c.DumpAsClassic()
 	case "yml", "yaml":
 		return c.DumpAsYAML()
