@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/calyptia/go-fluentbit-config/property"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
+
+	"github.com/calyptia/go-fluentbit-config/property"
 )
 
 type Config struct {
