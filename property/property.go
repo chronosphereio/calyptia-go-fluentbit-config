@@ -2,6 +2,8 @@ package property
 
 import (
 	"strings"
+
+	"golang.org/x/exp/slices"
 )
 
 // Properties list.
@@ -86,6 +88,12 @@ func (pp *Properties) Add(key string, value any) {
 	}
 
 	*pp = append(*pp, Property{Key: key, Value: value})
+}
+
+func (pp Properties) Equal(target Properties) bool {
+	return slices.EqualFunc(pp, target, func(a, b Property) bool {
+		return a.Key == b.Key && a.Value == b.Value
+	})
 }
 
 // Property key-value pair.

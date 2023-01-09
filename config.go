@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/calyptia/go-fluentbit-config/property"
+	"golang.org/x/exp/maps"
+	"golang.org/x/exp/slices"
 )
 
 type Config struct {
@@ -69,6 +71,42 @@ func (c *Config) AddSection(kind SectionKind, props property.Properties) {
 	}
 }
 
+func (c Config) Equal(target Config) bool {
+	if !c.Env.Equal(target.Env) {
+		return false
+	}
+
+	if !slices.Equal(c.Includes, target.Includes) {
+		return false
+	}
+
+	if !c.Service.Equal(target.Service) {
+		return false
+	}
+
+	if !equalByNames(c.Customs, target.Customs) {
+		return false
+	}
+
+	if !equalByNames(c.Pipeline.Inputs, target.Pipeline.Inputs) {
+		return false
+	}
+
+	if !equalByNames(c.Pipeline.Parsers, target.Pipeline.Parsers) {
+		return false
+	}
+
+	if !equalByNames(c.Pipeline.Filters, target.Pipeline.Filters) {
+		return false
+	}
+
+	if !equalByNames(c.Pipeline.Outputs, target.Pipeline.Outputs) {
+		return false
+	}
+
+	return true
+}
+
 // Name from properties.
 func Name(props property.Properties) string {
 	nameVal, ok := props.Get("name")
@@ -81,4 +119,14 @@ func Name(props property.Properties) string {
 	}
 
 	return strings.TrimSpace(strings.ToValidUTF8(fmt.Sprintf("%v", nameVal), ""))
+}
+
+func equalByNames(a, b []ByName) bool {
+	return slices.EqualFunc(a, b, equalByName)
+}
+
+func equalByName(a, b ByName) bool {
+	return maps.EqualFunc(a, b, func(v1, v2 property.Properties) bool {
+		return v1.Equal(v2)
+	})
 }

@@ -9,9 +9,9 @@ import (
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
-	"gopkg.in/yaml.v3"
-
 	fluentbitconfig "github.com/calyptia/go-fluentbit-config"
+	"github.com/calyptia/go-fluentbit-config/property"
+	"gopkg.in/yaml.v3"
 )
 
 func Test_Config(t *testing.T) {
@@ -68,4 +68,102 @@ func makeTestName(fp string) string {
 	s = strings.TrimRight(s, filepath.Ext(s))
 	s = strings.ReplaceAll(s, "-", "_")
 	return strings.ReplaceAll(s, " ", "_")
+}
+
+func TestConfig_Equal(t *testing.T) {
+	t.Run("equal_env", func(t *testing.T) {
+		a := fluentbitconfig.Config{
+			Env: property.Properties{
+				{Key: "foo", Value: "bar"},
+			},
+		}
+		b := fluentbitconfig.Config{
+			Env: property.Properties{
+				{Key: "foo", Value: "bar"},
+			},
+		}
+		assert.True(t, a.Equal(b))
+	})
+
+	t.Run("not_equal_env", func(t *testing.T) {
+		a := fluentbitconfig.Config{
+			Env: property.Properties{
+				{Key: "a", Value: "b"},
+			},
+		}
+		b := fluentbitconfig.Config{
+			Env: property.Properties{
+				{Key: "b", Value: "c"},
+			},
+		}
+		assert.False(t, a.Equal(b))
+	})
+
+	t.Run("equal_includes", func(t *testing.T) {
+		a := fluentbitconfig.Config{
+			Includes: []string{"foo"},
+		}
+		b := fluentbitconfig.Config{
+			Includes: []string{"foo"},
+		}
+		assert.True(t, a.Equal(b))
+	})
+
+	t.Run("not_equal_includes", func(t *testing.T) {
+		a := fluentbitconfig.Config{
+			Includes: []string{"foo"},
+		}
+		b := fluentbitconfig.Config{
+			Includes: []string{"bar"},
+		}
+		assert.False(t, a.Equal(b))
+	})
+
+	t.Run("equal_input", func(t *testing.T) {
+		a := fluentbitconfig.Config{
+			Pipeline: fluentbitconfig.Pipeline{
+				Inputs: []fluentbitconfig.ByName{{
+					"dummy": property.Properties{
+						{Key: "name", Value: "dummy"},
+						{Key: "rate", Value: 10},
+					}},
+				},
+			},
+		}
+		b := fluentbitconfig.Config{
+			Pipeline: fluentbitconfig.Pipeline{
+				Inputs: []fluentbitconfig.ByName{{
+					"dummy": property.Properties{
+						{Key: "name", Value: "dummy"},
+						{Key: "rate", Value: 10},
+					}},
+				},
+			},
+		}
+		assert.True(t, a.Equal(b))
+	})
+
+	t.Run("not_equal_input", func(t *testing.T) {
+		a := fluentbitconfig.Config{
+			Pipeline: fluentbitconfig.Pipeline{
+				Inputs: []fluentbitconfig.ByName{{
+					"dummy": property.Properties{
+						{Key: "name", Value: "dummy"},
+						{Key: "rate", Value: 10},
+					}},
+				},
+			},
+		}
+		b := fluentbitconfig.Config{
+			Pipeline: fluentbitconfig.Pipeline{
+				Inputs: []fluentbitconfig.ByName{{
+					"dummy": property.Properties{
+						{Key: "name", Value: "dummy"},
+						{Key: "rate", Value: 22},
+					}},
+				},
+			},
+		}
+		assert.False(t, a.Equal(b))
+	})
 }
