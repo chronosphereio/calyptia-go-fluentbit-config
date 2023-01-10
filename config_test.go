@@ -12,6 +12,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	fluentbitconfig "github.com/calyptia/go-fluentbit-config"
+	"github.com/calyptia/go-fluentbit-config/property"
 )
 
 func Test_Config(t *testing.T) {
@@ -68,4 +69,154 @@ func makeTestName(fp string) string {
 	s = strings.TrimRight(s, filepath.Ext(s))
 	s = strings.ReplaceAll(s, "-", "_")
 	return strings.ReplaceAll(s, " ", "_")
+}
+
+func TestConfig_Equal(t *testing.T) {
+	t.Run("equal_env", func(t *testing.T) {
+		a := fluentbitconfig.Config{
+			Env: property.Properties{
+				{Key: "foo", Value: "bar"},
+			},
+		}
+		b := fluentbitconfig.Config{
+			Env: property.Properties{
+				{Key: "foo", Value: "bar"},
+			},
+		}
+		assert.True(t, a.Equal(b))
+	})
+
+	t.Run("not_equal_env", func(t *testing.T) {
+		a := fluentbitconfig.Config{
+			Env: property.Properties{
+				{Key: "a", Value: "b"},
+			},
+		}
+		b := fluentbitconfig.Config{
+			Env: property.Properties{
+				{Key: "b", Value: "c"},
+			},
+		}
+		assert.False(t, a.Equal(b))
+	})
+
+	t.Run("equal_includes", func(t *testing.T) {
+		a := fluentbitconfig.Config{
+			Includes: []string{"foo"},
+		}
+		b := fluentbitconfig.Config{
+			Includes: []string{"foo"},
+		}
+		assert.True(t, a.Equal(b))
+	})
+
+	t.Run("not_equal_includes", func(t *testing.T) {
+		a := fluentbitconfig.Config{
+			Includes: []string{"foo"},
+		}
+		b := fluentbitconfig.Config{
+			Includes: []string{"bar"},
+		}
+		assert.False(t, a.Equal(b))
+	})
+
+	t.Run("equal_input", func(t *testing.T) {
+		a := fluentbitconfig.Config{
+			Pipeline: fluentbitconfig.Pipeline{
+				Inputs: []fluentbitconfig.ByName{{
+					"dummy": property.Properties{
+						{Key: "name", Value: "dummy"},
+						{Key: "rate", Value: 10},
+					}},
+				},
+			},
+		}
+		b := fluentbitconfig.Config{
+			Pipeline: fluentbitconfig.Pipeline{
+				Inputs: []fluentbitconfig.ByName{{
+					"dummy": property.Properties{
+						{Key: "name", Value: "dummy"},
+						{Key: "rate", Value: 10},
+					}},
+				},
+			},
+		}
+		assert.True(t, a.Equal(b))
+	})
+
+	t.Run("not_equal_input", func(t *testing.T) {
+		a := fluentbitconfig.Config{
+			Pipeline: fluentbitconfig.Pipeline{
+				Inputs: []fluentbitconfig.ByName{{
+					"dummy": property.Properties{
+						{Key: "name", Value: "dummy"},
+						{Key: "rate", Value: 10},
+					}},
+				},
+			},
+		}
+		b := fluentbitconfig.Config{
+			Pipeline: fluentbitconfig.Pipeline{
+				Inputs: []fluentbitconfig.ByName{{
+					"dummy": property.Properties{
+						{Key: "name", Value: "dummy"},
+						{Key: "rate", Value: 22},
+					}},
+				},
+			},
+		}
+		assert.False(t, a.Equal(b))
+	})
+
+	t.Run("not_equal_properties_out_of_order", func(t *testing.T) {
+		a := fluentbitconfig.Config{
+			Pipeline: fluentbitconfig.Pipeline{
+				Inputs: []fluentbitconfig.ByName{{
+					"foo": property.Properties{
+						{Key: "name", Value: "foo"},
+						{Key: "test_key", Value: "test_value"},
+					}},
+				},
+			},
+		}
+		b := fluentbitconfig.Config{
+			Pipeline: fluentbitconfig.Pipeline{
+				Inputs: []fluentbitconfig.ByName{{
+					"foo": property.Properties{
+						{Key: "test_key", Value: "test_value"},
+						{Key: "name", Value: "foo"},
+					}},
+				},
+			},
+		}
+		assert.False(t, a.Equal(b))
+	})
+
+	t.Run("not_equal_by_names_out_of_order", func(t *testing.T) {
+		a := fluentbitconfig.Config{
+			Pipeline: fluentbitconfig.Pipeline{
+				Inputs: []fluentbitconfig.ByName{{
+					"one": property.Properties{
+						{Key: "name", Value: "one"},
+					}}, {
+					"two": property.Properties{
+						{Key: "name", Value: "two"},
+					}},
+				},
+			},
+		}
+		b := fluentbitconfig.Config{
+			Pipeline: fluentbitconfig.Pipeline{
+				Inputs: []fluentbitconfig.ByName{{
+					"two": property.Properties{
+						{Key: "name", Value: "two"},
+					},
+					"one": property.Properties{
+						{Key: "name", Value: "one"},
+					}},
+				},
+			},
+		}
+		assert.False(t, a.Equal(b))
+	})
 }
