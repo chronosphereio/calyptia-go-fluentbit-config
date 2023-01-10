@@ -9,10 +9,9 @@ import (
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
-	"gopkg.in/yaml.v3"
-
 	fluentbitconfig "github.com/calyptia/go-fluentbit-config"
 	"github.com/calyptia/go-fluentbit-config/property"
+	"gopkg.in/yaml.v3"
 )
 
 func Test_Config(t *testing.T) {
@@ -161,6 +160,58 @@ func TestConfig_Equal(t *testing.T) {
 					"dummy": property.Properties{
 						{Key: "name", Value: "dummy"},
 						{Key: "rate", Value: 22},
+					}},
+				},
+			},
+		}
+		assert.False(t, a.Equal(b))
+	})
+
+	t.Run("not_equal_properties_out_of_order", func(t *testing.T) {
+		a := fluentbitconfig.Config{
+			Pipeline: fluentbitconfig.Pipeline{
+				Inputs: []fluentbitconfig.ByName{{
+					"foo": property.Properties{
+						{Key: "name", Value: "foo"},
+						{Key: "test_key", Value: "test_value"},
+					}},
+				},
+			},
+		}
+		b := fluentbitconfig.Config{
+			Pipeline: fluentbitconfig.Pipeline{
+				Inputs: []fluentbitconfig.ByName{{
+					"foo": property.Properties{
+						{Key: "test_key", Value: "test_value"},
+						{Key: "name", Value: "foo"},
+					}},
+				},
+			},
+		}
+		assert.False(t, a.Equal(b))
+	})
+
+	t.Run("not_equal_by_names_out_of_order", func(t *testing.T) {
+		a := fluentbitconfig.Config{
+			Pipeline: fluentbitconfig.Pipeline{
+				Inputs: []fluentbitconfig.ByName{{
+					"one": property.Properties{
+						{Key: "name", Value: "one"},
+					}}, {
+					"two": property.Properties{
+						{Key: "name", Value: "two"},
+					}},
+				},
+			},
+		}
+		b := fluentbitconfig.Config{
+			Pipeline: fluentbitconfig.Pipeline{
+				Inputs: []fluentbitconfig.ByName{{
+					"two": property.Properties{
+						{Key: "name", Value: "two"},
+					},
+					"one": property.Properties{
+						{Key: "name", Value: "one"},
 					}},
 				},
 			},
