@@ -108,6 +108,34 @@ func (c Config) Equal(target Config) bool {
 	return true
 }
 
+func (c Config) IDs(withPrefix bool) []string {
+	collect := func(kind SectionKind, byNames []ByName) []string {
+		var ids []string
+		for i, byName := range byNames {
+			for name, props := range byName {
+				if s := Name(props); s != "" {
+					name = s
+				}
+				if withPrefix {
+					ids = append(ids, fmt.Sprintf("%s:%s:%s.%d", kind, name, name, i))
+				} else {
+					ids = append(ids, fmt.Sprintf("%s.%d", name, i))
+				}
+				break
+			}
+		}
+		return ids
+	}
+
+	var ids []string
+	ids = append(ids, collect(SectionKindCustom, c.Customs)...)
+	ids = append(ids, collect(SectionKindInput, c.Pipeline.Inputs)...)
+	ids = append(ids, collect(SectionKindParser, c.Pipeline.Parsers)...)
+	ids = append(ids, collect(SectionKindFilter, c.Pipeline.Filters)...)
+	ids = append(ids, collect(SectionKindOutput, c.Pipeline.Outputs)...)
+	return ids
+}
+
 // Name from properties.
 func Name(props property.Properties) string {
 	nameVal, ok := props.Get("name")
