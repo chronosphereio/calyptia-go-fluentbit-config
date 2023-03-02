@@ -220,3 +220,71 @@ func TestConfig_Equal(t *testing.T) {
 		assert.False(t, a.Equal(b))
 	})
 }
+
+func TestConfig_IDs(t *testing.T) {
+	t.Run("empty", func(t *testing.T) {
+		conf, err := fluentbitconfig.ParseAs(`
+			[SERVICE]
+				log_level error
+		`, fluentbitconfig.FormatClassic)
+		assert.NoError(t, err)
+		assert.Equal(t, nil, conf.IDs(true))
+	})
+
+	t.Run("ok", func(t *testing.T) {
+		conf, err := fluentbitconfig.ParseAs(`
+			[INPUT]
+				name tcp
+			[OUTPUT]
+				name  tcp
+				match *
+			[OUTPUT]
+				name  stdout
+				match *
+		`, fluentbitconfig.FormatClassic)
+		assert.NoError(t, err)
+		assert.Equal(t, []string{
+			"input:tcp:tcp.0",
+			"output:tcp:tcp.0",
+			"output:stdout:stdout.1",
+		}, conf.IDs(true))
+	})
+
+	t.Run("ok_2", func(t *testing.T) {
+		conf, err := fluentbitconfig.ParseAs(`
+			[INPUT]
+				name tcp
+			[OUTPUT]
+				name  stdout
+				match *
+			[OUTPUT]
+				name  tcp
+				match *
+		`, fluentbitconfig.FormatClassic)
+		assert.NoError(t, err)
+		assert.Equal(t, []string{
+			"input:tcp:tcp.0",
+			"output:stdout:stdout.0",
+			"output:tcp:tcp.1",
+		}, conf.IDs(true))
+	})
+
+	t.Run("ok_no_prefix", func(t *testing.T) {
+		conf, err := fluentbitconfig.ParseAs(`
+			[INPUT]
+				name tcp
+			[OUTPUT]
+				name  tcp
+				match *
+			[OUTPUT]
+				name  stdout
+				match *
+		`, fluentbitconfig.FormatClassic)
+		assert.NoError(t, err)
+		assert.Equal(t, []string{
+			"tcp.0",
+			"tcp.0",
+			"stdout.1",
+		}, conf.IDs(false))
+	})
+}
