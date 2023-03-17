@@ -1,7 +1,6 @@
 package fluentbitconfig
 
 import (
-	"strconv"
 	"strings"
 )
 
@@ -17,7 +16,7 @@ func (p Protocol) OK() bool {
 	return p == ProtocolTCP || p == ProtocolUDP || p == ProtocolSCTP
 }
 
-var fluentBitNetworkingDefaults = map[string]portDefault{
+var fluentBitNetworkingDefaults = map[string]servicePortDefaults{
 	// Inputs.
 	"collectd":      {Port: 25826, Protocol: ProtocolUDP},
 	"elasticsearch": {Port: 9200, Protocol: ProtocolTCP},
@@ -34,7 +33,7 @@ var fluentBitNetworkingDefaults = map[string]portDefault{
 	"prometheus_exporter": {Port: 2021, Protocol: ProtocolTCP},
 }
 
-type portDefault struct {
+type servicePortDefaults struct {
 	Port     int
 	Protocol Protocol
 }
@@ -146,32 +145,4 @@ func (c *Config) ServicePorts() ServicePorts {
 	lookup(SectionKindOutput, c.Pipeline.Outputs)
 
 	return out
-}
-
-func intFromAny(v any) (int, bool) {
-	if v == nil {
-		return 0, false
-	}
-
-	switch v := v.(type) {
-	case int:
-		return v, true
-	case int32:
-		return int(v), true
-	case int64:
-		if int64(int(v)) == v {
-			return int(v), true
-		}
-	case float32:
-		return int(v), true
-	case float64:
-		if float64(int(v)) == v {
-			return int(v), true
-		}
-	case string:
-		if i, err := strconv.Atoi(v); err == nil {
-			return i, true
-		}
-	}
-	return 0, false
 }

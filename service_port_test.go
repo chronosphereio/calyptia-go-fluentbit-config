@@ -6,7 +6,7 @@ import (
 	"github.com/alecthomas/assert/v2"
 )
 
-func TestConfig_Ports(t *testing.T) {
+func TestConfig_ServicePorts(t *testing.T) {
 	t.Run("defaults", func(t *testing.T) {
 		config, err := ParseAs(`
 			[SERVICE]
