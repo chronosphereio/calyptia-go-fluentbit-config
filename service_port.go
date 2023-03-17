@@ -2,45 +2,35 @@ package fluentbitconfig
 
 import (
 	"strings"
+
+	"github.com/calyptia/go-fluentbit-config/v2/networking"
 )
-
-type Protocol string
-
-const (
-	ProtocolTCP  Protocol = "TCP"
-	ProtocolUDP  Protocol = "UDP"
-	ProtocolSCTP Protocol = "SCTP"
-)
-
-func (p Protocol) OK() bool {
-	return p == ProtocolTCP || p == ProtocolUDP || p == ProtocolSCTP
-}
 
 var fluentBitNetworkingDefaults = map[string]servicePortDefaults{
 	// Inputs.
-	"collectd":      {Port: 25826, Protocol: ProtocolUDP},
-	"elasticsearch": {Port: 9200, Protocol: ProtocolTCP},
-	"forward":       {Port: 24224, Protocol: ProtocolTCP}, // only if `unix_path` is not set.
-	"http":          {Port: 9880, Protocol: ProtocolTCP},
-	"mqtt":          {Port: 1883, Protocol: ProtocolTCP},
-	"opentelemetry": {Port: 4318, Protocol: ProtocolTCP},
-	"statsd":        {Port: 8125, Protocol: ProtocolUDP},
-	"syslog":        {Port: 5140, Protocol: ProtocolUDP}, // only if `mode` is not `unix_udp` (default) or `unix_tcp`
-	"tcp":           {Port: 5170, Protocol: ProtocolTCP},
-	"udp":           {Port: 5170, Protocol: ProtocolUDP},
+	"collectd":      {Port: 25826, Protocol: networking.ProtocolUDP},
+	"elasticsearch": {Port: 9200, Protocol: networking.ProtocolTCP},
+	"forward":       {Port: 24224, Protocol: networking.ProtocolTCP}, // only if `unix_path` is not set.
+	"http":          {Port: 9880, Protocol: networking.ProtocolTCP},
+	"mqtt":          {Port: 1883, Protocol: networking.ProtocolTCP},
+	"opentelemetry": {Port: 4318, Protocol: networking.ProtocolTCP},
+	"statsd":        {Port: 8125, Protocol: networking.ProtocolUDP},
+	"syslog":        {Port: 5140, Protocol: networking.ProtocolUDP}, // only if `mode` is not `unix_udp` (default) or `unix_tcp`
+	"tcp":           {Port: 5170, Protocol: networking.ProtocolTCP},
+	"udp":           {Port: 5170, Protocol: networking.ProtocolUDP},
 
 	// Outputs.
-	"prometheus_exporter": {Port: 2021, Protocol: ProtocolTCP},
+	"prometheus_exporter": {Port: 2021, Protocol: networking.ProtocolTCP},
 }
 
 type servicePortDefaults struct {
 	Port     int
-	Protocol Protocol
+	Protocol networking.Protocol
 }
 
 type ServicePort struct {
 	Port     int
-	Protocol Protocol
+	Protocol networking.Protocol
 	Kind     SectionKind
 	// Plugin is not available for `service`` section kind.
 	Plugin *Plugin
@@ -57,13 +47,13 @@ func (c *Config) ServicePorts() ServicePorts {
 		if !ok {
 			out = append(out, ServicePort{
 				Port:     2020,
-				Protocol: ProtocolTCP,
+				Protocol: networking.ProtocolTCP,
 				Kind:     SectionKindService,
 			})
 		} else if i, ok := intFromAny(portVal); ok {
 			out = append(out, ServicePort{
 				Port:     i,
-				Protocol: ProtocolTCP,
+				Protocol: networking.ProtocolTCP,
 				Kind:     SectionKindService,
 			})
 		}
@@ -107,11 +97,11 @@ func (c *Config) ServicePorts() ServicePorts {
 			if ok {
 				port, ok := intFromAny(portVal)
 				if ok {
-					var protocol Protocol
+					var protocol networking.Protocol
 					if plugin.Name == "syslog" {
 						modeVal, ok := plugin.Properties.Get("mode")
 						if ok {
-							if v := Protocol(strings.ToUpper(stringFromAny(modeVal))); v.OK() {
+							if v := networking.Protocol(strings.ToUpper(stringFromAny(modeVal))); v.OK() {
 								protocol = v
 							}
 						}
@@ -125,7 +115,7 @@ func (c *Config) ServicePorts() ServicePorts {
 					}
 
 					if protocol == "" {
-						protocol = ProtocolTCP
+						protocol = networking.ProtocolTCP
 					}
 
 					plugin := plugin
