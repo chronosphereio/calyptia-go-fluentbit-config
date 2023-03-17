@@ -3,74 +3,72 @@ package fluentbitconfig
 import (
 	"strconv"
 	"strings"
-
-	"golang.org/x/exp/slices"
 )
 
-var fluentBitNetworkingPorts = map[string]portDefault{
+type Protocol string
+
+const (
+	ProtocolTCP  Protocol = "TCP"
+	ProtocolUDP  Protocol = "UDP"
+	ProtocolSCTP Protocol = "SCTP"
+)
+
+func (p Protocol) OK() bool {
+	return p == ProtocolTCP || p == ProtocolUDP || p == ProtocolSCTP
+}
+
+var fluentBitNetworkingDefaults = map[string]portDefault{
 	// Inputs.
-	"collectd":      {Number: 25826, Protocol: "udp"},
-	"elasticsearch": {Number: 9200, Protocol: "http"},
-	"forward":       {Number: 24224, Protocol: "http"}, // only if `unix_path` is not set.
-	"http":          {Number: 9880, Protocol: "http"},
-	"mqtt":          {Number: 1883, Protocol: "http"},
-	"opentelemetry": {Number: 4318, Protocol: "http"},
-	"statsd":        {Number: 8125, Protocol: "udp"},
-	"syslog":        {Number: 5140, Protocol: "udp"}, // only if `mode` is not `unix_udp` (default) or `unix_tcp`
-	"tcp":           {Number: 5170, Protocol: "tcp"},
-	"udp":           {Number: 5170, Protocol: "udp"},
+	"collectd":      {Port: 25826, Protocol: ProtocolUDP},
+	"elasticsearch": {Port: 9200, Protocol: ProtocolTCP},
+	"forward":       {Port: 24224, Protocol: ProtocolTCP}, // only if `unix_path` is not set.
+	"http":          {Port: 9880, Protocol: ProtocolTCP},
+	"mqtt":          {Port: 1883, Protocol: ProtocolTCP},
+	"opentelemetry": {Port: 4318, Protocol: ProtocolTCP},
+	"statsd":        {Port: 8125, Protocol: ProtocolUDP},
+	"syslog":        {Port: 5140, Protocol: ProtocolUDP}, // only if `mode` is not `unix_udp` (default) or `unix_tcp`
+	"tcp":           {Port: 5170, Protocol: ProtocolTCP},
+	"udp":           {Port: 5170, Protocol: ProtocolUDP},
 
 	// Outputs.
-	"prometheus_exporter": {Number: 2021, Protocol: "http"},
+	"prometheus_exporter": {Port: 2021, Protocol: ProtocolTCP},
 }
 
 type portDefault struct {
-	Number   int
-	Protocol string
+	Port     int
+	Protocol Protocol
 }
 
-type Port struct {
-	Number   int
-	Protocol string
+type ServicePort struct {
+	Port     int
+	Protocol Protocol
 	Kind     SectionKind
-	Plugin   *PortPlugin
+	Plugin   *ServicePortPlugin
 }
 
-type PortPlugin struct {
+type ServicePortPlugin struct {
 	ID   string
 	Name string
 }
 
-type Ports []Port
+type ServicePorts []ServicePort
 
-func (p Ports) Numbers() []int {
-	var out []int
-	for _, port := range p {
-		out = append(out, port.Number)
-	}
-
-	slices.Sort(out)
-	out = slices.Compact(out)
-
-	return out
-}
-
-func (c *Config) Ports() Ports {
-	var out Ports
+func (c *Config) ServicePorts() ServicePorts {
+	var out ServicePorts
 
 	enabledVal, ok := c.Service.Get("http_server")
 	if ok && (enabledVal == true || strings.ToLower(stringFromAny(enabledVal)) == "on") {
 		portVal, ok := c.Service.Get("http_port")
 		if !ok {
-			out = append(out, Port{
-				Number:   2020,
-				Protocol: "http",
+			out = append(out, ServicePort{
+				Port:     2020,
+				Protocol: ProtocolTCP,
 				Kind:     SectionKindService,
 			})
 		} else if i, ok := intFromAny(portVal); ok {
-			out = append(out, Port{
-				Number:   i,
-				Protocol: "http",
+			out = append(out, ServicePort{
+				Port:     i,
+				Protocol: ProtocolTCP,
 				Kind:     SectionKindService,
 			})
 		}
@@ -98,13 +96,13 @@ func (c *Config) Ports() Ports {
 
 			portVal, ok := plugin.Properties.Get("port")
 			if !ok {
-				defaultPort, ok := fluentBitNetworkingPorts[plugin.Name]
+				defaults, ok := fluentBitNetworkingDefaults[plugin.Name]
 				if ok {
-					out = append(out, Port{
-						Number:   defaultPort.Number,
-						Protocol: defaultPort.Protocol,
+					out = append(out, ServicePort{
+						Port:     defaults.Port,
+						Protocol: defaults.Protocol,
 						Kind:     kind,
-						Plugin: &PortPlugin{
+						Plugin: &ServicePortPlugin{
 							ID:   plugin.ID,
 							Name: plugin.Name,
 						},
@@ -115,30 +113,32 @@ func (c *Config) Ports() Ports {
 			if ok {
 				port, ok := intFromAny(portVal)
 				if ok {
-					var protocol string
+					var protocol Protocol
 					if plugin.Name == "syslog" {
 						modeVal, ok := plugin.Properties.Get("mode")
 						if ok {
-							protocol = strings.ToLower(stringFromAny(modeVal))
+							if v := Protocol(strings.ToUpper(stringFromAny(modeVal))); v.OK() {
+								protocol = v
+							}
 						}
 					}
 
 					if protocol == "" {
-						defaultPort, ok := fluentBitNetworkingPorts[plugin.Name]
+						defaultPort, ok := fluentBitNetworkingDefaults[plugin.Name]
 						if ok {
 							protocol = defaultPort.Protocol
 						}
 					}
 
 					if protocol == "" {
-						protocol = "http"
+						protocol = ProtocolTCP
 					}
 
-					out = append(out, Port{
-						Number:   port,
+					out = append(out, ServicePort{
+						Port:     port,
 						Protocol: protocol,
 						Kind:     kind,
-						Plugin: &PortPlugin{
+						Plugin: &ServicePortPlugin{
 							ID:   plugin.ID,
 							Name: plugin.Name,
 						},

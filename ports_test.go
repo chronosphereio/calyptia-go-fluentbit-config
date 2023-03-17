@@ -36,20 +36,20 @@ func TestConfig_Ports(t *testing.T) {
 				name prometheus_exporter
 		`, FormatClassic)
 		assert.NoError(t, err)
-		assert.Equal(t, Ports{
-			{Number: 2020, Protocol: "http", Kind: SectionKindService},
-			{Number: 25826, Protocol: "udp", Kind: SectionKindInput, Plugin: &PortPlugin{ID: "collectd.0", Name: "collectd"}},
-			{Number: 9200, Protocol: "http", Kind: SectionKindInput, Plugin: &PortPlugin{ID: "elasticsearch.1", Name: "elasticsearch"}},
-			{Number: 24224, Protocol: "http", Kind: SectionKindInput, Plugin: &PortPlugin{ID: "forward.2", Name: "forward"}},
-			{Number: 9880, Protocol: "http", Kind: SectionKindInput, Plugin: &PortPlugin{ID: "http.3", Name: "http"}},
-			{Number: 1883, Protocol: "http", Kind: SectionKindInput, Plugin: &PortPlugin{ID: "mqtt.4", Name: "mqtt"}},
-			{Number: 4318, Protocol: "http", Kind: SectionKindInput, Plugin: &PortPlugin{ID: "opentelemetry.5", Name: "opentelemetry"}},
-			{Number: 8125, Protocol: "udp", Kind: SectionKindInput, Plugin: &PortPlugin{ID: "statsd.6", Name: "statsd"}},
-			{Number: 5140, Protocol: "udp", Kind: SectionKindInput, Plugin: &PortPlugin{ID: "syslog.7", Name: "syslog"}},
-			{Number: 5170, Protocol: "tcp", Kind: SectionKindInput, Plugin: &PortPlugin{ID: "tcp.8", Name: "tcp"}},
-			{Number: 5170, Protocol: "udp", Kind: SectionKindInput, Plugin: &PortPlugin{ID: "udp.9", Name: "udp"}},
-			{Number: 2021, Protocol: "http", Kind: SectionKindOutput, Plugin: &PortPlugin{ID: "prometheus_exporter.0", Name: "prometheus_exporter"}},
-		}, config.Ports())
+		assert.Equal(t, ServicePorts{
+			{Port: 2020, Protocol: ProtocolTCP, Kind: SectionKindService},
+			{Port: 25826, Protocol: ProtocolUDP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "collectd.0", Name: "collectd"}},
+			{Port: 9200, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "elasticsearch.1", Name: "elasticsearch"}},
+			{Port: 24224, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "forward.2", Name: "forward"}},
+			{Port: 9880, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "http.3", Name: "http"}},
+			{Port: 1883, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "mqtt.4", Name: "mqtt"}},
+			{Port: 4318, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "opentelemetry.5", Name: "opentelemetry"}},
+			{Port: 8125, Protocol: ProtocolUDP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "statsd.6", Name: "statsd"}},
+			{Port: 5140, Protocol: ProtocolUDP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "syslog.7", Name: "syslog"}},
+			{Port: 5170, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "tcp.8", Name: "tcp"}},
+			{Port: 5170, Protocol: ProtocolUDP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "udp.9", Name: "udp"}},
+			{Port: 2021, Protocol: ProtocolTCP, Kind: SectionKindOutput, Plugin: &ServicePortPlugin{ID: "prometheus_exporter.0", Name: "prometheus_exporter"}},
+		}, config.ServicePorts())
 	})
 
 	t.Run("explicit", func(t *testing.T) {
@@ -93,20 +93,20 @@ func TestConfig_Ports(t *testing.T) {
 				port 12
 		`, FormatClassic)
 		assert.NoError(t, err)
-		assert.Equal(t, []int{
-			1,
-			2,
-			3,
-			4,
-			5,
-			6,
-			7,
-			8,
-			9,
-			10,
-			11,
-			12,
-		}, config.Ports().Numbers())
+		assert.Equal(t, ServicePorts{
+			{Port: 1, Protocol: ProtocolTCP, Kind: SectionKindService},
+			{Port: 2, Protocol: ProtocolUDP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "collectd.0", Name: "collectd"}},
+			{Port: 3, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "elasticsearch.1", Name: "elasticsearch"}},
+			{Port: 4, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "forward.2", Name: "forward"}},
+			{Port: 5, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "http.3", Name: "http"}},
+			{Port: 6, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "mqtt.4", Name: "mqtt"}},
+			{Port: 7, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "opentelemetry.5", Name: "opentelemetry"}},
+			{Port: 8, Protocol: ProtocolUDP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "statsd.6", Name: "statsd"}},
+			{Port: 9, Protocol: ProtocolUDP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "syslog.7", Name: "syslog"}},
+			{Port: 10, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "tcp.8", Name: "tcp"}},
+			{Port: 11, Protocol: ProtocolUDP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "udp.9", Name: "udp"}},
+			{Port: 12, Protocol: ProtocolTCP, Kind: SectionKindOutput, Plugin: &ServicePortPlugin{ID: "prometheus_exporter.0", Name: "prometheus_exporter"}},
+		}, config.ServicePorts())
 	})
 
 	t.Run("skips", func(t *testing.T) {
@@ -128,7 +128,7 @@ func TestConfig_Ports(t *testing.T) {
 				port 4
 		`, FormatClassic)
 		assert.NoError(t, err)
-		assert.Equal(t, nil, config.Ports())
+		assert.Equal(t, nil, config.ServicePorts())
 	})
 
 	t.Run("with_mode", func(t *testing.T) {
@@ -139,8 +139,8 @@ func TestConfig_Ports(t *testing.T) {
 				port 1
 		`, FormatClassic)
 		assert.NoError(t, err)
-		assert.Equal(t, Ports{
-			{Number: 1, Protocol: "tcp", Kind: SectionKindInput, Plugin: &PortPlugin{ID: "syslog.0", Name: "syslog"}},
-		}, config.Ports())
+		assert.Equal(t, ServicePorts{
+			{Port: 1, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "syslog.0", Name: "syslog"}},
+		}, config.ServicePorts())
 	})
 }
