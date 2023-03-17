@@ -227,7 +227,7 @@ func TestConfig_IDs(t *testing.T) {
 				log_level error
 		`, FormatClassic)
 		assert.NoError(t, err)
-		assert.Equal(t, nil, conf.IDs())
+		assert.Equal(t, nil, conf.IDs(true))
 	})
 
 	t.Run("ok", func(t *testing.T) {
@@ -246,7 +246,7 @@ func TestConfig_IDs(t *testing.T) {
 			"input:tcp:tcp.0",
 			"output:tcp:tcp.0",
 			"output:stdout:stdout.1",
-		}, conf.IDs())
+		}, conf.IDs(true))
 	})
 
 	t.Run("ok_2", func(t *testing.T) {
@@ -265,6 +265,64 @@ func TestConfig_IDs(t *testing.T) {
 			"input:tcp:tcp.0",
 			"output:stdout:stdout.0",
 			"output:tcp:tcp.1",
-		}, conf.IDs())
+		}, conf.IDs(true))
+	})
+
+	t.Run("ok_no_prefix", func(t *testing.T) {
+		conf, err := ParseAs(`
+ 			[INPUT]
+ 				name tcp
+ 			[OUTPUT]
+ 				name  tcp
+ 				match *
+ 			[OUTPUT]
+ 				name  stdout
+ 				match *
+ 		`, FormatClassic)
+		assert.NoError(t, err)
+		assert.Equal(t, []string{
+			"tcp.0",
+			"tcp.0",
+			"stdout.1",
+		}, conf.IDs(false))
+	})
+}
+
+func TestConfig_FindByID(t *testing.T) {
+	t.Run("not_found", func(t *testing.T) {
+		conf, err := ParseAs(`
+			[INPUT]
+				name cpu
+			[INPUT]
+				name mem
+			[INPUT]
+				name  cpu
+		`, FormatClassic)
+		assert.NoError(t, err)
+		_, found := conf.FindByID("input:cpu:cpu.1")
+		assert.False(t, found)
+	})
+
+	t.Run("ok", func(t *testing.T) {
+		conf, err := ParseAs(`
+			[INPUT]
+				name cpu
+			[INPUT]
+				name mem
+			[INPUT]
+				name     cpu
+				proptest valuetest
+		`, FormatClassic)
+		assert.NoError(t, err)
+		plugin, found := conf.FindByID("input:cpu:cpu.2")
+		assert.True(t, found)
+		assert.Equal(t, Plugin{
+			ID:   "cpu.2",
+			Name: "cpu",
+			Properties: []property.Property{
+				{Key: "name", Value: "cpu"},
+				{Key: "proptest", Value: "valuetest"},
+			},
+		}, plugin)
 	})
 }

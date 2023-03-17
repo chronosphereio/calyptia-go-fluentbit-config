@@ -4,13 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/calyptia/go-fluentbit-config/v2/property"
 	"golang.org/x/exp/slices"
 	"gopkg.in/yaml.v3"
+
+	"github.com/calyptia/go-fluentbit-config/v2/property"
 )
 
 type Plugins []Plugin
 
+// IDs not namespaced.
+// For example: tail.0
 func (plugins Plugins) IDs() []string {
 	var ids []string
 	for _, plugin := range plugins {
@@ -19,21 +22,15 @@ func (plugins Plugins) IDs() []string {
 	return ids
 }
 
-func (c Config) IDs() []string {
-	var ids []string
-	set := func(kind SectionKind, plugins Plugins) {
-		for _, plugin := range plugins {
-			ids = append(ids, fmt.Sprintf("%s:%s:%s", kind, plugin.Name, plugin.ID))
+// FindByID were the id should not be namespaced.
+// For example: tail.0
+func (plugins Plugins) FindByID(id string) (Plugin, bool) {
+	for _, plugin := range plugins {
+		if plugin.ID == id {
+			return plugin, true
 		}
 	}
-
-	set(SectionKindCustom, c.Customs)
-	set(SectionKindInput, c.Pipeline.Inputs)
-	set(SectionKindParser, c.Pipeline.Parsers)
-	set(SectionKindFilter, c.Pipeline.Filters)
-	set(SectionKindOutput, c.Pipeline.Outputs)
-
-	return ids
+	return Plugin{}, false
 }
 
 func (plugins *Plugins) UnmarshalJSON(data []byte) error {

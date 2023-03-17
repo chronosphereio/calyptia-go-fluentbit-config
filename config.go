@@ -109,6 +109,60 @@ func (c Config) Equal(target Config) bool {
 	return true
 }
 
+// IDs namespaced with the section kind and name.
+// For example: input:tail:tail.0
+func (c Config) IDs(namespaced bool) []string {
+	var ids []string
+	set := func(kind SectionKind, plugins Plugins) {
+		for _, plugin := range plugins {
+			if namespaced {
+				ids = append(ids, fmt.Sprintf("%s:%s:%s", kind, plugin.Name, plugin.ID))
+			} else {
+				ids = append(ids, plugin.ID)
+			}
+		}
+	}
+
+	set(SectionKindCustom, c.Customs)
+	set(SectionKindInput, c.Pipeline.Inputs)
+	set(SectionKindParser, c.Pipeline.Parsers)
+	set(SectionKindFilter, c.Pipeline.Filters)
+	set(SectionKindOutput, c.Pipeline.Outputs)
+
+	return ids
+}
+
+// FindByID were the id should be namespaced with the section kind and name.
+// For example: input:tail:tail.0
+func (c Config) FindByID(id string) (Plugin, bool) {
+	find := func(kind SectionKind, plugins Plugins, id string) (Plugin, bool) {
+		for _, plugin := range plugins {
+			if fmt.Sprintf("%s:%s:%s", kind, plugin.Name, plugin.ID) == id {
+				return plugin, true
+			}
+		}
+		return Plugin{}, false
+	}
+
+	if plugin, ok := find(SectionKindCustom, c.Customs, id); ok {
+		return plugin, true
+	}
+
+	if plugin, ok := find(SectionKindInput, c.Pipeline.Inputs, id); ok {
+		return plugin, true
+	}
+
+	if plugin, ok := find(SectionKindParser, c.Pipeline.Parsers, id); ok {
+		return plugin, true
+	}
+
+	if plugin, ok := find(SectionKindFilter, c.Pipeline.Filters, id); ok {
+		return plugin, true
+	}
+
+	return Plugin{}, false
+}
+
 // Name from properties.
 func Name(props property.Properties) string {
 	nameVal, ok := props.Get("name")

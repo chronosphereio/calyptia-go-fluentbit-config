@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
+
 	"github.com/calyptia/go-fluentbit-config/v2/networking"
 )
 
