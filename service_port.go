@@ -6,7 +6,7 @@ import (
 	"github.com/calyptia/go-fluentbit-config/v2/networking"
 )
 
-var fluentBitNetworkingDefaults = map[string]servicePortDefaults{
+var servicePortDefaultsByPlugin = map[string]servicePortDefaults{
 	// Inputs.
 	"collectd":      {Port: 25826, Protocol: networking.ProtocolUDP},
 	"elasticsearch": {Port: 9200, Protocol: networking.ProtocolTCP},
@@ -81,7 +81,7 @@ func (c *Config) ServicePorts() ServicePorts {
 
 			portVal, ok := plugin.Properties.Get("port")
 			if !ok {
-				defaults, ok := fluentBitNetworkingDefaults[plugin.Name]
+				defaults, ok := servicePortDefaultsByPlugin[plugin.Name]
 				if ok {
 					plugin := plugin
 					plugin.Properties = nil
@@ -108,7 +108,7 @@ func (c *Config) ServicePorts() ServicePorts {
 					}
 
 					if protocol == "" {
-						defaultPort, ok := fluentBitNetworkingDefaults[plugin.Name]
+						defaultPort, ok := servicePortDefaultsByPlugin[plugin.Name]
 						if ok {
 							protocol = defaultPort.Protocol
 						}
