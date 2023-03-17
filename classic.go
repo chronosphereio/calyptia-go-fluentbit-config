@@ -11,7 +11,7 @@ import (
 	"text/tabwriter"
 	"unicode/utf8"
 
-	"github.com/calyptia/go-fluentbit-config/property"
+	"github.com/calyptia/go-fluentbit-config/v2/property"
 )
 
 // reSpaces matches more than one consecutive spaces.
@@ -179,20 +179,10 @@ func (c Config) MarshalClassic() ([]byte, error) {
 		return tw.Flush()
 	}
 
-	writeByNames := func(kind string, byNames []ByName) error {
-		if len(byNames) == 0 || len(byNames[0]) == 0 {
-			return nil
-		}
-
-		for _, byName := range byNames {
-			for name, props := range byName {
-				if !props.Has("name") {
-					props.Set("name", name)
-				}
-
-				if err := writeProps(kind, props); err != nil {
-					return err
-				}
+	writePlugins := func(kind string, plugins Plugins) error {
+		for _, plugin := range plugins {
+			if err := writeProps(kind, plugin.Properties); err != nil {
+				return err
 			}
 		}
 
@@ -203,23 +193,23 @@ func (c Config) MarshalClassic() ([]byte, error) {
 		return nil, err
 	}
 
-	if err := writeByNames("CUSTOM", c.Customs); err != nil {
+	if err := writePlugins("CUSTOM", c.Customs); err != nil {
 		return nil, err
 	}
 
-	if err := writeByNames("INPUT", c.Pipeline.Inputs); err != nil {
+	if err := writePlugins("INPUT", c.Pipeline.Inputs); err != nil {
 		return nil, err
 	}
 
-	if err := writeByNames("PARSER", c.Pipeline.Parsers); err != nil {
+	if err := writePlugins("PARSER", c.Pipeline.Parsers); err != nil {
 		return nil, err
 	}
 
-	if err := writeByNames("FILTER", c.Pipeline.Filters); err != nil {
+	if err := writePlugins("FILTER", c.Pipeline.Filters); err != nil {
 		return nil, err
 	}
 
-	if err := writeByNames("OUTPUT", c.Pipeline.Outputs); err != nil {
+	if err := writePlugins("OUTPUT", c.Pipeline.Outputs); err != nil {
 		return nil, err
 	}
 
@@ -309,6 +299,8 @@ func stringFromAny(v any) string {
 	return stringFromAny(fmt.Sprintf("%v", v))
 }
 
+// isFloatInt reports whether a float is an integer number
+// with no fractional part.
 func isFloatInt[F float32 | float64](f F) bool {
 	switch t := any(f).(type) {
 	case float32:

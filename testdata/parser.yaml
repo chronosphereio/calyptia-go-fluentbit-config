@@ -1,6 +1,5 @@
 pipeline:
     parsers:
-        - dummy_test:
-            name: dummy_test
-            format: regex
-            regex: ^(?<INT>[^ ]+) (?<FLOAT>[^ ]+) (?<BOOL>[^ ]+) (?<STRING>.+)$
+        - name: dummy_test
+          format: regex
+          regex: ^(?<INT>[^ ]+) (?<FLOAT>[^ ]+) (?<BOOL>[^ ]+) (?<STRING>.+)$

@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/calyptia/go-fluentbit-config/property"
+	"github.com/calyptia/go-fluentbit-config/v2/property"
 )
 
 var ErrMissingName = errors.New("missing name property")
@@ -23,16 +23,13 @@ func (c Config) Validate() error {
 // has a property named "pid" that is of integer type,
 // it must be a valid integer.
 func (c Config) ValidateWithSchema(schema Schema) error {
-	validate := func(kind SectionKind, byNames []ByName) error {
-		for _, byName := range byNames {
-			for _, props := range byName {
-				if err := ValidateSectionWithSchema(kind, props, schema); err != nil {
-					return err
-				}
+	validate := func(kind SectionKind, plugins Plugins) error {
+		for _, plugin := range plugins {
+			if err := ValidateSectionWithSchema(kind, plugin.Properties, schema); err != nil {
+				return err
 			}
 		}
 
-		// valid by default
 		return nil
 	}
 

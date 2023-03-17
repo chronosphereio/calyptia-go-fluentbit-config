@@ -7,33 +7,26 @@ service:
     log_level: error
     http_server: "on"
 customs:
-    - calyptia:
-        name: calyptia
-        api_key: secret
+    - name: calyptia
+      api_key: secret
 pipeline:
     inputs:
-        - syslog:
-            name: syslog
-            listen: 0.0.0.0
-            port: 5140
-        - tail:
-            name: tail
-            exit_on_eof: false
-        - dummy:
-            name: dummy
-            dummy: '{"message": "hello from fluent-bit"}'
+        - name: syslog
+          listen: 0.0.0.0
+          port: 5140
+        - name: tail
+          exit_on_eof: false
+        - name: dummy
+          dummy: '{"message": "hello from fluent-bit"}'
     filters:
-        - throttle:
-            name: throttle
-            match: syslog
-            rate: 3.14
-        - record_modifier:
-            name: record_modifier
-            match: dummy
-            record:
-                - key1 value1
-                - key2 value2
+        - name: throttle
+          match: syslog
+          rate: 3.14
+        - name: record_modifier
+          match: dummy
+          record:
+            - key1 value1
+            - key2 value2
     outputs:
-        - stdout:
-            name: stdout
-            match: '*'
+        - name: stdout
+          match: '*'

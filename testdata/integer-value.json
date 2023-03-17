@@ -2,10 +2,8 @@
     "pipeline": {
         "inputs": [
             {
-                "syslog": {
-                    "name": "syslog",
-                    "port": 5140
-                }
+                "name": "syslog",
+                "port": 5140
             }
         ]
     }

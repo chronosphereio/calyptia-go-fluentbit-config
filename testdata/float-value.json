@@ -2,10 +2,8 @@
     "pipeline": {
         "filters": [
             {
-                "throttle": {
-                    "name": "throttle",
-                    "rate": 3.14
-                }
+                "name": "throttle",
+                "rate": 3.14
             }
         ]
     }

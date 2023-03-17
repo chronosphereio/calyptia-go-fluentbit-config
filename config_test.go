@@ -1,4 +1,4 @@
-package fluentbitconfig_test
+package fluentbitconfig
 
 import (
 	"bytes"
@@ -11,8 +11,7 @@ import (
 	"github.com/alecthomas/assert/v2"
 	"gopkg.in/yaml.v3"
 
-	fluentbitconfig "github.com/calyptia/go-fluentbit-config"
-	"github.com/calyptia/go-fluentbit-config/property"
+	"github.com/calyptia/go-fluentbit-config/v2/property"
 )
 
 func Test_Config(t *testing.T) {
@@ -24,21 +23,21 @@ func Test_Config(t *testing.T) {
 			classicText, err := os.ReadFile(name)
 			assert.NoError(t, err)
 
-			var classicConf fluentbitconfig.Config
+			var classicConf Config
 			err = classicConf.UnmarshalClassic(classicText)
 			assert.NoError(t, err)
 
 			yamlText, err := os.ReadFile(strings.Replace(name, ".conf", ".yaml", 1))
 			assert.NoError(t, err)
 
-			var yamlConf fluentbitconfig.Config
+			var yamlConf Config
 			err = yaml.Unmarshal(yamlText, &yamlConf)
 			assert.NoError(t, err)
 
 			jsonText, err := os.ReadFile(strings.Replace(name, ".conf", ".json", 1))
 			assert.NoError(t, err)
 
-			var jsonConf fluentbitconfig.Config
+			var jsonConf Config
 			err = json.Unmarshal(jsonText, &jsonConf)
 			assert.NoError(t, err)
 
@@ -73,12 +72,12 @@ func makeTestName(fp string) string {
 
 func TestConfig_Equal(t *testing.T) {
 	t.Run("equal_env", func(t *testing.T) {
-		a := fluentbitconfig.Config{
+		a := Config{
 			Env: property.Properties{
 				{Key: "foo", Value: "bar"},
 			},
 		}
-		b := fluentbitconfig.Config{
+		b := Config{
 			Env: property.Properties{
 				{Key: "foo", Value: "bar"},
 			},
@@ -87,12 +86,12 @@ func TestConfig_Equal(t *testing.T) {
 	})
 
 	t.Run("not_equal_env", func(t *testing.T) {
-		a := fluentbitconfig.Config{
+		a := Config{
 			Env: property.Properties{
 				{Key: "a", Value: "b"},
 			},
 		}
-		b := fluentbitconfig.Config{
+		b := Config{
 			Env: property.Properties{
 				{Key: "b", Value: "c"},
 			},
@@ -101,40 +100,40 @@ func TestConfig_Equal(t *testing.T) {
 	})
 
 	t.Run("equal_includes", func(t *testing.T) {
-		a := fluentbitconfig.Config{
+		a := Config{
 			Includes: []string{"foo"},
 		}
-		b := fluentbitconfig.Config{
+		b := Config{
 			Includes: []string{"foo"},
 		}
 		assert.True(t, a.Equal(b))
 	})
 
 	t.Run("not_equal_includes", func(t *testing.T) {
-		a := fluentbitconfig.Config{
+		a := Config{
 			Includes: []string{"foo"},
 		}
-		b := fluentbitconfig.Config{
+		b := Config{
 			Includes: []string{"bar"},
 		}
 		assert.False(t, a.Equal(b))
 	})
 
 	t.Run("equal_input", func(t *testing.T) {
-		a := fluentbitconfig.Config{
-			Pipeline: fluentbitconfig.Pipeline{
-				Inputs: []fluentbitconfig.ByName{{
-					"dummy": property.Properties{
+		a := Config{
+			Pipeline: Pipeline{
+				Inputs: Plugins{{
+					Properties: property.Properties{
 						{Key: "name", Value: "dummy"},
 						{Key: "rate", Value: 10},
 					}},
 				},
 			},
 		}
-		b := fluentbitconfig.Config{
-			Pipeline: fluentbitconfig.Pipeline{
-				Inputs: []fluentbitconfig.ByName{{
-					"dummy": property.Properties{
+		b := Config{
+			Pipeline: Pipeline{
+				Inputs: Plugins{{
+					Properties: property.Properties{
 						{Key: "name", Value: "dummy"},
 						{Key: "rate", Value: 10},
 					}},
@@ -145,20 +144,20 @@ func TestConfig_Equal(t *testing.T) {
 	})
 
 	t.Run("not_equal_input", func(t *testing.T) {
-		a := fluentbitconfig.Config{
-			Pipeline: fluentbitconfig.Pipeline{
-				Inputs: []fluentbitconfig.ByName{{
-					"dummy": property.Properties{
+		a := Config{
+			Pipeline: Pipeline{
+				Inputs: Plugins{{
+					Properties: property.Properties{
 						{Key: "name", Value: "dummy"},
 						{Key: "rate", Value: 10},
 					}},
 				},
 			},
 		}
-		b := fluentbitconfig.Config{
-			Pipeline: fluentbitconfig.Pipeline{
-				Inputs: []fluentbitconfig.ByName{{
-					"dummy": property.Properties{
+		b := Config{
+			Pipeline: Pipeline{
+				Inputs: Plugins{{
+					Properties: property.Properties{
 						{Key: "name", Value: "dummy"},
 						{Key: "rate", Value: 22},
 					}},
@@ -169,20 +168,20 @@ func TestConfig_Equal(t *testing.T) {
 	})
 
 	t.Run("not_equal_properties_out_of_order", func(t *testing.T) {
-		a := fluentbitconfig.Config{
-			Pipeline: fluentbitconfig.Pipeline{
-				Inputs: []fluentbitconfig.ByName{{
-					"foo": property.Properties{
+		a := Config{
+			Pipeline: Pipeline{
+				Inputs: Plugins{{
+					Properties: property.Properties{
 						{Key: "name", Value: "foo"},
 						{Key: "test_key", Value: "test_value"},
 					}},
 				},
 			},
 		}
-		b := fluentbitconfig.Config{
-			Pipeline: fluentbitconfig.Pipeline{
-				Inputs: []fluentbitconfig.ByName{{
-					"foo": property.Properties{
+		b := Config{
+			Pipeline: Pipeline{
+				Inputs: Plugins{{
+					Properties: property.Properties{
 						{Key: "test_key", Value: "test_value"},
 						{Key: "name", Value: "foo"},
 					}},
@@ -193,25 +192,25 @@ func TestConfig_Equal(t *testing.T) {
 	})
 
 	t.Run("not_equal_by_names_out_of_order", func(t *testing.T) {
-		a := fluentbitconfig.Config{
-			Pipeline: fluentbitconfig.Pipeline{
-				Inputs: []fluentbitconfig.ByName{{
-					"one": property.Properties{
+		a := Config{
+			Pipeline: Pipeline{
+				Inputs: Plugins{{
+					Properties: property.Properties{
 						{Key: "name", Value: "one"},
 					}}, {
-					"two": property.Properties{
+					Properties: property.Properties{
 						{Key: "name", Value: "two"},
 					}},
 				},
 			},
 		}
-		b := fluentbitconfig.Config{
-			Pipeline: fluentbitconfig.Pipeline{
-				Inputs: []fluentbitconfig.ByName{{
-					"two": property.Properties{
+		b := Config{
+			Pipeline: Pipeline{
+				Inputs: Plugins{{
+					Properties: property.Properties{
 						{Key: "name", Value: "two"},
-					},
-					"one": property.Properties{
+					}}, {
+					Properties: property.Properties{
 						{Key: "name", Value: "one"},
 					}},
 				},
@@ -223,16 +222,16 @@ func TestConfig_Equal(t *testing.T) {
 
 func TestConfig_IDs(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
-		conf, err := fluentbitconfig.ParseAs(`
+		conf, err := ParseAs(`
 			[SERVICE]
 				log_level error
-		`, fluentbitconfig.FormatClassic)
+		`, FormatClassic)
 		assert.NoError(t, err)
-		assert.Equal(t, nil, conf.IDs(true))
+		assert.Equal(t, nil, conf.IDs())
 	})
 
 	t.Run("ok", func(t *testing.T) {
-		conf, err := fluentbitconfig.ParseAs(`
+		conf, err := ParseAs(`
 			[INPUT]
 				name tcp
 			[OUTPUT]
@@ -241,17 +240,17 @@ func TestConfig_IDs(t *testing.T) {
 			[OUTPUT]
 				name  stdout
 				match *
-		`, fluentbitconfig.FormatClassic)
+		`, FormatClassic)
 		assert.NoError(t, err)
 		assert.Equal(t, []string{
 			"input:tcp:tcp.0",
 			"output:tcp:tcp.0",
 			"output:stdout:stdout.1",
-		}, conf.IDs(true))
+		}, conf.IDs())
 	})
 
 	t.Run("ok_2", func(t *testing.T) {
-		conf, err := fluentbitconfig.ParseAs(`
+		conf, err := ParseAs(`
 			[INPUT]
 				name tcp
 			[OUTPUT]
@@ -260,31 +259,12 @@ func TestConfig_IDs(t *testing.T) {
 			[OUTPUT]
 				name  tcp
 				match *
-		`, fluentbitconfig.FormatClassic)
+		`, FormatClassic)
 		assert.NoError(t, err)
 		assert.Equal(t, []string{
 			"input:tcp:tcp.0",
 			"output:stdout:stdout.0",
 			"output:tcp:tcp.1",
-		}, conf.IDs(true))
-	})
-
-	t.Run("ok_no_prefix", func(t *testing.T) {
-		conf, err := fluentbitconfig.ParseAs(`
-			[INPUT]
-				name tcp
-			[OUTPUT]
-				name  tcp
-				match *
-			[OUTPUT]
-				name  stdout
-				match *
-		`, fluentbitconfig.FormatClassic)
-		assert.NoError(t, err)
-		assert.Equal(t, []string{
-			"tcp.0",
-			"tcp.0",
-			"stdout.1",
-		}, conf.IDs(false))
+		}, conf.IDs())
 	})
 }

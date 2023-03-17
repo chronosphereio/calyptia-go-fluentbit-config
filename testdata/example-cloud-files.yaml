@@ -1,20 +1,17 @@
 pipeline:
     inputs:
-        - '{{files.name}}':
-            NameA: '{{filesnote}}'
-            NameB: '{{files}}'
-            NameC: '{{files...}}'
-            NameD: '{{nofiles.test}}'
-            NameE: '{files.nope}'
-            Name: '{{files.name}}'
-            Listen: '{{files.testing}}'
-            Port: 24224
-        - tail:
-            Name: tail
-            Tag: tail.01
-            Path: /var/log/system.log
+        - NameA: '{{filesnote}}'
+          NameB: '{{files}}'
+          NameC: '{{files...}}'
+          NameD: '{{nofiles.test}}'
+          NameE: '{files.nope}'
+          Name: '{{files.name}}'
+          Listen: '{{files.testing}}'
+          Port: 24224
+        - Name: tail
+          Tag: tail.01
+          Path: /var/log/system.log
     outputs:
-        - s3:
-            Name: s3
-            Match: '*'
-            bucket: '{{files.bucket}}'
+        - Name: s3
+          Match: '*'
+          bucket: '{{files.bucket}}'

@@ -1,7 +1,6 @@
 pipeline:
     filters:
-        - record_modifier:
-            name: record_modifier
-            record:
-                - key1 value1
-                - key2 value2
+        - name: record_modifier
+          record:
+            - key1 value1
+            - key2 value2

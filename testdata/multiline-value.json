@@ -1,10 +1,8 @@
 {
     "customs": [
         {
-            "custom": {
-                "name": "custom",
-                "multiline": "FOO\nBAR"
-            }
+            "name": "custom",
+            "multiline": "FOO\nBAR"
         }
     ],
     "pipeline": {}
