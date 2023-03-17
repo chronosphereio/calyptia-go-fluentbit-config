@@ -38,17 +38,17 @@ func TestConfig_Ports(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, ServicePorts{
 			{Port: 2020, Protocol: ProtocolTCP, Kind: SectionKindService},
-			{Port: 25826, Protocol: ProtocolUDP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "collectd.0", Name: "collectd"}},
-			{Port: 9200, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "elasticsearch.1", Name: "elasticsearch"}},
-			{Port: 24224, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "forward.2", Name: "forward"}},
-			{Port: 9880, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "http.3", Name: "http"}},
-			{Port: 1883, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "mqtt.4", Name: "mqtt"}},
-			{Port: 4318, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "opentelemetry.5", Name: "opentelemetry"}},
-			{Port: 8125, Protocol: ProtocolUDP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "statsd.6", Name: "statsd"}},
-			{Port: 5140, Protocol: ProtocolUDP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "syslog.7", Name: "syslog"}},
-			{Port: 5170, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "tcp.8", Name: "tcp"}},
-			{Port: 5170, Protocol: ProtocolUDP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "udp.9", Name: "udp"}},
-			{Port: 2021, Protocol: ProtocolTCP, Kind: SectionKindOutput, Plugin: &ServicePortPlugin{ID: "prometheus_exporter.0", Name: "prometheus_exporter"}},
+			{Port: 25826, Protocol: ProtocolUDP, Kind: SectionKindInput, Plugin: &Plugin{ID: "collectd.0", Name: "collectd"}},
+			{Port: 9200, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "elasticsearch.1", Name: "elasticsearch"}},
+			{Port: 24224, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "forward.2", Name: "forward"}},
+			{Port: 9880, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "http.3", Name: "http"}},
+			{Port: 1883, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "mqtt.4", Name: "mqtt"}},
+			{Port: 4318, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "opentelemetry.5", Name: "opentelemetry"}},
+			{Port: 8125, Protocol: ProtocolUDP, Kind: SectionKindInput, Plugin: &Plugin{ID: "statsd.6", Name: "statsd"}},
+			{Port: 5140, Protocol: ProtocolUDP, Kind: SectionKindInput, Plugin: &Plugin{ID: "syslog.7", Name: "syslog"}},
+			{Port: 5170, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "tcp.8", Name: "tcp"}},
+			{Port: 5170, Protocol: ProtocolUDP, Kind: SectionKindInput, Plugin: &Plugin{ID: "udp.9", Name: "udp"}},
+			{Port: 2021, Protocol: ProtocolTCP, Kind: SectionKindOutput, Plugin: &Plugin{ID: "prometheus_exporter.0", Name: "prometheus_exporter"}},
 		}, config.ServicePorts())
 	})
 
@@ -95,17 +95,17 @@ func TestConfig_Ports(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, ServicePorts{
 			{Port: 1, Protocol: ProtocolTCP, Kind: SectionKindService},
-			{Port: 2, Protocol: ProtocolUDP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "collectd.0", Name: "collectd"}},
-			{Port: 3, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "elasticsearch.1", Name: "elasticsearch"}},
-			{Port: 4, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "forward.2", Name: "forward"}},
-			{Port: 5, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "http.3", Name: "http"}},
-			{Port: 6, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "mqtt.4", Name: "mqtt"}},
-			{Port: 7, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "opentelemetry.5", Name: "opentelemetry"}},
-			{Port: 8, Protocol: ProtocolUDP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "statsd.6", Name: "statsd"}},
-			{Port: 9, Protocol: ProtocolUDP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "syslog.7", Name: "syslog"}},
-			{Port: 10, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "tcp.8", Name: "tcp"}},
-			{Port: 11, Protocol: ProtocolUDP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "udp.9", Name: "udp"}},
-			{Port: 12, Protocol: ProtocolTCP, Kind: SectionKindOutput, Plugin: &ServicePortPlugin{ID: "prometheus_exporter.0", Name: "prometheus_exporter"}},
+			{Port: 2, Protocol: ProtocolUDP, Kind: SectionKindInput, Plugin: &Plugin{ID: "collectd.0", Name: "collectd"}},
+			{Port: 3, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "elasticsearch.1", Name: "elasticsearch"}},
+			{Port: 4, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "forward.2", Name: "forward"}},
+			{Port: 5, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "http.3", Name: "http"}},
+			{Port: 6, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "mqtt.4", Name: "mqtt"}},
+			{Port: 7, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "opentelemetry.5", Name: "opentelemetry"}},
+			{Port: 8, Protocol: ProtocolUDP, Kind: SectionKindInput, Plugin: &Plugin{ID: "statsd.6", Name: "statsd"}},
+			{Port: 9, Protocol: ProtocolUDP, Kind: SectionKindInput, Plugin: &Plugin{ID: "syslog.7", Name: "syslog"}},
+			{Port: 10, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "tcp.8", Name: "tcp"}},
+			{Port: 11, Protocol: ProtocolUDP, Kind: SectionKindInput, Plugin: &Plugin{ID: "udp.9", Name: "udp"}},
+			{Port: 12, Protocol: ProtocolTCP, Kind: SectionKindOutput, Plugin: &Plugin{ID: "prometheus_exporter.0", Name: "prometheus_exporter"}},
 		}, config.ServicePorts())
 	})
 
@@ -140,7 +140,7 @@ func TestConfig_Ports(t *testing.T) {
 		`, FormatClassic)
 		assert.NoError(t, err)
 		assert.Equal(t, ServicePorts{
-			{Port: 1, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &ServicePortPlugin{ID: "syslog.0", Name: "syslog"}},
+			{Port: 1, Protocol: ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "syslog.0", Name: "syslog"}},
 		}, config.ServicePorts())
 	})
 }

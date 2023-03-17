@@ -43,12 +43,8 @@ type ServicePort struct {
 	Port     int
 	Protocol Protocol
 	Kind     SectionKind
-	Plugin   *ServicePortPlugin
-}
-
-type ServicePortPlugin struct {
-	ID   string
-	Name string
+	// Plugin is not available for `service`` section kind.
+	Plugin *Plugin
 }
 
 type ServicePorts []ServicePort
@@ -98,14 +94,13 @@ func (c *Config) ServicePorts() ServicePorts {
 			if !ok {
 				defaults, ok := fluentBitNetworkingDefaults[plugin.Name]
 				if ok {
+					plugin := plugin
+					plugin.Properties = nil
 					out = append(out, ServicePort{
 						Port:     defaults.Port,
 						Protocol: defaults.Protocol,
 						Kind:     kind,
-						Plugin: &ServicePortPlugin{
-							ID:   plugin.ID,
-							Name: plugin.Name,
-						},
+						Plugin:   &plugin,
 					})
 				}
 			}
@@ -134,14 +129,13 @@ func (c *Config) ServicePorts() ServicePorts {
 						protocol = ProtocolTCP
 					}
 
+					plugin := plugin
+					plugin.Properties = nil
 					out = append(out, ServicePort{
 						Port:     port,
 						Protocol: protocol,
 						Kind:     kind,
-						Plugin: &ServicePortPlugin{
-							ID:   plugin.ID,
-							Name: plugin.Name,
-						},
+						Plugin:   &plugin,
 					})
 				}
 			}
