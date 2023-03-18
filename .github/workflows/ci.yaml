@@ -7,7 +7,7 @@ on:
   pull_request:
     branches: [main]
 jobs:
-  test:
+  go:
     runs-on: ubuntu-latest
     steps:
       # Checkout your project with git
