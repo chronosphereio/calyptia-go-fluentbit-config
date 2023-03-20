@@ -22,7 +22,7 @@ jobs:
 
       # Install gotestfmt on the VM running the action.
       - name: Set up gotestfmt
-        run: go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@latest
+        run: go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@v2
 
       # Run tests with nice formatting. Save the original log in /tmp/gotest.log
       - name: Run tests
