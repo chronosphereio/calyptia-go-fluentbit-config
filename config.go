@@ -4,28 +4,25 @@ import (
 	"fmt"
 	"strings"
 
-	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 
-	"github.com/calyptia/go-fluentbit-config/property"
+	"github.com/calyptia/go-fluentbit-config/v2/property"
 )
 
 type Config struct {
 	Env      property.Properties `json:"env,omitempty" yaml:"env,omitempty"`
 	Includes []string            `json:"includes,omitempty" yaml:"includes,omitempty"`
 	Service  property.Properties `json:"service,omitempty" yaml:"service,omitempty"`
-	Customs  []ByName            `json:"customs,omitempty" yaml:"customs,omitempty"`
+	Customs  Plugins             `json:"customs,omitempty" yaml:"customs,omitempty"`
 	Pipeline Pipeline            `json:"pipeline,omitempty" yaml:"pipeline,omitempty"`
 }
 
 type Pipeline struct {
-	Inputs  []ByName `json:"inputs,omitempty" yaml:"inputs,omitempty"`
-	Parsers []ByName `json:"parsers,omitempty" yaml:"parsers,omitempty"`
-	Filters []ByName `json:"filters,omitempty" yaml:"filters,omitempty"`
-	Outputs []ByName `json:"outputs,omitempty" yaml:"outputs,omitempty"`
+	Inputs  Plugins `json:"inputs,omitempty" yaml:"inputs,omitempty"`
+	Parsers Plugins `json:"parsers,omitempty" yaml:"parsers,omitempty"`
+	Filters Plugins `json:"filters,omitempty" yaml:"filters,omitempty"`
+	Outputs Plugins `json:"outputs,omitempty" yaml:"outputs,omitempty"`
 }
-
-type ByName map[string]property.Properties
 
 func (c *Config) SetEnv(key string, value any) {
 	if c.Env == nil {
@@ -54,21 +51,25 @@ func (c *Config) AddSection(kind SectionKind, props property.Properties) {
 		return
 	}
 
-	byName := ByName{
-		name: props,
+	makePlugin := func(i int) Plugin {
+		return Plugin{
+			ID:         fmt.Sprintf("%s.%d", name, i),
+			Name:       name,
+			Properties: props,
+		}
 	}
 
 	switch kind {
 	case SectionKindCustom:
-		c.Customs = append(c.Customs, byName)
+		c.Customs = append(c.Customs, makePlugin(len(c.Customs)))
 	case SectionKindInput:
-		c.Pipeline.Inputs = append(c.Pipeline.Inputs, byName)
+		c.Pipeline.Inputs = append(c.Pipeline.Inputs, makePlugin(len(c.Pipeline.Inputs)))
 	case SectionKindParser:
-		c.Pipeline.Parsers = append(c.Pipeline.Parsers, byName)
+		c.Pipeline.Parsers = append(c.Pipeline.Parsers, makePlugin(len(c.Pipeline.Parsers)))
 	case SectionKindFilter:
-		c.Pipeline.Filters = append(c.Pipeline.Filters, byName)
+		c.Pipeline.Filters = append(c.Pipeline.Filters, makePlugin(len(c.Pipeline.Filters)))
 	case SectionKindOutput:
-		c.Pipeline.Outputs = append(c.Pipeline.Outputs, byName)
+		c.Pipeline.Outputs = append(c.Pipeline.Outputs, makePlugin(len(c.Pipeline.Outputs)))
 	}
 }
 
@@ -85,55 +86,81 @@ func (c Config) Equal(target Config) bool {
 		return false
 	}
 
-	if !equalByNames(c.Customs, target.Customs) {
+	if !c.Customs.Equal(target.Customs) {
 		return false
 	}
 
-	if !equalByNames(c.Pipeline.Inputs, target.Pipeline.Inputs) {
+	if !c.Pipeline.Inputs.Equal(target.Pipeline.Inputs) {
 		return false
 	}
 
-	if !equalByNames(c.Pipeline.Parsers, target.Pipeline.Parsers) {
+	if !c.Pipeline.Parsers.Equal(target.Pipeline.Parsers) {
 		return false
 	}
 
-	if !equalByNames(c.Pipeline.Filters, target.Pipeline.Filters) {
+	if !c.Pipeline.Filters.Equal(target.Pipeline.Filters) {
 		return false
 	}
 
-	if !equalByNames(c.Pipeline.Outputs, target.Pipeline.Outputs) {
+	if !c.Pipeline.Outputs.Equal(target.Pipeline.Outputs) {
 		return false
 	}
 
 	return true
 }
 
-func (c Config) IDs(withPrefix bool) []string {
-	collect := func(kind SectionKind, byNames []ByName) []string {
-		var ids []string
-		for i, byName := range byNames {
-			for name, props := range byName {
-				if s := Name(props); s != "" {
-					name = s
-				}
-				if withPrefix {
-					ids = append(ids, fmt.Sprintf("%s:%s:%s.%d", kind, name, name, i))
-				} else {
-					ids = append(ids, fmt.Sprintf("%s.%d", name, i))
-				}
-				break
+// IDs namespaced with the section kind and name.
+// For example: input:tail:tail.0
+func (c Config) IDs(namespaced bool) []string {
+	var ids []string
+	set := func(kind SectionKind, plugins Plugins) {
+		for _, plugin := range plugins {
+			if namespaced {
+				ids = append(ids, fmt.Sprintf("%s:%s:%s", kind, plugin.Name, plugin.ID))
+			} else {
+				ids = append(ids, plugin.ID)
 			}
 		}
-		return ids
 	}
 
-	var ids []string
-	ids = append(ids, collect(SectionKindCustom, c.Customs)...)
-	ids = append(ids, collect(SectionKindInput, c.Pipeline.Inputs)...)
-	ids = append(ids, collect(SectionKindParser, c.Pipeline.Parsers)...)
-	ids = append(ids, collect(SectionKindFilter, c.Pipeline.Filters)...)
-	ids = append(ids, collect(SectionKindOutput, c.Pipeline.Outputs)...)
+	set(SectionKindCustom, c.Customs)
+	set(SectionKindInput, c.Pipeline.Inputs)
+	set(SectionKindParser, c.Pipeline.Parsers)
+	set(SectionKindFilter, c.Pipeline.Filters)
+	set(SectionKindOutput, c.Pipeline.Outputs)
+
 	return ids
+}
+
+// FindByID were the id should be namespaced with the section kind and name.
+// For example: input:tail:tail.0
+func (c Config) FindByID(id string) (Plugin, bool) {
+	find := func(kind SectionKind, plugins Plugins, id string) (Plugin, bool) {
+		for _, plugin := range plugins {
+			if fmt.Sprintf("%s:%s:%s", kind, plugin.Name, plugin.ID) == id {
+				return plugin, true
+			}
+		}
+		return Plugin{}, false
+	}
+
+	if plugin, ok := find(SectionKindCustom, c.Customs, id); ok {
+		return plugin, true
+	}
+
+	if plugin, ok := find(SectionKindInput, c.Pipeline.Inputs, id); ok {
+		return plugin, true
+	}
+
+	if plugin, ok := find(SectionKindParser, c.Pipeline.Parsers, id); ok {
+		return plugin, true
+	}
+
+	if plugin, ok := find(SectionKindFilter, c.Pipeline.Filters, id); ok {
+		return plugin, true
+	}
+
+	return Plugin{}, false
 }
 
 // Name from properties.
@@ -143,19 +170,6 @@ func Name(props property.Properties) string {
 		return ""
 	}
 
-	if name, ok := nameVal.(string); ok {
-		return strings.TrimSpace(strings.ToValidUTF8(name, ""))
-	}
-
-	return strings.TrimSpace(strings.ToValidUTF8(fmt.Sprintf("%v", nameVal), ""))
-}
-
-func equalByNames(a, b []ByName) bool {
-	return slices.EqualFunc(a, b, equalByName)
-}
-
-func equalByName(a, b ByName) bool {
-	return maps.EqualFunc(a, b, func(v1, v2 property.Properties) bool {
-		return v1.Equal(v2)
-	})
+	name := stringFromAny(nameVal)
+	return strings.ToLower(strings.TrimSpace(strings.ToValidUTF8(name, "")))
 }

@@ -1,10 +1,10 @@
-module github.com/calyptia/go-fluentbit-config
+module github.com/calyptia/go-fluentbit-config/v2
 
-go 1.19
+go 1.20
 
 require (
-	github.com/alecthomas/assert/v2 v2.2.1
-	golang.org/x/exp v0.0.0-20230224173230-c95f2b4c22f2
+	github.com/alecthomas/assert/v2 v2.2.2
+	golang.org/x/exp v0.0.0-20230315142452-642cacee5cc0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

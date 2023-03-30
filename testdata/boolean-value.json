@@ -2,10 +2,8 @@
     "pipeline": {
         "inputs": [
             {
-                "tail": {
-                    "name": "tail",
-                    "exit_on_eof": false
-                }
+                "name": "tail",
+                "exit_on_eof": false
             }
         ]
     }

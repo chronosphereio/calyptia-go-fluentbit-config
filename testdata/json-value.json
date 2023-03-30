@@ -2,10 +2,8 @@
     "pipeline": {
         "inputs": [
             {
-                "dummy": {
-                    "name": "dummy",
-                    "dummy": "{\"message\": \"hello from fluent-bit\"}"
-                }
+                "name": "dummy",
+                "dummy": "{\"message\": \"hello from fluent-bit\"}"
             }
         ]
     }

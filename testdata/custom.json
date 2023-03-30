@@ -1,10 +1,8 @@
 {
     "customs": [
         {
-            "calyptia": {
-                "name": "calyptia",
-                "api_key": "secret"
-            }
+            "name": "calyptia",
+            "api_key": "secret"
         }
     ],
     "pipeline": {}
