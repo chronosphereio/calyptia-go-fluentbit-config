@@ -138,7 +138,7 @@ func areProcessors(key string) bool {
 }
 
 func validateProcessorsSectionMaps(sectionMaps []interface{}) error {
-	for _, section := range sectionmaps {
+	for _, section := range sectionMaps {
 		props := property.Properties{}
 		for key, val := range section.(map[string]interface{}) {
 			props.Set(key, val)
