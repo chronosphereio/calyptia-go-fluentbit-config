@@ -137,31 +137,33 @@ func areProcessors(key string) bool {
 	return strings.ToLower(key) == "processors"
 }
 
+func validateProcessorsSectionMaps(sectionMaps []interface{}) error {
+	for _, section := range sectionmaps {
+		props := property.Properties{}
+		for key, val := range section.(map[string]interface{}) {
+			props.Set(key, val)
+		}
+		if err := ValidateSection(SectionKindFilter, props); err != nil {
+			return err
+		}
+
+	}
+	return nil
+}
+
 func validateProcessors(processors any) error {
 	if procMap, ok := processors.(map[string]interface{}); !ok {
 		return fmt.Errorf("not a list of processors")
 	} else {
 		for key, sections := range procMap {
-			sectionmaps, ok := sections.([]interface{})
+			sectionMaps, ok := sections.([]interface{})
 			if !ok {
 				return fmt.Errorf("not a list of processors")
 			}
 			switch key {
-			case "logs":
-				fallthrough
-			case "metrics":
-				fallthrough
-			case "traces":
-
-				for _, section := range sectionmaps {
-					props := property.Properties{}
-					for key, val := range section.(map[string]interface{}) {
-						props.Set(key, val)
-					}
-					if err := ValidateSection(SectionKindFilter, props); err != nil {
-						return err
-					}
-
+			case "logs", "metrics", "traces":
+				if err := validateProcessorsSectionMaps(sectionMaps); err != nil {
+					return err
 				}
 			default:
 				return fmt.Errorf("unknown processor type: %s", key)
