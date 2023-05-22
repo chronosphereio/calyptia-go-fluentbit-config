@@ -1,0 +1,45 @@
+{
+    "service": {
+        "log_level": "info",
+        "http_server": "on",
+        "http_listen": "0.0.0.0",
+        "http_port": 2021
+    },
+    "pipeline": {
+        "inputs": [
+            {
+                "name": "dummy",
+                "tag": "test-tag",
+                "processors": {
+                    "logs": [
+                        {
+                            "add": "hostname monox",
+                            "name": "modify"
+                        },
+                        {
+                            "call": "append_tag",
+                            "code": "function append_tag(tag, timestamp, record)\n   new_record = record\n   new_record[\"tag\"] = tag\n   return 1, timestamp, new_record\nend\n",
+                            "name": "lua"
+                        }
+                    ]
+                }
+            }
+        ],
+        "outputs": [
+            {
+                "name": "stdout",
+                "format": "json_lines",
+                "match": "*",
+                "processors": {
+                    "logs": [
+                        {
+                            "call": "add_field",
+                            "code": "function add_field(tag, timestamp, record)\n   new_record = record\n   new_record[\"output\"] = \"new data\"\n   return 1, timestamp, new_record\nend\n",
+                            "name": "lua"
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}

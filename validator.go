@@ -87,6 +87,13 @@ func ValidateSectionWithSchema(kind SectionKind, props property.Properties, sche
 			continue
 		}
 
+		if areProcessors(p.Key) {
+			if err := validateProcessors(p.Value); err != nil {
+				return err
+			}
+			continue
+		}
+
 		opts, ok := section.findOptions(p.Key)
 		if !ok {
 			return fmt.Errorf("%s: %s: unknown property %q", kind, name, p.Key)
@@ -124,6 +131,46 @@ func isCloudVariable(val any) bool {
 
 	return reCloudSecretVariable.MatchString(s) ||
 		reCloudFileVariable.MatchString(s)
+}
+
+func areProcessors(key string) bool {
+	return strings.ToLower(key) == "processors"
+}
+
+func validateProcessorsSectionMaps(sectionMaps []interface{}) error {
+	for _, section := range sectionMaps {
+		props := property.Properties{}
+		for key, val := range section.(map[string]interface{}) {
+			props.Set(key, val)
+		}
+		if err := ValidateSection(SectionKindFilter, props); err != nil {
+			return err
+		}
+
+	}
+	return nil
+}
+
+func validateProcessors(processors any) error {
+	if procMap, ok := processors.(map[string]interface{}); !ok {
+		return fmt.Errorf("not a list of processors")
+	} else {
+		for key, sections := range procMap {
+			sectionMaps, ok := sections.([]interface{})
+			if !ok {
+				return fmt.Errorf("not a list of processors")
+			}
+			switch key {
+			case "logs", "metrics", "traces":
+				if err := validateProcessorsSectionMaps(sectionMaps); err != nil {
+					return err
+				}
+			default:
+				return fmt.Errorf("unknown processor type: %s", key)
+			}
+		}
+	}
+	return nil
 }
 
 func valid(opts SchemaOptions, val any) bool {
