@@ -1,4 +1,4 @@
-module github.com/calyptia/go-fluentbit-config/v2
+module github.com/calyptia/go-fluentbit-config
 
 go 1.20
 
