@@ -3,6 +3,7 @@ package fluentbitconfig
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -49,6 +50,7 @@ func Test_Config(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, string(yamlText), gotYamlText)
 
+			// using special encoding to be able to indent json.
 			var gotJsonText bytes.Buffer
 			{
 				enc := json.NewEncoder(&gotJsonText)
@@ -59,6 +61,53 @@ func Test_Config(t *testing.T) {
 			}
 			assert.NoError(t, err)
 			assert.Equal(t, string(jsonText), gotJsonText.String())
+
+			t.Run("v1", func(t *testing.T) {
+				t.Skip("v1 test are not reliable since order of properties is not kept")
+
+				t.Run("yaml", func(t *testing.T) {
+					yamlTextV1, err := os.ReadFile(strings.Replace(name, ".conf", "-v1.yaml", 1))
+					if errors.Is(err, os.ErrNotExist) {
+						t.SkipNow()
+					}
+
+					assert.NoError(t, err)
+
+					var yamlConf Config
+					err = yaml.Unmarshal(yamlTextV1, &yamlConf)
+					assert.NoError(t, err)
+
+					gotYamlText, err := yamlConf.DumpAsYAML()
+					assert.NoError(t, err)
+					assert.NotEqual(t, string(yamlTextV1), gotYamlText)
+					assert.Equal(t, string(yamlText), gotYamlText)
+				})
+
+				t.Run("json", func(t *testing.T) {
+					jsonTextV1, err := os.ReadFile(strings.Replace(name, ".conf", "-v1.json", 1))
+					if errors.Is(err, os.ErrNotExist) {
+						t.SkipNow()
+					}
+
+					assert.NoError(t, err)
+
+					var jsonConf Config
+					err = json.Unmarshal(jsonTextV1, &jsonConf)
+					assert.NoError(t, err)
+
+					// using special encoding to be able to indent json.
+					var gotJsonText bytes.Buffer
+					{
+						enc := json.NewEncoder(&gotJsonText)
+						enc.SetEscapeHTML(false)
+						enc.SetIndent("", "    ")
+						err = enc.Encode(jsonConf)
+						assert.NoError(t, err)
+					}
+					assert.NoError(t, err)
+					assert.Equal(t, string(jsonText), gotJsonText.String())
+				})
+			})
 		})
 	}
 }

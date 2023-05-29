@@ -88,6 +88,8 @@ func (p *Plugin) UnmarshalJSON(data []byte) error {
 	}
 
 	p.Name = Name(p.Properties)
+	p.handleV1()
+
 	return nil
 }
 
@@ -98,7 +100,30 @@ func (p *Plugin) UnmarshalYAML(node *yaml.Node) error {
 	}
 
 	p.Name = Name(p.Properties)
+	p.handleV1()
+
 	return nil
+}
+
+// handleV1 adds support for old v1 format.
+func (p *Plugin) handleV1() {
+	if len(p.Properties) != 1 || p.Name != "" {
+		return
+	}
+
+	for _, prop := range p.Properties {
+		// TODO: keep order of properties.
+		props, ok := prop.Value.(map[string]any)
+		if !ok {
+			break
+		}
+
+		p.Properties = property.Properties{}
+		for k, v := range props {
+			p.Properties.Add(k, v)
+		}
+		p.Name = Name(p.Properties)
+	}
 }
 
 func (p Plugin) Equal(target Plugin) bool {
