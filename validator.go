@@ -180,6 +180,14 @@ func valid(opts SchemaOptions, val any) bool {
 		// or totally invalid.
 		return true
 	case "string":
+		// numbers and booleans are valid strings too.
+		if validInteger(val) || validDouble(val) {
+			return true
+		}
+		if _, ok := val.(bool); ok {
+			return true
+		}
+
 		_, ok := val.(string)
 		return ok
 	case "boolean":
