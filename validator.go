@@ -1,7 +1,6 @@
 package fluentbitconfig
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -9,8 +8,6 @@ import (
 
 	"github.com/calyptia/go-fluentbit-config/v2/property"
 )
-
-var ErrMissingName = errors.New("missing name property")
 
 // Validate with the default schema.
 func (c Config) Validate() error {
@@ -79,7 +76,7 @@ func ValidateSectionWithSchema(kind SectionKind, props property.Properties, sche
 
 	section, ok := schema.findSection(kind, name)
 	if !ok {
-		return fmt.Errorf("%s: unknown plugin %q", kind, name)
+		return NewUnknownPluginError(kind, name)
 	}
 
 	for _, p := range props {
