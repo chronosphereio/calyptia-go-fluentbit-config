@@ -218,7 +218,8 @@ func TestConfig_Validate(t *testing.T) {
 					Name systemd
 					path true
 			`,
-			want: `input: systemd: expected "path" to be a valid string, got true`,
+			// `true` is a valid string too.
+			// want: `input: systemd: expected "path" to be a valid string, got true`,
 		},
 		{
 			name: "input_systemd_path_string",
@@ -286,6 +287,14 @@ func TestConfig_Validate(t *testing.T) {
 				[OUTPUT]
 					Name   http
 					Header private_key 008(test)
+			`,
+		},
+		{
+			name: "input_tail_refresh_interval",
+			ini: `
+				[INPUT]
+					Name   tail
+					refresh_interval 30
 			`,
 		},
 	}
