@@ -1,6 +1,7 @@
 package fluentbitconfig
 
 import (
+	"errors"
 	"strings"
 
 	"github.com/calyptia/go-fluentbit-config/v2/networking"
@@ -61,6 +62,16 @@ func (c *Config) ServicePorts() ServicePorts {
 
 	lookup := func(kind SectionKind, plugins Plugins) {
 		for _, plugin := range plugins {
+			err := ValidateSection(kind, plugin.Properties)
+			if errors.Is(err, ErrMissingName) {
+				continue
+			}
+
+			var e *UnknownPluginError
+			if errors.As(err, &e) {
+				continue
+			}
+
 			if plugin.Name == "forward" && plugin.Properties.Has("unix_path") {
 				continue
 			}

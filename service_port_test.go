@@ -128,6 +128,9 @@ func TestConfig_ServicePorts(t *testing.T) {
 				name syslog
 				mode unix_tcp
 				port 4
+			[INPUT]
+				name does_not_exists
+				port 5
 		`, FormatClassic)
 		assert.NoError(t, err)
 		assert.Equal(t, nil, config.ServicePorts())
