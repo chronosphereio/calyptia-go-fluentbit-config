@@ -1,6 +1,6 @@
 {
   "fluent-bit": {
-    "version": "23.4.3",
+    "version": "23.7.3",
     "schema_version": "1",
     "os": "linux"
   },
@@ -593,9 +593,15 @@
             "type": "time"
           },
           {
+            "name": "collector.systemd.scrape_interval",
+            "description": "scrape interval to collect systemd metrics from the node.",
+            "default": "0",
+            "type": "time"
+          },
+          {
             "name": "metrics",
             "description": "Comma separated list of keys to enable metrics.",
-            "default": "cpu,cpufreq,meminfo,diskstats,filesystem,uname,stat,time,loadavg,vmstat,netdev,filefd",
+            "default": "cpu,cpufreq,meminfo,diskstats,filesystem,uname,stat,time,loadavg,vmstat,netdev,filefd,systemd",
             "type": "multiple comma delimited strings"
           },
           {
@@ -614,6 +620,54 @@
             "name": "path.sysfs",
             "description": "sysfs mount point",
             "default": "/sys",
+            "type": "string"
+          },
+          {
+            "name": "systemd_service_restart_metrics",
+            "description": "include systemd service restart metrics",
+            "default": "false",
+            "type": "boolean"
+          },
+          {
+            "name": "systemd_unit_start_time_metrics",
+            "description": "include systemd unit start time metrics",
+            "default": "false",
+            "type": "boolean"
+          },
+          {
+            "name": "systemd_include_service_task_metrics",
+            "description": "include systemd service task metrics",
+            "default": "false",
+            "type": "boolean"
+          },
+          {
+            "name": "systemd_include_pattern",
+            "description": "include list regular expression",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "systemd_exclude_pattern",
+            "description": "exclude list regular expression",
+            "default": ".+\\.(automount|device|mount|scope|slice)",
+            "type": "string"
+          },
+          {
+            "name": "filesystem.ignore_mount_point_regex",
+            "description": "ignore regular expression for mount points",
+            "default": "^/(dev|proc|run/credentials/.+|sys|var/lib/docker/.+|var/lib/containers/storage/.+)($|/)",
+            "type": "string"
+          },
+          {
+            "name": "filesystem.ignore_filesystem_type_regex",
+            "description": "ignore regular expression for filesystem types",
+            "default": "^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs)$",
+            "type": "string"
+          },
+          {
+            "name": "diskstats.ignore_device_regex",
+            "description": "ignore regular expression for disk devices",
+            "default": "^(ram|loop|fd|(h|s|v|xv)d[a-z]|nvme\\d+n\\d+p)\\d+$",
             "type": "string"
           }
         ]
@@ -653,6 +707,165 @@
             "name": "path.procfs",
             "description": "Path to proc subsystem directory",
             "default": "/proc",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "type": "input",
+      "name": "kubernetes_events",
+      "description": "Kubernetes Events",
+      "properties": {
+        "options": [
+          {
+            "name": "host",
+            "description": "Listen Address",
+            "default": "0.0.0.0",
+            "type": "string"
+          },
+          {
+            "name": "port",
+            "description": "Listen Port",
+            "default": "0",
+            "type": "integer"
+          },
+          {
+            "name": "tls",
+            "description": "Enable or disable TLS/SSL support",
+            "default": "off",
+            "type": "boolean"
+          },
+          {
+            "name": "tls.verify",
+            "description": "Force certificate validation",
+            "default": "on",
+            "type": "boolean"
+          },
+          {
+            "name": "tls.debug",
+            "description": "Set TLS debug verbosity level. It accept the following values: 0 (No debug), 1 (Error), 2 (State change), 3 (Informational) and 4 Verbose",
+            "default": "1",
+            "type": "integer"
+          },
+          {
+            "name": "tls.ca_file",
+            "description": "Absolute path to CA certificate file",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "tls.ca_path",
+            "description": "Absolute path to scan for certificate files",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "tls.crt_file",
+            "description": "Absolute path to Certificate file",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "tls.key_file",
+            "description": "Absolute path to private Key file",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "tls.key_passwd",
+            "description": "Optional password for tls.key_file file",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "tls.vhost",
+            "description": "Hostname to be used for TLS SNI extension",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "kube_url",
+            "description": "Kubernetes API server URL",
+            "default": "https://kubernetes.default.svc",
+            "type": "string"
+          },
+          {
+            "name": "interval_sec",
+            "description": "Set the polling interval for each channel",
+            "default": "0",
+            "type": "integer"
+          },
+          {
+            "name": "interval_nsec",
+            "description": "Set the polling interval for each channel (sub seconds)",
+            "default": "500000",
+            "type": "integer"
+          },
+          {
+            "name": "tls.debug",
+            "description": "set TLS debug level: 0 (no debug), 1 (error), 2 (state change), 3 (info) and 4 (verbose)",
+            "default": "0",
+            "type": "integer"
+          },
+          {
+            "name": "tls.verify",
+            "description": "enable or disable verification of TLS peer certificate",
+            "default": "true",
+            "type": "boolean"
+          },
+          {
+            "name": "tls.vhost",
+            "description": "set optional TLS virtual host",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "kube_ca_file",
+            "description": "Kubernetes TLS CA file",
+            "default": "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt",
+            "type": "string"
+          },
+          {
+            "name": "kube_ca_path",
+            "description": "Kubernetes TLS ca path",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "kube_token_file",
+            "description": "Kubernetes authorization token file",
+            "default": "/var/run/secrets/kubernetes.io/serviceaccount/token",
+            "type": "string"
+          },
+          {
+            "name": "kube_token_ttl",
+            "description": "kubernetes token ttl, until it is reread from the token file. Default: 10m",
+            "default": "10m",
+            "type": "time"
+          },
+          {
+            "name": "kube_request_limit",
+            "description": "kubernetes limit parameter for events query, no limit applied when set to 0",
+            "default": "0",
+            "type": "integer"
+          },
+          {
+            "name": "kube_retention_time",
+            "description": "kubernetes retention time for events. Default: 1h",
+            "default": "1h",
+            "type": "time"
+          },
+          {
+            "name": "db",
+            "description": "set a database file to keep track of recorded kubernetes events.",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "db.sync",
+            "description": "set a database sync method. values: extra, full, normal and off.",
+            "default": "normal",
             "type": "string"
           }
         ]
@@ -2042,6 +2255,18 @@
           {
             "name": "oneshot",
             "description": "execute the command only once",
+            "default": "false",
+            "type": "boolean"
+          },
+          {
+            "name": "exit_after_oneshot",
+            "description": "exit fluent-bit after the command terminates in one-shot mode",
+            "default": "false",
+            "type": "boolean"
+          },
+          {
+            "name": "propagate_exit_code",
+            "description": "propagate oneshot exit command fluent-bit exit code using shell exit code translation conventions",
             "default": "false",
             "type": "boolean"
           }
@@ -3642,8 +3867,14 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
             "type": "integer"
           }
         ],
@@ -3901,8 +4132,213 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
+            "type": "integer"
+          }
+        ],
+        "network_tls": [
+          {
+            "name": "tls",
+            "description": "Enable or disable TLS/SSL support",
+            "default": "off",
+            "type": "boolean"
+          },
+          {
+            "name": "tls.verify",
+            "description": "Force certificate validation",
+            "default": "on",
+            "type": "boolean"
+          },
+          {
+            "name": "tls.debug",
+            "description": "Set TLS debug verbosity level. It accept the following values: 0 (No debug), 1 (Error), 2 (State change), 3 (Informational) and 4 Verbose",
+            "default": "1",
+            "type": "integer"
+          },
+          {
+            "name": "tls.ca_file",
+            "description": "Absolute path to CA certificate file",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "tls.ca_path",
+            "description": "Absolute path to scan for certificate files",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "tls.crt_file",
+            "description": "Absolute path to Certificate file",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "tls.key_file",
+            "description": "Absolute path to private Key file",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "tls.key_passwd",
+            "description": "Optional password for tls.key_file file",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "tls.vhost",
+            "description": "Hostname to be used for TLS SNI extension",
+            "default": null,
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "type": "output",
+      "name": "azure_logs_ingestion",
+      "description": "Send logs to Log Analytics with Log Ingestion API",
+      "properties": {
+        "options": [
+          {
+            "name": "host",
+            "description": "Host Address",
+            "default": "",
+            "type": "string"
+          },
+          {
+            "name": "port",
+            "description": "host Port",
+            "default": "0",
+            "type": "integer"
+          },
+          {
+            "name": "tenant_id",
+            "description": "Set the tenant ID of the AAD application",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "client_id",
+            "description": "Set the client/app ID of the AAD application",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "client_secret",
+            "description": "Set the client secret of the AAD application",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "dce_url",
+            "description": "Data Collection Endpoint(DCE) URI (e.g. https://la-endpoint-q12a.eastus-1.ingest.monitor.azure.com)",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "dcr_id",
+            "description": "Data Collection Rule (DCR) immutable ID",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "table_name",
+            "description": "The name of the custom log table, including '_CL' suffix",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "time_key",
+            "description": "[Optional] Specify the key name where the timestamp will be stored.",
+            "default": "@timestamp",
+            "type": "string"
+          },
+          {
+            "name": "time_generated",
+            "description": "If enabled, will generate a timestamp and append it to JSON. The key name is set by the 'time_key' parameter",
+            "default": "false",
+            "type": "boolean"
+          },
+          {
+            "name": "compress",
+            "description": "Enable HTTP payload compression (gzip).",
+            "default": "false",
+            "type": "boolean"
+          }
+        ],
+        "networking": [
+          {
+            "name": "net.dns.mode",
+            "description": "Select the primary DNS connection type (TCP or UDP)",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "net.dns.resolver",
+            "description": "Select the primary DNS resolver type (LEGACY or ASYNC)",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "net.dns.prefer_ipv4",
+            "description": "Prioritize IPv4 DNS results when trying to establish a connection",
+            "default": "false",
+            "type": "boolean"
+          },
+          {
+            "name": "net.keepalive",
+            "description": "Enable or disable Keepalive support",
+            "default": "true",
+            "type": "boolean"
+          },
+          {
+            "name": "net.keepalive_idle_timeout",
+            "description": "Set maximum time allowed for an idle Keepalive connection",
+            "default": "30s",
+            "type": "time"
+          },
+          {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
+            "type": "time"
+          },
+          {
+            "name": "net.connect_timeout",
+            "description": "Set maximum time allowed to establish a connection, this time includes the TLS handshake",
+            "default": "10s",
+            "type": "time"
+          },
+          {
+            "name": "net.connect_timeout_log_error",
+            "description": "On connection timeout, specify if it should log an error. When disabled, the timeout is logged as a debug message",
+            "default": "true",
+            "type": "boolean"
+          },
+          {
+            "name": "net.source_address",
+            "description": "Specify network address to bind for data traffic",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "net.keepalive_max_recycle",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
+            "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
             "type": "integer"
           }
         ],
@@ -4112,8 +4548,14 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
             "type": "integer"
           }
         ],
@@ -4335,8 +4777,14 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
             "type": "integer"
           }
         ],
@@ -4602,8 +5050,14 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
             "type": "integer"
           }
         ],
@@ -5005,8 +5459,14 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
             "type": "integer"
           }
         ],
@@ -5354,8 +5814,14 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
             "type": "integer"
           }
         ],
@@ -5703,8 +6169,14 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
             "type": "integer"
           }
         ],
@@ -5962,8 +6434,14 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
             "type": "integer"
           }
         ],
@@ -6155,8 +6633,14 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
             "type": "integer"
           }
         ],
@@ -6420,8 +6904,14 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
             "type": "integer"
           }
         ],
@@ -6796,8 +7286,14 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
             "type": "integer"
           }
         ],
@@ -6935,8 +7431,14 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
             "type": "integer"
           }
         ]
@@ -7042,8 +7544,14 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
             "type": "integer"
           }
         ],
@@ -7395,6 +7903,12 @@
             "description": "When enabled print the OpenSearch exception to stderr (for diag only)",
             "default": "false",
             "type": "boolean"
+          },
+          {
+            "name": "compress",
+            "description": "Set payload compression mechanism. Option available is 'gzip'",
+            "default": null,
+            "type": "string"
           }
         ],
         "networking": [
@@ -7454,8 +7968,14 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
             "type": "integer"
           }
         ],
@@ -7537,12 +8057,6 @@
           }
         ]
       }
-    },
-    {
-      "type": "output",
-      "name": "pgsql",
-      "description": "PostgreSQL",
-      "properties": {}
     },
     {
       "type": "output",
@@ -7692,8 +8206,14 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
             "type": "integer"
           }
         ],
@@ -7837,8 +8357,14 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
             "type": "integer"
           }
         ],
@@ -8126,8 +8652,14 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
             "type": "integer"
           }
         ],
@@ -8251,7 +8783,7 @@
           },
           {
             "name": "autoformat_stackdriver_trace",
-            "description": "Autoformat the stacrdriver trace",
+            "description": "Autoformat the stackdriver trace",
             "default": "false",
             "type": "boolean"
           },
@@ -8259,6 +8791,18 @@
             "name": "trace_key",
             "description": "Set the trace key",
             "default": "logging.googleapis.com/trace",
+            "type": "string"
+          },
+          {
+            "name": "span_id_key",
+            "description": "Set the span id key",
+            "default": "logging.googleapis.com/spanId",
+            "type": "string"
+          },
+          {
+            "name": "trace_sampled_key",
+            "description": "Set the trace sampled key",
+            "default": "logging.googleapis.com/traceSampled",
             "type": "string"
           },
           {
@@ -8409,8 +8953,14 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
             "type": "integer"
           }
         ],
@@ -8737,8 +9287,14 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
             "type": "integer"
           }
         ],
@@ -8954,8 +9510,14 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
             "type": "integer"
           }
         ],
@@ -9117,8 +9679,14 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
             "type": "integer"
           }
         ]
@@ -9418,8 +9986,14 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
             "type": "integer"
           }
         ],
@@ -9635,8 +10209,14 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
             "type": "integer"
           }
         ],
@@ -10173,8 +10753,14 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
             "type": "integer"
           }
         ],
@@ -10324,8 +10910,14 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
             "type": "integer"
           }
         ]
@@ -10425,6 +11017,12 @@
             "name": "http_passwd",
             "description": "Set HTTP auth password",
             "default": "",
+            "type": "string"
+          },
+          {
+            "name": "compression",
+            "description": "Compress the payload with either snappy, gzip if set",
+            "default": "snappy",
             "type": "string"
           },
           {
@@ -10545,8 +11143,14 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
             "type": "integer"
           }
         ],
@@ -10852,8 +11456,14 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
             "type": "integer"
           }
         ],
@@ -11009,9 +11619,208 @@
           },
           {
             "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
             "default": "2000",
             "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
+            "type": "integer"
+          }
+        ]
+      }
+    },
+    {
+      "type": "output",
+      "name": "chronicle",
+      "description": "Send logs to Google Chronicle as unstructured log",
+      "properties": {
+        "options": [
+          {
+            "name": "host",
+            "description": "Host Address",
+            "default": "",
+            "type": "string"
+          },
+          {
+            "name": "port",
+            "description": "host Port",
+            "default": "0",
+            "type": "integer"
+          },
+          {
+            "name": "google_service_credentials",
+            "description": "Set the path for the google service credentials file",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "service_account_email",
+            "description": "Set the service account email",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "service_account_secret",
+            "description": "Set the service account secret",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "project_id",
+            "description": "Set the project id",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "customer_id",
+            "description": "Set the customer id",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "log_type",
+            "description": "Set the log type",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "region",
+            "description": "Set the region",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "log_key",
+            "description": "Set the log key",
+            "default": null,
+            "type": "string"
+          }
+        ],
+        "networking": [
+          {
+            "name": "net.dns.mode",
+            "description": "Select the primary DNS connection type (TCP or UDP)",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "net.dns.resolver",
+            "description": "Select the primary DNS resolver type (LEGACY or ASYNC)",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "net.dns.prefer_ipv4",
+            "description": "Prioritize IPv4 DNS results when trying to establish a connection",
+            "default": "false",
+            "type": "boolean"
+          },
+          {
+            "name": "net.keepalive",
+            "description": "Enable or disable Keepalive support",
+            "default": "true",
+            "type": "boolean"
+          },
+          {
+            "name": "net.keepalive_idle_timeout",
+            "description": "Set maximum time allowed for an idle Keepalive connection",
+            "default": "30s",
+            "type": "time"
+          },
+          {
+            "name": "net.io_timeout",
+            "description": "Set maximum time a connection can stay idle while assigned",
+            "default": "0s",
+            "type": "time"
+          },
+          {
+            "name": "net.connect_timeout",
+            "description": "Set maximum time allowed to establish a connection, this time includes the TLS handshake",
+            "default": "10s",
+            "type": "time"
+          },
+          {
+            "name": "net.connect_timeout_log_error",
+            "description": "On connection timeout, specify if it should log an error. When disabled, the timeout is logged as a debug message",
+            "default": "true",
+            "type": "boolean"
+          },
+          {
+            "name": "net.source_address",
+            "description": "Specify network address to bind for data traffic",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "net.keepalive_max_recycle",
+            "description": "Set maximum number of times a keepalive connection can be used before it is retried.",
+            "default": "2000",
+            "type": "integer"
+          },
+          {
+            "name": "net.max_worker_connections",
+            "description": "Set the maximum number of active TCP connections that can be used per worker thread.",
+            "default": "0",
+            "type": "integer"
+          }
+        ],
+        "network_tls": [
+          {
+            "name": "tls",
+            "description": "Enable or disable TLS/SSL support",
+            "default": "off",
+            "type": "boolean"
+          },
+          {
+            "name": "tls.verify",
+            "description": "Force certificate validation",
+            "default": "on",
+            "type": "boolean"
+          },
+          {
+            "name": "tls.debug",
+            "description": "Set TLS debug verbosity level. It accept the following values: 0 (No debug), 1 (Error), 2 (State change), 3 (Informational) and 4 Verbose",
+            "default": "1",
+            "type": "integer"
+          },
+          {
+            "name": "tls.ca_file",
+            "description": "Absolute path to CA certificate file",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "tls.ca_path",
+            "description": "Absolute path to scan for certificate files",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "tls.crt_file",
+            "description": "Absolute path to Certificate file",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "tls.key_file",
+            "description": "Absolute path to private Key file",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "tls.key_passwd",
+            "description": "Optional password for tls.key_file file",
+            "default": null,
+            "type": "string"
+          },
+          {
+            "name": "tls.vhost",
+            "description": "Hostname to be used for TLS SNI extension",
+            "default": null,
+            "type": "string"
           }
         ]
       }

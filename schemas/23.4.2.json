@@ -1,6 +1,6 @@
 {
   "fluent-bit": {
-    "version": "23.4.3",
+    "version": "23.4.2",
     "schema_version": "1",
     "os": "linux"
   },
