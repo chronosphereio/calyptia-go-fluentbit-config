@@ -1,6 +1,6 @@
 {
   "fluent-bit": {
-    "version": "23.4.3",
+    "version": "22.11.1",
     "schema_version": "1",
     "os": "linux"
   },
@@ -56,12 +56,6 @@
           {
             "name": "machine_id",
             "description": "Custom machine_id to be used when registering agent",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "fleet_id",
-            "description": "Fleet id to be used when registering agent in a fleet",
             "default": null,
             "type": "string"
           },
@@ -410,60 +404,6 @@
             "type": "integer"
           },
           {
-            "name": "tls",
-            "description": "Enable or disable TLS/SSL support",
-            "default": "off",
-            "type": "boolean"
-          },
-          {
-            "name": "tls.verify",
-            "description": "Force certificate validation",
-            "default": "on",
-            "type": "boolean"
-          },
-          {
-            "name": "tls.debug",
-            "description": "Set TLS debug verbosity level. It accept the following values: 0 (No debug), 1 (Error), 2 (State change), 3 (Informational) and 4 Verbose",
-            "default": "1",
-            "type": "integer"
-          },
-          {
-            "name": "tls.ca_file",
-            "description": "Absolute path to CA certificate file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.ca_path",
-            "description": "Absolute path to scan for certificate files",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.crt_file",
-            "description": "Absolute path to Certificate file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.key_file",
-            "description": "Absolute path to private Key file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.key_passwd",
-            "description": "Optional password for tls.key_file file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.vhost",
-            "description": "Hostname to be used for TLS SNI extension",
-            "default": null,
-            "type": "string"
-          },
-          {
             "name": "unix_path",
             "description": "Define Docker unix socket path to read events",
             "default": "/var/run/docker.sock",
@@ -515,96 +455,6 @@
             "type": "time"
           },
           {
-            "name": "collector.cpu.scrape_interval",
-            "description": "scrape interval to collect cpu metrics from the node.",
-            "default": "0",
-            "type": "time"
-          },
-          {
-            "name": "collector.cpufreq.scrape_interval",
-            "description": "scrape interval to collect cpufreq metrics from the node.",
-            "default": "0",
-            "type": "time"
-          },
-          {
-            "name": "collector.meminfo.scrape_interval",
-            "description": "scrape interval to collect meminfo metrics from the node.",
-            "default": "0",
-            "type": "time"
-          },
-          {
-            "name": "collector.diskstats.scrape_interval",
-            "description": "scrape interval to collect diskstats metrics from the node.",
-            "default": "0",
-            "type": "time"
-          },
-          {
-            "name": "collector.filesystem.scrape_interval",
-            "description": "scrape interval to collect filesystem metrics from the node.",
-            "default": "0",
-            "type": "time"
-          },
-          {
-            "name": "collector.uname.scrape_interval",
-            "description": "scrape interval to collect uname metrics from the node.",
-            "default": "0",
-            "type": "time"
-          },
-          {
-            "name": "collector.stat.scrape_interval",
-            "description": "scrape interval to collect stat metrics from the node.",
-            "default": "0",
-            "type": "time"
-          },
-          {
-            "name": "collector.time.scrape_interval",
-            "description": "scrape interval to collect time metrics from the node.",
-            "default": "0",
-            "type": "time"
-          },
-          {
-            "name": "collector.loadavg.scrape_interval",
-            "description": "scrape interval to collect loadavg metrics from the node.",
-            "default": "0",
-            "type": "time"
-          },
-          {
-            "name": "collector.vmstat.scrape_interval",
-            "description": "scrape interval to collect vmstat metrics from the node.",
-            "default": "0",
-            "type": "time"
-          },
-          {
-            "name": "collector.netdev.scrape_interval",
-            "description": "scrape interval to collect netdev metrics from the node.",
-            "default": "0",
-            "type": "time"
-          },
-          {
-            "name": "collector.filefd.scrape_interval",
-            "description": "scrape interval to collect filefd metrics from the node.",
-            "default": "0",
-            "type": "time"
-          },
-          {
-            "name": "collector.textfile.scrape_interval",
-            "description": "scrape interval to collect textfile metrics from the node.",
-            "default": "0",
-            "type": "time"
-          },
-          {
-            "name": "metrics",
-            "description": "Comma separated list of keys to enable metrics.",
-            "default": "cpu,cpufreq,meminfo,diskstats,filesystem,uname,stat,time,loadavg,vmstat,netdev,filefd",
-            "type": "multiple comma delimited strings"
-          },
-          {
-            "name": "collector.textfile.path",
-            "description": "Specify file path or directory to collect textfile metrics from the node.",
-            "default": null,
-            "type": "string"
-          },
-          {
             "name": "path.procfs",
             "description": "procfs mount point",
             "default": "/proc",
@@ -615,90 +465,6 @@
             "description": "sysfs mount point",
             "default": "/sys",
             "type": "string"
-          }
-        ]
-      }
-    },
-    {
-      "type": "input",
-      "name": "podman_metrics",
-      "description": "Podman metrics",
-      "properties": {
-        "options": [
-          {
-            "name": "scrape_interval",
-            "description": "Scrape interval to collect the metrics of podman containers(defaults to 30s)",
-            "default": "30",
-            "type": "time"
-          },
-          {
-            "name": "scrape_on_start",
-            "description": "Scrape metrics upon start, useful to avoid waiting for 'scrape_interval' for the first round of metrics.",
-            "default": "false",
-            "type": "boolean"
-          },
-          {
-            "name": "path.config",
-            "description": "Path to podman config file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "path.sysfs",
-            "description": "Path to sysfs subsystem directory",
-            "default": "/sys/fs/cgroup",
-            "type": "string"
-          },
-          {
-            "name": "path.procfs",
-            "description": "Path to proc subsystem directory",
-            "default": "/proc",
-            "type": "string"
-          }
-        ]
-      }
-    },
-    {
-      "type": "input",
-      "name": "kafka",
-      "description": "Kafka consumer input plugin",
-      "properties": {
-        "options": [
-          {
-            "name": "poll_ms",
-            "description": "Interval in milliseconds to check for new messages.",
-            "default": "500",
-            "type": "integer"
-          },
-          {
-            "name": "topics",
-            "description": "Set the kafka topics, delimited by commas.",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "brokers",
-            "description": "Set the kafka brokers, delimited by commas.",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "client_id",
-            "description": "Set the kafka client_id.",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "group_id",
-            "description": "Set the kafka group_id.",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "rdkafka.",
-            "description": "Set the librdkafka options",
-            "default": null,
-            "type": "prefixed string"
           }
         ]
       }
@@ -743,70 +509,10 @@
             "type": "integer"
           },
           {
-            "name": "tls",
-            "description": "Enable or disable TLS/SSL support",
-            "default": "off",
-            "type": "boolean"
-          },
-          {
-            "name": "tls.verify",
-            "description": "Force certificate validation",
-            "default": "on",
-            "type": "boolean"
-          },
-          {
-            "name": "tls.debug",
-            "description": "Set TLS debug verbosity level. It accept the following values: 0 (No debug), 1 (Error), 2 (State change), 3 (Informational) and 4 Verbose",
-            "default": "1",
-            "type": "integer"
-          },
-          {
-            "name": "tls.ca_file",
-            "description": "Absolute path to CA certificate file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.ca_path",
-            "description": "Absolute path to scan for certificate files",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.crt_file",
-            "description": "Absolute path to Certificate file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.key_file",
-            "description": "Absolute path to private Key file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.key_passwd",
-            "description": "Optional password for tls.key_file file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.vhost",
-            "description": "Hostname to be used for TLS SNI extension",
-            "default": null,
-            "type": "string"
-          },
-          {
             "name": "scrape_interval",
             "description": "Scraping interval.",
             "default": "10s",
             "type": "time"
-          },
-          {
-            "name": "buffer_max_size",
-            "description": "",
-            "default": "10M",
-            "type": "size"
           },
           {
             "name": "metrics_path",
@@ -858,18 +564,6 @@
             "description": "",
             "default": "2s",
             "type": "time"
-          },
-          {
-            "name": "progress_check_interval",
-            "description": "",
-            "default": "2s",
-            "type": "time"
-          },
-          {
-            "name": "progress_check_interval_nsec",
-            "description": "",
-            "default": "0",
-            "type": "integer"
           },
           {
             "name": "rotate_wait",
@@ -1049,12 +743,6 @@
             "type": "string"
           },
           {
-            "name": "metadata",
-            "description": "set the sample metadata to be generated. It should be a JSON object.",
-            "default": "{}",
-            "type": "string"
-          },
-          {
             "name": "rate",
             "description": "set a number of events per second.",
             "default": "1",
@@ -1163,60 +851,6 @@
             "type": "integer"
           },
           {
-            "name": "tls",
-            "description": "Enable or disable TLS/SSL support",
-            "default": "off",
-            "type": "boolean"
-          },
-          {
-            "name": "tls.verify",
-            "description": "Force certificate validation",
-            "default": "on",
-            "type": "boolean"
-          },
-          {
-            "name": "tls.debug",
-            "description": "Set TLS debug verbosity level. It accept the following values: 0 (No debug), 1 (Error), 2 (State change), 3 (Informational) and 4 Verbose",
-            "default": "1",
-            "type": "integer"
-          },
-          {
-            "name": "tls.ca_file",
-            "description": "Absolute path to CA certificate file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.ca_path",
-            "description": "Absolute path to scan for certificate files",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.crt_file",
-            "description": "Absolute path to Certificate file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.key_file",
-            "description": "Absolute path to private Key file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.key_passwd",
-            "description": "Optional password for tls.key_file file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.vhost",
-            "description": "Hostname to be used for TLS SNI extension",
-            "default": null,
-            "type": "string"
-          },
-          {
             "name": "alert",
             "description": "Only generate records when the port is down",
             "default": "false",
@@ -1268,60 +902,6 @@
             "type": "integer"
           },
           {
-            "name": "tls",
-            "description": "Enable or disable TLS/SSL support",
-            "default": "off",
-            "type": "boolean"
-          },
-          {
-            "name": "tls.verify",
-            "description": "Force certificate validation",
-            "default": "on",
-            "type": "boolean"
-          },
-          {
-            "name": "tls.debug",
-            "description": "Set TLS debug verbosity level. It accept the following values: 0 (No debug), 1 (Error), 2 (State change), 3 (Informational) and 4 Verbose",
-            "default": "1",
-            "type": "integer"
-          },
-          {
-            "name": "tls.ca_file",
-            "description": "Absolute path to CA certificate file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.ca_path",
-            "description": "Absolute path to scan for certificate files",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.crt_file",
-            "description": "Absolute path to Certificate file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.key_file",
-            "description": "Absolute path to private Key file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.key_passwd",
-            "description": "Optional password for tls.key_file file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.vhost",
-            "description": "Hostname to be used for TLS SNI extension",
-            "default": null,
-            "type": "string"
-          },
-          {
             "name": "buffer_max_size",
             "description": "",
             "default": "4M",
@@ -1332,12 +912,6 @@
             "description": "",
             "default": "512K",
             "type": "size"
-          },
-          {
-            "name": "success_header",
-            "description": "Add an HTTP header key/value pair on success. Multiple headers can be set",
-            "default": null,
-            "type": "space delimited strings (minimum 1)"
           },
           {
             "name": "tag_key",
@@ -1396,60 +970,6 @@
             "type": "integer"
           },
           {
-            "name": "tls",
-            "description": "Enable or disable TLS/SSL support",
-            "default": "off",
-            "type": "boolean"
-          },
-          {
-            "name": "tls.verify",
-            "description": "Force certificate validation",
-            "default": "on",
-            "type": "boolean"
-          },
-          {
-            "name": "tls.debug",
-            "description": "Set TLS debug verbosity level. It accept the following values: 0 (No debug), 1 (Error), 2 (State change), 3 (Informational) and 4 Verbose",
-            "default": "1",
-            "type": "integer"
-          },
-          {
-            "name": "tls.ca_file",
-            "description": "Absolute path to CA certificate file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.ca_path",
-            "description": "Absolute path to scan for certificate files",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.crt_file",
-            "description": "Absolute path to Certificate file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.key_file",
-            "description": "Absolute path to private Key file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.key_passwd",
-            "description": "Optional password for tls.key_file file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.vhost",
-            "description": "Hostname to be used for TLS SNI extension",
-            "default": null,
-            "type": "string"
-          },
-          {
             "name": "buffer_max_size",
             "description": "",
             "default": "4M",
@@ -1484,222 +1004,6 @@
     },
     {
       "type": "input",
-      "name": "elasticsearch",
-      "description": "HTTP Endpoints for Elasticsearch (Bulk API)",
-      "properties": {
-        "options": [
-          {
-            "name": "host",
-            "description": "Listen Address",
-            "default": "0.0.0.0",
-            "type": "string"
-          },
-          {
-            "name": "port",
-            "description": "Listen Port",
-            "default": "0",
-            "type": "integer"
-          },
-          {
-            "name": "tls",
-            "description": "Enable or disable TLS/SSL support",
-            "default": "off",
-            "type": "boolean"
-          },
-          {
-            "name": "tls.verify",
-            "description": "Force certificate validation",
-            "default": "on",
-            "type": "boolean"
-          },
-          {
-            "name": "tls.debug",
-            "description": "Set TLS debug verbosity level. It accept the following values: 0 (No debug), 1 (Error), 2 (State change), 3 (Informational) and 4 Verbose",
-            "default": "1",
-            "type": "integer"
-          },
-          {
-            "name": "tls.ca_file",
-            "description": "Absolute path to CA certificate file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.ca_path",
-            "description": "Absolute path to scan for certificate files",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.crt_file",
-            "description": "Absolute path to Certificate file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.key_file",
-            "description": "Absolute path to private Key file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.key_passwd",
-            "description": "Optional password for tls.key_file file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.vhost",
-            "description": "Hostname to be used for TLS SNI extension",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "buffer_max_size",
-            "description": "Set the maximum size of buffer",
-            "default": "4M",
-            "type": "size"
-          },
-          {
-            "name": "buffer_chunk_size",
-            "description": "Set the buffer chunk size",
-            "default": "512K",
-            "type": "size"
-          },
-          {
-            "name": "tag_key",
-            "description": "Specify a key name for extracting as a tag",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "meta_key",
-            "description": "Specify a key name for meta information",
-            "default": "@meta",
-            "type": "string"
-          },
-          {
-            "name": "hostname",
-            "description": "Specify hostname or FQDN. This parameter is effective for sniffering node information.",
-            "default": "localhost",
-            "type": "string"
-          }
-        ]
-      }
-    },
-    {
-      "type": "input",
-      "name": "calyptia_fleet",
-      "description": "Calyptia Fleet Input",
-      "properties": {
-        "options": [
-          {
-            "name": "host",
-            "description": "Listen Address",
-            "default": "0.0.0.0",
-            "type": "string"
-          },
-          {
-            "name": "port",
-            "description": "Listen Port",
-            "default": "0",
-            "type": "integer"
-          },
-          {
-            "name": "tls",
-            "description": "Enable or disable TLS/SSL support",
-            "default": "off",
-            "type": "boolean"
-          },
-          {
-            "name": "tls.verify",
-            "description": "Force certificate validation",
-            "default": "on",
-            "type": "boolean"
-          },
-          {
-            "name": "tls.debug",
-            "description": "Set TLS debug verbosity level. It accept the following values: 0 (No debug), 1 (Error), 2 (State change), 3 (Informational) and 4 Verbose",
-            "default": "1",
-            "type": "integer"
-          },
-          {
-            "name": "tls.ca_file",
-            "description": "Absolute path to CA certificate file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.ca_path",
-            "description": "Absolute path to scan for certificate files",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.crt_file",
-            "description": "Absolute path to Certificate file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.key_file",
-            "description": "Absolute path to private Key file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.key_passwd",
-            "description": "Optional password for tls.key_file file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.vhost",
-            "description": "Hostname to be used for TLS SNI extension",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "api_key",
-            "description": "Calyptia Cloud API Key.",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "config_dir",
-            "description": "Base path for the configuration directory.",
-            "default": "/tmp/calyptia-fleet",
-            "type": "string"
-          },
-          {
-            "name": "fleet_id",
-            "description": "Calyptia Fleet ID.",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "event_fd",
-            "description": "Used internally to set the event fd.",
-            "default": "-1",
-            "type": "integer"
-          },
-          {
-            "name": "interval_sec",
-            "description": "Set the collector interval",
-            "default": "3",
-            "type": "integer"
-          },
-          {
-            "name": "interval_nsec",
-            "description": "Set the collector interval (nanoseconds)",
-            "default": "0",
-            "type": "integer"
-          }
-        ]
-      }
-    },
-    {
-      "type": "input",
       "name": "event_test",
       "description": "Event tests for input plugins",
       "properties": {
@@ -1717,18 +1021,6 @@
             "description": "Set the type of event to deliver, optionsa are: logs, metrics or traces",
             "default": "logs",
             "type": "string"
-          },
-          {
-            "name": "interval_sec",
-            "description": "Set the interval seconds between events generation",
-            "default": "2",
-            "type": "integer"
-          },
-          {
-            "name": "interval_nsec",
-            "description": "Set the nanoseconds interval (sub seconds)",
-            "default": "0",
-            "type": "integer"
           }
         ]
       }
@@ -1750,60 +1042,6 @@
             "description": "Listen Port",
             "default": "0",
             "type": "integer"
-          },
-          {
-            "name": "tls",
-            "description": "Enable or disable TLS/SSL support",
-            "default": "off",
-            "type": "boolean"
-          },
-          {
-            "name": "tls.verify",
-            "description": "Force certificate validation",
-            "default": "on",
-            "type": "boolean"
-          },
-          {
-            "name": "tls.debug",
-            "description": "Set TLS debug verbosity level. It accept the following values: 0 (No debug), 1 (Error), 2 (State change), 3 (Informational) and 4 Verbose",
-            "default": "1",
-            "type": "integer"
-          },
-          {
-            "name": "tls.ca_file",
-            "description": "Absolute path to CA certificate file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.ca_path",
-            "description": "Absolute path to scan for certificate files",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.crt_file",
-            "description": "Absolute path to Certificate file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.key_file",
-            "description": "Absolute path to private Key file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.key_passwd",
-            "description": "Optional password for tls.key_file file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.vhost",
-            "description": "Hostname to be used for TLS SNI extension",
-            "default": null,
-            "type": "string"
           },
           {
             "name": "status_url",
@@ -1899,60 +1137,6 @@
             "type": "integer"
           },
           {
-            "name": "tls",
-            "description": "Enable or disable TLS/SSL support",
-            "default": "off",
-            "type": "boolean"
-          },
-          {
-            "name": "tls.verify",
-            "description": "Force certificate validation",
-            "default": "on",
-            "type": "boolean"
-          },
-          {
-            "name": "tls.debug",
-            "description": "Set TLS debug verbosity level. It accept the following values: 0 (No debug), 1 (Error), 2 (State change), 3 (Informational) and 4 Verbose",
-            "default": "1",
-            "type": "integer"
-          },
-          {
-            "name": "tls.ca_file",
-            "description": "Absolute path to CA certificate file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.ca_path",
-            "description": "Absolute path to scan for certificate files",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.crt_file",
-            "description": "Absolute path to Certificate file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.key_file",
-            "description": "Absolute path to private Key file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.key_passwd",
-            "description": "Optional password for tls.key_file file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.vhost",
-            "description": "Hostname to be used for TLS SNI extension",
-            "default": null,
-            "type": "string"
-          },
-          {
             "name": "mode",
             "description": "Set the socket mode: unix_tcp, unix_udp, tcp or udp",
             "default": null,
@@ -1985,18 +1169,6 @@
           {
             "name": "parser",
             "description": "Set the parser",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "receive_buffer_size",
-            "description": "Set the socket receiving buffer size",
-            "default": null,
-            "type": "size"
-          },
-          {
-            "name": "raw_message_key",
-            "description": "Key where the raw message will be preserved",
             "default": null,
             "type": "string"
           }
@@ -2163,60 +1335,6 @@
             "type": "integer"
           },
           {
-            "name": "tls",
-            "description": "Enable or disable TLS/SSL support",
-            "default": "off",
-            "type": "boolean"
-          },
-          {
-            "name": "tls.verify",
-            "description": "Force certificate validation",
-            "default": "on",
-            "type": "boolean"
-          },
-          {
-            "name": "tls.debug",
-            "description": "Set TLS debug verbosity level. It accept the following values: 0 (No debug), 1 (Error), 2 (State change), 3 (Informational) and 4 Verbose",
-            "default": "1",
-            "type": "integer"
-          },
-          {
-            "name": "tls.ca_file",
-            "description": "Absolute path to CA certificate file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.ca_path",
-            "description": "Absolute path to scan for certificate files",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.crt_file",
-            "description": "Absolute path to Certificate file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.key_file",
-            "description": "Absolute path to private Key file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.key_passwd",
-            "description": "Optional password for tls.key_file file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.vhost",
-            "description": "Hostname to be used for TLS SNI extension",
-            "default": null,
-            "type": "string"
-          },
-          {
             "name": "format",
             "description": "Set the format: json or none",
             "default": null,
@@ -2260,60 +1378,6 @@
             "description": "Listen Port",
             "default": "0",
             "type": "integer"
-          },
-          {
-            "name": "tls",
-            "description": "Enable or disable TLS/SSL support",
-            "default": "off",
-            "type": "boolean"
-          },
-          {
-            "name": "tls.verify",
-            "description": "Force certificate validation",
-            "default": "on",
-            "type": "boolean"
-          },
-          {
-            "name": "tls.debug",
-            "description": "Set TLS debug verbosity level. It accept the following values: 0 (No debug), 1 (Error), 2 (State change), 3 (Informational) and 4 Verbose",
-            "default": "1",
-            "type": "integer"
-          },
-          {
-            "name": "tls.ca_file",
-            "description": "Absolute path to CA certificate file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.ca_path",
-            "description": "Absolute path to scan for certificate files",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.crt_file",
-            "description": "Absolute path to Certificate file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.key_file",
-            "description": "Absolute path to private Key file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.key_passwd",
-            "description": "Optional password for tls.key_file file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.vhost",
-            "description": "Hostname to be used for TLS SNI extension",
-            "default": null,
-            "type": "string"
           }
         ]
       }
@@ -2341,60 +1405,6 @@
             "description": "Listen Port",
             "default": "0",
             "type": "integer"
-          },
-          {
-            "name": "tls",
-            "description": "Enable or disable TLS/SSL support",
-            "default": "off",
-            "type": "boolean"
-          },
-          {
-            "name": "tls.verify",
-            "description": "Force certificate validation",
-            "default": "on",
-            "type": "boolean"
-          },
-          {
-            "name": "tls.debug",
-            "description": "Set TLS debug verbosity level. It accept the following values: 0 (No debug), 1 (Error), 2 (State change), 3 (Informational) and 4 Verbose",
-            "default": "1",
-            "type": "integer"
-          },
-          {
-            "name": "tls.ca_file",
-            "description": "Absolute path to CA certificate file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.ca_path",
-            "description": "Absolute path to scan for certificate files",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.crt_file",
-            "description": "Absolute path to Certificate file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.key_file",
-            "description": "Absolute path to private Key file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.key_passwd",
-            "description": "Optional password for tls.key_file file",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tls.vhost",
-            "description": "Hostname to be used for TLS SNI extension",
-            "default": null,
-            "type": "string"
           },
           {
             "name": "tag_prefix",
@@ -2538,24 +1548,6 @@
             "description": "Enable EC2 instance hostname",
             "default": "false",
             "type": "boolean"
-          },
-          {
-            "name": "tags_enabled",
-            "description": "Enable EC2 instance tags, injects all tags if tags_include and tags_exclude are empty",
-            "default": "false",
-            "type": "boolean"
-          },
-          {
-            "name": "tags_include",
-            "description": "Defines list of specific EC2 tag keys to inject into the logs; tag keys must be separated by \",\" character; tags which are not present in this list will be ignored; e.g.: \"Name,tag1,tag2\"",
-            "default": "",
-            "type": "string"
-          },
-          {
-            "name": "tags_exclude",
-            "description": "Defines list of specific EC2 tag keys not to inject into the logs; tag keys must be separated by \",\" character; if both tags_include and tags_exclude are specified, configuration is invalid and plugin fails",
-            "default": "",
-            "type": "string"
           }
         ]
       }
@@ -2634,24 +1626,6 @@
             "description": "Configurable TTL for cached ECS Task Metadata. Default 3600s (1 hour)For example, set this value to 600 or 600s or 10m and cache entries which have been created more than 10 minutes will be evicted.Cache eviction is needed to purge task metadata for tasks that have been stopped.",
             "default": "3600",
             "type": "time"
-          },
-          {
-            "name": "ecs_meta_host",
-            "description": "The host name at which the ECS Agent Introspection endpoint is reachable. Defaults to 127.0.0.1",
-            "default": "127.0.0.1",
-            "type": "string"
-          },
-          {
-            "name": "ecs_meta_port",
-            "description": "The port at which the ECS Agent Introspection endpoint is reachable. Defaults to 51678",
-            "default": "51678",
-            "type": "integer"
-          },
-          {
-            "name": "agent_endpoint_retries",
-            "description": "Number of retries for failed metadata requests to ECS Agent Introspection endpoint. The most common cause of failed metadata requests is that the container the metadata request was made for is not part of an ECS Task. Check if you have non-task containers and docker dual logging enabled.",
-            "default": "2",
-            "type": "integer"
           }
         ]
       }
@@ -2683,12 +1657,6 @@
           {
             "name": "whitelist_key",
             "description": "(Alias of allowlist_key)",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "uuid_key",
-            "description": "If set, the plugin generates uuid per record.",
             "default": null,
             "type": "string"
           }
@@ -3258,12 +2226,6 @@
             "description": "Exclude records in which the content of KEY matches the regular expression.",
             "default": null,
             "type": "string"
-          },
-          {
-            "name": "logical_op",
-            "description": "Specify whether to use logical conjuciton or disjunction. legacy, AND and OR are allowed.",
-            "default": "legacy",
-            "type": "string"
           }
         ]
       }
@@ -3297,75 +2259,6 @@
             "description": "set a memory buffer limit to restrict memory usage of emitter",
             "default": "10M",
             "type": "size"
-          }
-        ]
-      }
-    },
-    {
-      "type": "filter",
-      "name": "log_to_metrics",
-      "description": "generate log derived metrics",
-      "properties": {
-        "options": [
-          {
-            "name": "regex",
-            "description": "Optional filter for records in which the content of KEY matches the regular expression.",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "exclude",
-            "description": "Optional filter for records in which the content of KEY does not matches the regular expression.",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "metric_mode",
-            "description": "Mode selector. Values counter, gauge, or histogram. Summary is not supported",
-            "default": "counter",
-            "type": "string"
-          },
-          {
-            "name": "value_field",
-            "description": "Numeric field to use for gauge or histogram",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "metric_name",
-            "description": "Name of metric",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "metric_description",
-            "description": "Help text for metric",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "kubernetes_mode",
-            "description": "Enable kubernetes log metric fields",
-            "default": "false",
-            "type": "boolean"
-          },
-          {
-            "name": "label_field",
-            "description": "Specify message field that should be included in the metric",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "bucket",
-            "description": "Specify bucket for histogram metric",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "tag",
-            "description": "Metric Tag",
-            "default": null,
-            "type": "string"
           }
         ]
       }
@@ -4816,18 +3709,6 @@
             "type": "string"
           },
           {
-            "name": "aws_service_name",
-            "description": "AWS Service Name",
-            "default": "es",
-            "type": "string"
-          },
-          {
-            "name": "aws_profile",
-            "description": "AWS Profile name. AWS Profiles can be configured with AWS CLI and are usually stored in $HOME/.aws/ directory.",
-            "default": null,
-            "type": "string"
-          },
-          {
             "name": "logstash_format",
             "description": "Enable Logstash format compatibility",
             "default": "false",
@@ -4837,12 +3718,6 @@
             "name": "logstash_prefix",
             "description": "When Logstash_Format is enabled, the Index name is composed using a prefix and the date, e.g: If Logstash_Prefix is equals to 'mydata' your index will become 'mydata-YYYY.MM.DD'. The last string appended belongs to the date when the data is being generated",
             "default": "logstash",
-            "type": "string"
-          },
-          {
-            "name": "logstash_prefix_separator",
-            "description": "Set a separator between logstash_prefix and date.",
-            "default": "-",
             "type": "string"
           },
           {
@@ -5219,12 +4094,6 @@
             "type": "boolean"
           },
           {
-            "name": "retain_metadata_in_forward_mode",
-            "description": "Retain metadata when operating in forward mode",
-            "default": "false",
-            "type": "boolean"
-          },
-          {
             "name": "shared_key",
             "description": "Shared key for authentication",
             "default": null,
@@ -5289,12 +4158,6 @@
             "description": "Compression mode",
             "default": null,
             "type": "string"
-          },
-          {
-            "name": "fluentd_compat",
-            "description": "Send cmetrics and ctreaces with Fluentd compatible format",
-            "default": "false",
-            "type": "boolean"
           }
         ],
         "networking": [
@@ -5552,12 +4415,6 @@
           {
             "name": "aws_external_id",
             "description": "Specify an external ID for the STS API, can be used with the `aws_role_arn` parameter if your role requires an external ID.",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "aws_profile",
-            "description": "AWS Profile name. AWS Profiles can be configured with AWS CLI and are usuallystored in $HOME/.aws/ directory.",
             "default": null,
             "type": "string"
           },
@@ -6355,12 +5212,6 @@
             "description": "Set HTTP auth password",
             "default": "",
             "type": "string"
-          },
-          {
-            "name": "bearer_token",
-            "description": "Set bearer token auth",
-            "default": null,
-            "type": "string"
           }
         ],
         "networking": [
@@ -6564,18 +5415,6 @@
           {
             "name": "gelf_level_key",
             "description": "Set the level key for gelf  output.",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "schema_str",
-            "description": "Set AVRO schema.",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "schema_id",
-            "description": "Set AVRO schema ID.",
             "default": null,
             "type": "string"
           },
@@ -7247,12 +6086,6 @@
             "type": "string"
           },
           {
-            "name": "aws_profile",
-            "description": "AWS Profile name. AWS Profiles can be configured with AWS CLI and are usually stored in $HOME/.aws/ directory.",
-            "default": "default",
-            "type": "string"
-          },
-          {
             "name": "aws_sts_endpoint",
             "description": "Custom endpoint for the AWS STS API, used with the AWS_Role_ARN option",
             "default": null,
@@ -7271,12 +6104,6 @@
             "type": "string"
           },
           {
-            "name": "aws_service_name",
-            "description": "AWS Service Name",
-            "default": "es",
-            "type": "string"
-          },
-          {
             "name": "logstash_format",
             "description": "Enable Logstash format compatibility",
             "default": "false",
@@ -7286,12 +6113,6 @@
             "name": "logstash_prefix",
             "description": "When Logstash_Format is enabled, the Index name is composed using a prefix and the date, e.g: If Logstash_Prefix is equals to 'mydata' your index will become 'mydata-YYYY.MM.DD'. The last string appended belongs to the date when the data is being generated",
             "default": "logstash",
-            "type": "string"
-          },
-          {
-            "name": "logstash_prefix_separator",
-            "description": "Set a separator between logstash_prefix and date.",
-            "default": "-",
             "type": "string"
           },
           {
@@ -8672,12 +7493,6 @@
             "description": "Specify the key name that contains the message to deliver. Note that if this property is mandatory, otherwise the message will be empty.",
             "default": null,
             "type": "string"
-          },
-          {
-            "name": "allow_longer_sd_id",
-            "description": "If true, Fluent-bit allows SD-ID that is longer than 32 characters. Such long SD-ID violates RFC 5424.",
-            "default": "false",
-            "type": "boolean"
           }
         ],
         "networking": [
@@ -8889,12 +7704,6 @@
             "description": "Specify the name of the date field in output.",
             "default": "date",
             "type": "string"
-          },
-          {
-            "name": "raw_message_key",
-            "description": "use a raw message key for the message.",
-            "default": null,
-            "type": "string"
           }
         ],
         "networking": [
@@ -9013,113 +7822,6 @@
             "description": "Hostname to be used for TLS SNI extension",
             "default": null,
             "type": "string"
-          }
-        ]
-      }
-    },
-    {
-      "type": "output",
-      "name": "udp",
-      "description": "UDP Output",
-      "properties": {
-        "options": [
-          {
-            "name": "host",
-            "description": "Host Address",
-            "default": "",
-            "type": "string"
-          },
-          {
-            "name": "port",
-            "description": "host Port",
-            "default": "0",
-            "type": "integer"
-          },
-          {
-            "name": "format",
-            "description": "Specify the payload format, supported formats: msgpack, json, json_lines or json_stream.",
-            "default": "json_lines",
-            "type": "string"
-          },
-          {
-            "name": "json_date_format",
-            "description": "Specify the format of the date, supported formats: double, iso8601 (e.g: 2018-05-30T09:39:52.000681Z), java_sql_timestamp (e.g: 2018-05-30 09:39:52.000681, useful for AWS Athena), and epoch.",
-            "default": "double",
-            "type": "string"
-          },
-          {
-            "name": "json_date_key",
-            "description": "Specify the name of the date field in output.",
-            "default": "date",
-            "type": "string"
-          },
-          {
-            "name": "raw_message_key",
-            "description": "use a raw message key for the message.",
-            "default": null,
-            "type": "string"
-          }
-        ],
-        "networking": [
-          {
-            "name": "net.dns.mode",
-            "description": "Select the primary DNS connection type (TCP or UDP)",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "net.dns.resolver",
-            "description": "Select the primary DNS resolver type (LEGACY or ASYNC)",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "net.dns.prefer_ipv4",
-            "description": "Prioritize IPv4 DNS results when trying to establish a connection",
-            "default": "false",
-            "type": "boolean"
-          },
-          {
-            "name": "net.keepalive",
-            "description": "Enable or disable Keepalive support",
-            "default": "true",
-            "type": "boolean"
-          },
-          {
-            "name": "net.keepalive_idle_timeout",
-            "description": "Set maximum time allowed for an idle Keepalive connection",
-            "default": "30s",
-            "type": "time"
-          },
-          {
-            "name": "net.io_timeout",
-            "description": "Set maximum time a connection can stay idle while assigned",
-            "default": "0s",
-            "type": "time"
-          },
-          {
-            "name": "net.connect_timeout",
-            "description": "Set maximum time allowed to establish a connection, this time includes the TLS handshake",
-            "default": "10s",
-            "type": "time"
-          },
-          {
-            "name": "net.connect_timeout_log_error",
-            "description": "On connection timeout, specify if it should log an error. When disabled, the timeout is logged as a debug message",
-            "default": "true",
-            "type": "boolean"
-          },
-          {
-            "name": "net.source_address",
-            "description": "Specify network address to bind for data traffic",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
-            "default": "2000",
-            "type": "integer"
           }
         ]
       }
@@ -9811,12 +8513,6 @@
             "description": "Metric dimensions is a list of lists. If you have only one list of dimensions, put the values as a comma seperated string. If you want to put list of lists, use the list as semicolon seperated strings. If your value is 'd1,d2;d3', we will consider it as [[d1, d2],[d3]].",
             "default": null,
             "type": "string"
-          },
-          {
-            "name": "profile",
-            "description": "AWS Profile name. AWS Profiles can be configured with AWS CLI and are usually stored in $HOME/.aws/ directory.",
-            "default": null,
-            "type": "string"
           }
         ]
       }
@@ -9892,12 +8588,6 @@
             "description": "Immediately retry failed requests to AWS services once. This option does not affect the normal Fluent Bit retry mechanism with backoff. Instead, it enables an immediate retry with no delay for networking errors, which may help improve throughput when there are transient/random networking issues.",
             "default": "true",
             "type": "boolean"
-          },
-          {
-            "name": "profile",
-            "description": "AWS Profile name. AWS Profiles can be configured with AWS CLI and are usually stored in $HOME/.aws/ directory.",
-            "default": null,
-            "type": "string"
           }
         ]
       }
@@ -9967,12 +8657,6 @@
             "description": "Immediately retry failed requests to AWS services once. This option does not affect the normal Fluent Bit retry mechanism with backoff. Instead, it enables an immediate retry with no delay for networking errors, which may help improve throughput when there are transient/random networking issues.",
             "default": "true",
             "type": "boolean"
-          },
-          {
-            "name": "profile",
-            "description": "AWS Profile name. AWS Profiles can be configured with AWS CLI and are usually stored in $HOME/.aws/ directory.",
-            "default": null,
-            "type": "string"
           }
         ]
       }
@@ -10102,18 +8786,6 @@
             "description": "Specify if the response paylod should be logged or not",
             "default": "true",
             "type": "boolean"
-          },
-          {
-            "name": "batch_size",
-            "description": "Set the maximum number of log records to be flushed at a time",
-            "default": "1000",
-            "type": "integer"
-          },
-          {
-            "name": "compress",
-            "description": "Set payload compression mechanism. Option available is 'gzip'",
-            "default": null,
-            "type": "string"
           }
         ],
         "networking": [
@@ -10428,48 +9100,6 @@
             "type": "string"
           },
           {
-            "name": "aws_auth",
-            "description": "Enable AWS SigV4 authentication",
-            "default": "false",
-            "type": "boolean"
-          },
-          {
-            "name": "aws_service",
-            "description": "AWS destination service code, used by SigV4 authentication",
-            "default": "aps",
-            "type": "string"
-          },
-          {
-            "name": "aws_region",
-            "description": "AWS region of your service",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "aws_sts_endpoint",
-            "description": "Custom endpoint for the AWS STS API, used with the `aws_role_arn` option",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "aws_role_arn",
-            "description": "ARN of an IAM role to assume (ex. for cross account access)",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "aws_external_id",
-            "description": "Specify an external ID for the STS API, can be used with the `aws_role_arn` parameter if your role requires an external ID.",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "aws_profile",
-            "description": "AWS Profile name. AWS Profiles can be configured with AWS CLI and are usuallystored in $HOME/.aws/ directory.",
-            "default": null,
-            "type": "string"
-          },
-          {
             "name": "header",
             "description": "Add a HTTP header key/value pair. Multiple headers can be set",
             "default": null,
@@ -10723,12 +9353,6 @@
             "type": "string"
           },
           {
-            "name": "store_dir_limit_size",
-            "description": "S3 plugin has its own buffering system with files in the `store_dir`. Use the `store_dir_limit_size` to limit the amount of data S3 buffers in the `store_dir` to limit disk usage. If the limit is reached, data will be discarded. Default is 0 which means unlimited.",
-            "default": null,
-            "type": "size"
-          },
-          {
             "name": "s3_key_format",
             "description": "Format string for keys in S3. This option supports strftime time formatters and a syntax for selecting parts of the Fluent log tag using a syntax inspired by the rewrite_tag filter. Add $TAG in the format string to insert the full log tag; add $TAG[0] to insert the first part of the tag in the s3 key. The tag is split into “parts” using the characters specified with the s3_key_format_tag_delimiters option. Add $INDEX to enable sequential indexing for file names. Adding $INDEX will prevent random string being added to end of keywhen $UUID is not provided. See the in depth examples and tutorial in the documentation.",
             "default": "/fluent-bit-logs/$TAG/%Y/%m/%d/%H/%M/%S",
@@ -10761,7 +9385,7 @@
           {
             "name": "preserve_data_ordering",
             "description": "Normally, when an upload request fails, there is a high chance for the last received chunk to be swapped with a later chunk, resulting in data shuffling. This feature prevents this shuffling by using a queue logic for uploads.",
-            "default": "true",
+            "default": "false",
             "type": "boolean"
           },
           {
@@ -10785,12 +9409,6 @@
           {
             "name": "storage_class",
             "description": "Specify the storage class for S3 objects. If this option is not specified, objects will be stored with the default 'STANDARD' storage class.",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "profile",
-            "description": "AWS Profile name. AWS Profiles can be configured with AWS CLI and are usually stored in $HOME/.aws/ directory.",
             "default": null,
             "type": "string"
           }
@@ -10911,107 +9529,6 @@
             "description": "Hostname to be used for TLS SNI extension",
             "default": null,
             "type": "string"
-          }
-        ]
-      }
-    },
-    {
-      "type": "output",
-      "name": "vivo_exporter",
-      "description": "Vivo Exporter",
-      "properties": {
-        "options": [
-          {
-            "name": "host",
-            "description": "Host Address",
-            "default": "",
-            "type": "string"
-          },
-          {
-            "name": "port",
-            "description": "host Port",
-            "default": "0",
-            "type": "integer"
-          },
-          {
-            "name": "empty_stream_on_read",
-            "description": "If enabled, when an HTTP client consumes the data from a stream, the queue content will be removed",
-            "default": "off",
-            "type": "boolean"
-          },
-          {
-            "name": "stream_queue_size",
-            "description": "Specify the maximum queue size per stream. Each specific stream for logs, metrics and traces can hold up to 'stream_queue_size' bytes.",
-            "default": "20M",
-            "type": "size"
-          },
-          {
-            "name": "http_cors_allow_origin",
-            "description": "Specify the value for the HTTP Access-Control-Allow-Origin header (CORS)",
-            "default": null,
-            "type": "string"
-          }
-        ],
-        "networking": [
-          {
-            "name": "net.dns.mode",
-            "description": "Select the primary DNS connection type (TCP or UDP)",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "net.dns.resolver",
-            "description": "Select the primary DNS resolver type (LEGACY or ASYNC)",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "net.dns.prefer_ipv4",
-            "description": "Prioritize IPv4 DNS results when trying to establish a connection",
-            "default": "false",
-            "type": "boolean"
-          },
-          {
-            "name": "net.keepalive",
-            "description": "Enable or disable Keepalive support",
-            "default": "true",
-            "type": "boolean"
-          },
-          {
-            "name": "net.keepalive_idle_timeout",
-            "description": "Set maximum time allowed for an idle Keepalive connection",
-            "default": "30s",
-            "type": "time"
-          },
-          {
-            "name": "net.io_timeout",
-            "description": "Set maximum time a connection can stay idle while assigned",
-            "default": "0s",
-            "type": "time"
-          },
-          {
-            "name": "net.connect_timeout",
-            "description": "Set maximum time allowed to establish a connection, this time includes the TLS handshake",
-            "default": "10s",
-            "type": "time"
-          },
-          {
-            "name": "net.connect_timeout_log_error",
-            "description": "On connection timeout, specify if it should log an error. When disabled, the timeout is logged as a debug message",
-            "default": "true",
-            "type": "boolean"
-          },
-          {
-            "name": "net.source_address",
-            "description": "Specify network address to bind for data traffic",
-            "default": null,
-            "type": "string"
-          },
-          {
-            "name": "net.keepalive_max_recycle",
-            "description": "Set maximum number of times a keepalive connection can be used before it is retired.",
-            "default": "2000",
-            "type": "integer"
           }
         ]
       }
