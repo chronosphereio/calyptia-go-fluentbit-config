@@ -110,7 +110,6 @@ func (s Schema) findSections(kind SectionKind) ([]SchemaSection, bool) {
 }
 
 func (s *Schema) InjectLTSPlugins() {
-	// See https://github.com/calyptia/core-images/blob/main/container/plugins/plugins.json
 	s.Inputs = append(s.Inputs, SchemaSection{
 		// See https://github.com/calyptia/lts-advanced-plugin-s3-replay
 		Type:        "input",
@@ -201,6 +200,141 @@ func (s *Schema) InjectLTSPlugins() {
 					Type:        "string",
 					Description: "Profile ID or the user email for which the data should be filtered. Can be `all` for all information, or `userKey` for a user's unique Google Workspace profile ID or their primary email address",
 					Default:     "all",
+				},
+			},
+		},
+	}, SchemaSection{
+		// See https://github.com/calyptia/core-fluent-bit-plugin-http-loader
+		Type:        "input",
+		Name:        "http_loader",
+		Description: "HTTP Loader plugin provides a way to load/dump data from a paginated HTTP endpoint.",
+		Properties: SchemaProperties{
+			Options: []SchemaOptions{
+				{
+					Name:        "method",
+					Type:        "string",
+					Description: `HTTP request method, default is "GET" or "POST" if body is set.`,
+					Default:     "GET",
+				},
+				{
+					Name:        "url",
+					Type:        "string",
+					Description: "Target URL to scrap. It must be an absolute URL starting with http or https.",
+					Default:     "",
+				},
+				{
+					Name:        "body",
+					Type:        "string",
+					Description: "Optional request body.",
+				},
+				{
+					Name:        "headers_separator",
+					Type:        "string",
+					Description: "Option to override the headers separator.",
+					Default:     "\r\n",
+				},
+				{
+					Name:        "headers",
+					Type:        "string",
+					Description: `Optional request headers, each one separated by a new line character "\r\n". "User-Agent" will always be set to "Fluent-Bit HTTP Loader Plugin" unless overriden.`,
+					Default:     "User-Agent: Fluent-Bit HTTP Loader Plugin",
+				},
+				{
+					Name:        "next_url_template",
+					Type:        "string",
+					Description: "Optional Golang template you can use to modify the original request URL. Use it to advance and iterate over your paginated API. For an offset API do something like:\nhttps://example.org/pages?offset={{.index}}",
+				},
+				{
+					Name:        "next_body_template",
+					Type:        "string",
+					Description: "Optional Golang template used to modify the original request body.",
+				},
+				{
+					Name: "next_headers_template",
+					Type: "string",
+				},
+				{
+					Name:        "stop_template",
+					Type:        "string",
+					Description: "Required golang template that evaluates to a boolean value which tells the plugin when to stop.",
+				},
+				{
+					Name:        "pull_interval",
+					Type:        "string",
+					Description: `Optional interval between each request. It supports Golang templating. Useful if you want to set different values depending on the response. For example: \n{{if .body.nextCursor}}1s{{else}}6h{{end}}\nWould use a short interval if paginating, or a long interval if not.`,
+					Default:     "0s",
+				},
+				{
+					Name:        "timeout",
+					Type:        "string",
+					Description: "Request timeout, default 10s.",
+					Default:     "10s",
+				},
+				{
+					Name:        "continue_on_error",
+					Type:        "boolean",
+					Description: "Whether to continue on >400 response status code.",
+					Default:     false,
+				},
+				{
+					Name:        "split_records",
+					Type:        "boolean",
+					Description: "Controls if we should send multiple records to fluent-bit when we find an array. In which case, each record will contain the array `index` and `value`.",
+					Default:     false,
+				},
+				{
+					Name:        "max_response_bytes",
+					Type:        "integer",
+					Description: "Option to limit the amount of bytes to read from the response body. Default is 15 MB.",
+					Default:     15 << 20,
+				},
+				{
+					Name:        "template",
+					Type:        "string",
+					Description: "Optional Golang template to apply over the record. You can find `statusCode` (int), `headers` (http.Header), `body` which can be any and `index` which a increasing number for the request being made. This is the data that will be sent to fluent-bit for processing.",
+				},
+				{
+					Name:        "oauth2_client_id",
+					Type:        "string",
+					Description: "Optional OAuth2 Client ID. You need to at least pass the client ID, secret and token URL to enable OAUth2. It uses the client_credentials flow.",
+				},
+				{
+					Name:        "oauth2_client_secret",
+					Type:        "string",
+					Description: "Optional OAuth2 client secret.",
+				},
+				{
+					Name:        "oauth2_token_url",
+					Type:        "string",
+					Description: "Optional OAuth2 token URL.",
+				},
+				{
+					Name:        "oauth2_scopes_separator",
+					Type:        "string",
+					Description: "Optional list of additional scopes for OAuth2 separated by space.",
+				},
+				{
+					Name:        "oauth2_scopes",
+					Type:        "string",
+					Description: "Option to override the OAuth2 scopes separator.",
+					Default:     " ",
+				},
+				{
+					Name:        "oauth2_endpoint_params",
+					Type:        "string",
+					Description: "Optional additional params to pass during OAuth2. The format is a URL query string.",
+				},
+				{
+					Name:        "data_dir",
+					Type:        "string",
+					Description: "Optional storage path to allow resuming after a restart.",
+					Default:     "/data/storage",
+				},
+				{
+					Name:        "data_exp",
+					Type:        "string",
+					Description: "Optional duration time to allow stored data to be valid. Set this if you know stuff like pagination tokens have an expiration time.",
+					Default:     "0s",
 				},
 			},
 		},
