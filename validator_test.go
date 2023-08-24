@@ -298,23 +298,14 @@ func TestConfig_Validate(t *testing.T) {
 			`,
 		},
 		{
-			name: "http_loader_invalid_max_response_bytes",
-			ini: `
-				[INPUT]
-					Name               http_loader
-					max_response_bytes 10MB
-			`,
-			want: `input: http_loader: expected "max_response_bytes" to be a valid integer, got 10MB`,
-		},
-		{
 			name: "http_loader_ok",
 			ini: `
 				[INPUT]
-					Name          http_loader
-					url           https://example.org
-					template      {{toJson .body}}
-					stop_template false
-					split_records true
+					Name    http_loader
+					url     https://example.org
+					out     {{toJson .body}}
+					skip    false
+					timeout 5s
 			`,
 		},
 	}
