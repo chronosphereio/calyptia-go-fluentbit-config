@@ -291,6 +291,24 @@ func (s *Schema) InjectLTSPlugins() {
 					Description: "Cookie based authentication request body.",
 				},
 				{
+					Name:        "wait",
+					Type:        "string",
+					Description: "Controls the time to wait before starting to collect, string duration. If set, it must be greater or equal than 0s. Supports templating.",
+					Default:     "0s",
+				},
+				{
+					Name:        "retry",
+					Type:        "string",
+					Description: "Tells whether to retry a request, boolean. Supports templating.",
+					Default:     "false",
+				},
+				{
+					Name:        "max_retries",
+					Type:        "string",
+					Description: "Controls the maximum number of retries, integer. If set, it must be greater or equal than 0. Supports templating.",
+					Default:     "1",
+				},
+				{
 					Name:        "skip",
 					Type:        "string",
 					Description: "Controls when to skip sending records to fluent-bit, supports templating.\nDefaults to ignore error status codes, and empty response body.",
@@ -301,6 +319,12 @@ func (s *Schema) InjectLTSPlugins() {
 					Type:        "string",
 					Description: "Controls what to send to fluent-bit, supports templating. Defaults to send the response body.",
 					Default:     "{{toJson .Response.Body}}",
+				},
+				{
+					Name:        "stop",
+					Type:        "string",
+					Description: "Controls when to stop collecting, supports templating. Defaults to never stop.",
+					Default:     "false",
 				},
 				{
 					Name:        "data_dir",
