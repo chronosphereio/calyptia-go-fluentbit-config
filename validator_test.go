@@ -301,11 +301,17 @@ func TestConfig_Validate(t *testing.T) {
 			name: "http_loader_ok",
 			ini: `
 				[INPUT]
-					Name    http_loader
-					url     https://example.org
-					out     {{toJson .body}}
-					skip    false
-					timeout 5s
+					Name        http_loader
+					method      POST
+					url         https://example.org
+					header      Authorization Bearer 123
+					body        {"foo": "bar"}
+					out         {{toJson .body}}
+					skip        false
+					stop        true
+					retry       true
+					max_retries 3
+					timeout     5s
 			`,
 		},
 	}
