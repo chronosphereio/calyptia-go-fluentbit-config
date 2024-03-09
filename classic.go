@@ -7,7 +7,7 @@ import (
 	"text/tabwriter"
 	"unicode/utf8"
 
-	"github.com/calyptia/go-fluentbit-config/v2/property"
+	"github.com/chronosphereio/calyptia-go-fluentbit-config/v2/property"
 )
 
 func (c *Config) UnmarshalClassic(text []byte) error {

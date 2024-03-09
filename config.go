@@ -6,7 +6,7 @@ import (
 
 	"golang.org/x/exp/slices"
 
-	"github.com/calyptia/go-fluentbit-config/v2/property"
+	"github.com/chronosphereio/calyptia-go-fluentbit-config/v2/property"
 )
 
 type Config struct {
