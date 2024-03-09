@@ -7,7 +7,7 @@ import (
 	"golang.org/x/exp/slices"
 	"gopkg.in/yaml.v3"
 
-	"github.com/calyptia/go-fluentbit-config/v2/property"
+	"github.com/chronosphereio/calyptia-go-fluentbit-config/v2/property"
 )
 
 type Plugins []Plugin

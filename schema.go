@@ -111,7 +111,7 @@ func (s Schema) findSections(kind SectionKind) ([]SchemaSection, bool) {
 
 func (s *Schema) InjectLTSPlugins() {
 	s.Inputs = append(s.Inputs, SchemaSection{
-		// See https://github.com/calyptia/lts-advanced-plugin-s3-replay
+		// See https://github.com/chronosphereio/calyptia-core-fluent-bit-s3-replay
 		Type:        "input",
 		Name:        "go-s3-replay-plugin",
 		Description: "Calyptia LTS advanced plugin providing logs replay from s3",
@@ -147,12 +147,12 @@ func (s *Schema) InjectLTSPlugins() {
 			},
 		},
 	}, SchemaSection{
-		// See https://github.com/calyptia/lts-advanced-plugin-dummy
+		// See https://github.com/chronosphereio/calyptia-core-fluent-bit-dummy
 		Type:        "input",
 		Name:        "gdummy",
 		Description: "dummy GO!",
 	}, SchemaSection{
-		// See https://github.com/calyptia/lts-advanced-plugin-gsuite-reporter
+		// See https://github.com/chronosphereio/calyptia-core-fluent-bit-gsuite-reporter
 		Type:        "input",
 		Name:        "gsuite-reporter",
 		Description: "A Calyptia LTS advanced plugin providing activity streams from Gsuite",
@@ -204,7 +204,7 @@ func (s *Schema) InjectLTSPlugins() {
 			},
 		},
 	}, SchemaSection{
-		// See https://github.com/calyptia/core-fluent-bit-plugin-http-loader
+		// See https://github.com/chronosphereio/calyptia-core-fluent-bit-plugin-http-loader
 		Type:        "input",
 		Name:        "http_loader",
 		Description: "HTTP Loader plugin provides a way to load/dump data from a paginated HTTP endpoint.",

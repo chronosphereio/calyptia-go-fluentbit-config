@@ -5,7 +5,7 @@ import (
 
 	"github.com/alecthomas/assert/v2"
 
-	"github.com/calyptia/go-fluentbit-config/v2/property"
+	"github.com/chronosphereio/calyptia-go-fluentbit-config/v2/property"
 )
 
 func TestPlugins_IDs(t *testing.T) {

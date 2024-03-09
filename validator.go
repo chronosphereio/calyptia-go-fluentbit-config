@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/calyptia/go-fluentbit-config/v2/property"
+	"github.com/chronosphereio/calyptia-go-fluentbit-config/v2/property"
 )
 
 // Validate with the default schema.

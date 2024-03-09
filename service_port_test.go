@@ -5,7 +5,7 @@ import (
 
 	"github.com/alecthomas/assert/v2"
 
-	"github.com/calyptia/go-fluentbit-config/v2/networking"
+	"github.com/chronosphereio/calyptia-go-fluentbit-config/v2/networking"
 )
 
 func TestConfig_ServicePorts(t *testing.T) {

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/calyptia/go-fluentbit-config/v2/networking"
+	"github.com/chronosphereio/calyptia-go-fluentbit-config/v2/networking"
 )
 
 var servicePortDefaultsByPlugin = map[string]servicePortDefaults{
