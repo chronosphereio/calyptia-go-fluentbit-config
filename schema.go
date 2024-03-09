@@ -327,6 +327,46 @@ func (s *Schema) InjectLTSPlugins() {
 					Default:     "false",
 				},
 				{
+					Name:        "proxy",
+					Type:        "string",
+					Description: "Proxy URL, allows comma separated list of URLs.",
+				},
+				{
+					Name:        "no_proxy",
+					Type:        "string",
+					Description: "Exclude URLs from proxy, allows comma separated list of URLs.",
+				},
+				{
+					Name:        "tls_cert_file",
+					Type:        "string",
+					Description: "TLS certificate file path.",
+				},
+				{
+					Name:        "tls_key_file",
+					Type:        "string",
+					Description: "TLS key file path.",
+				},
+				{
+					Name:        "tls_cert",
+					Type:        "string",
+					Description: "TLS certificate in PEM format.",
+				},
+				{
+					Name:        "tls_key",
+					Type:        "string",
+					Description: "TLS key in PEM format.",
+				},
+				{
+					Name:        "ca_cert_file",
+					Type:        "string",
+					Description: "CA certificate file path.",
+				},
+				{
+					Name:        "ca_cert",
+					Type:        "string",
+					Description: "CA certificate in PEM format.",
+				},
+				{
 					Name:        "data_dir",
 					Type:        "string",
 					Description: "Controls where to store data, data which is used to resume collecting.\nDefaults to `/data/storage` if exists, or a temporary directory if available, otherwise storage is disabled.",
@@ -337,6 +377,223 @@ func (s *Schema) InjectLTSPlugins() {
 					Type:        "string",
 					Description: "Controls for how much time data can be used after resume.",
 					Default:     "0s",
+				},
+				{
+					Name:        "store_response_body",
+					Type:        "string",
+					Description: "JSON value to store as response body, supports templating.",
+					Default:     "{{toJson .Response.Body}}",
+				},
+			},
+		},
+	}, SchemaSection{
+		// See https://github.com/chronosphereio/calyptia-core-fluent-bit-azure-event-grid
+		Type:        "input",
+		Name:        "azeventgrid",
+		Description: "A Calyptia Core fluent-bit plugin providing input from Azure Event Grid.",
+		Properties: SchemaProperties{
+			Options: []SchemaOptions{
+				{
+					Name:        "topicName",
+					Type:        "string",
+					Description: "The name of the topic to subscribe to.",
+				},
+				{
+					Name:        "eventSubscriptionName",
+					Type:        "string",
+					Description: "The name of the event subscription to subscribe to.",
+				},
+				{
+					Name:        "endpoint",
+					Type:        "string",
+					Description: "The endpoint domain to use for the subscription.",
+				},
+				{
+					Name:        "key",
+					Type:        "string",
+					Description: "The key to use to authenticate.",
+				},
+			},
+		},
+	}, SchemaSection{
+		// See https://github.com/chronosphereio/calyptia-core-fluent-bit-aws-kinesis-stream-input
+		Type:        "input",
+		Name:        "aws_kinesis_stream",
+		Description: "AWS Kinesis stream input plugin.",
+		Properties: SchemaProperties{
+			Options: []SchemaOptions{
+				{
+					Name:        "aws_access_key_id",
+					Type:        "string",
+					Description: "AWS access key ID.",
+				},
+				{
+					Name:        "aws_secret_access_key",
+					Type:        "string",
+					Description: "AWS secret access key.",
+				},
+				{
+					Name:        "aws_region",
+					Type:        "string",
+					Description: "AWS region.",
+				},
+				{
+					Name:        "stream_name",
+					Type:        "string",
+					Description: "AWS Kinesis stream name.",
+				},
+				{
+					Name:        "empty_interval",
+					Type:        "string",
+					Description: "Interval to wait for new records when the stream is empty, string duration.",
+					Default:     "10s",
+				},
+				{
+					Name:        "limit",
+					Type:        "integer",
+					Description: "Maximum number of records to read per request, integer.",
+				},
+				{
+					Name:        "data_dir",
+					Type:        "string",
+					Description: "Directory to store data. It holds a 1MB cache.",
+					Default:     "/data/storage",
+				},
+			},
+		},
+	}, SchemaSection{
+		// See https://github.com/chronosphereio/calyptia-core-fluent-bit-azure-blob-input
+		Type:        "input",
+		Name:        "flb_core_fluent_bit_azure_blob",
+		Description: "Calyptia LTS Azure Blob Storage Input Plugin",
+		Properties: SchemaProperties{
+			Options: []SchemaOptions{
+				{
+					Name:        "account_name",
+					Type:        "string",
+					Description: "Azure Storage Account Name",
+				},
+				{
+					Name:        "container",
+					Type:        "string",
+					Description: "If set, the plugin will only read from this container. Otherwise, it will read from all containers in the account.",
+				},
+				{
+					Name:        "bucket",
+					Type:        "string",
+					Description: "-",
+				},
+			},
+		},
+	}, SchemaSection{
+		// See https://github.com/chronosphereio/calyptia-core-fluent-bit-plugin-input-s3-sqs
+		Type:        "input",
+		Name:        "s3_sqs",
+		Description: "Calyptia LTS advanced plugin providing logs replay from sqs events",
+		Properties: SchemaProperties{
+			Options: []SchemaOptions{
+				{
+					Name:        "delete_messages",
+					Type:        "boolean",
+					Description: "If true, messages will be deleted from the queue after being processed.",
+					Default:     "true",
+				},
+				{
+					Name:        "aws_s3_role_arn",
+					Type:        "string",
+					Description: "The role ARN to assume when reading from S3.",
+				},
+				{
+					Name:        "aws_s3_role_session_name",
+					Type:        "string",
+					Description: "The session name to use when assuming the role.",
+				},
+				{
+					Name:        "aws_s3_role_external_id",
+					Type:        "string",
+					Description: "The external ID to use when assuming the role.",
+				},
+				{
+					Name:        "aws_s3_role_duration",
+					Type:        "string",
+					Description: "The duration to assume the role for, string duration.",
+				},
+				{
+					Name:        "aws_sqs_role_arn",
+					Type:        "string",
+					Description: "The role ARN to assume when reading from SQS.",
+				},
+				{
+					Name:        "aws_sqs_role_session_name",
+					Type:        "string",
+					Description: "The session name to use when assuming the role.",
+				},
+				{
+					Name:        "aws_sqs_role_external_id",
+					Type:        "string",
+					Description: "The external ID to use when assuming the role.",
+				},
+				{
+					Name:        "aws_sqs_role_duration",
+					Type:        "string",
+					Description: "The duration to assume the role for, string duration.",
+				},
+				{
+					Name:        "aws_access_key",
+					Type:        "string",
+					Description: "AWS access key.",
+				},
+				{
+					Name:        "aws_secret_key",
+					Type:        "string",
+					Description: "AWS secret key.",
+				},
+				{
+					Name:        "aws_bucket_name",
+					Type:        "string",
+					Description: "AWS S3 bucket name.",
+				},
+				{
+					Name:        "aws_bucket_region",
+					Type:        "string",
+					Description: "AWS S3 bucket region.",
+				},
+				{
+					Name:        "match_regexp",
+					Type:        "string",
+					Description: "The regular expression to match against the SQS message body.",
+					Default:     ".*",
+				},
+				{
+					Name:        "aws_s3_enable_imds",
+					Type:        "boolean",
+					Description: "If true, the plugin will use the Instance Metadata Service to retrieve credentials.",
+				},
+				{
+					Name:        "sqs_queue_name",
+					Type:        "string",
+					Description: "The name of the SQS queue to read from.",
+				},
+				{
+					Name:        "sqs_queue_region",
+					Type:        "string",
+					Description: "The region of the SQS queue to read from.",
+				},
+				{
+					Name:        "aws_sqs_endpoint",
+					Type:        "string",
+					Description: "The endpoint to use when reading from SQS.",
+				},
+				{
+					Name:        "max_line_buffer_size",
+					Type:        "size",
+					Description: "The maximum size of the line buffer, size.",
+					Default:     "10 MB",
+				},
+				{
+					Name:        "s3_read_concurrency",
+					Type:        "integer",
+					Description: "The number of concurrent S3 reads, integer. Defaults to the number of CPUs.",
 				},
 			},
 		},
