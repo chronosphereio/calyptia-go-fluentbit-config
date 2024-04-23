@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-//go:embed schemas/24.3.6.json
+//go:embed schemas/24.4.3.json
 var rawSchema []byte
 
 var DefaultSchema = func() Schema {
