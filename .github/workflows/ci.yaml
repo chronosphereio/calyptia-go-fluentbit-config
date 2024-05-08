@@ -1,5 +1,6 @@
 name: Go
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     tags:
@@ -12,13 +13,13 @@ jobs:
     steps:
       # Checkout your project with git
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Install Go on the VM running the action.
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
-          go-version: "^1.20"
+          go-version: "^1.22"
 
       # Install gotestfmt on the VM running the action.
       - name: Set up gotestfmt
@@ -28,11 +29,11 @@ jobs:
       - name: Run tests
         run: |
           set -euo pipefail
-          go test -json -race -v ./... 2>&1 | tee /tmp/gotest.log | gotestfmt -hide all
+          go test -json -fullpath -race -v ./... 2>&1 | tee /tmp/gotest.log | gotestfmt -hide all
 
       # Upload the original go test log as an artifact for later review.
       - name: Upload test log
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-log
