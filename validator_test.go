@@ -335,6 +335,25 @@ func TestConfig_Validate(t *testing.T) {
 					labels bar
 			`,
 		},
+		{
+			name: "in_sqldb_unknown_property",
+			ini: `
+				[INPUT]
+					Name sqldb
+					nope test
+			`,
+			want: `input: sqldb: unknown property "nope"`,
+		},
+		{
+			name: "in_sqldb_ok",
+			ini: `
+				[INPUT]
+					Name   sqldb
+					driver slite
+					dsn   file::memory:?cache=shared
+					query SELECT 'hello from sqldb' AS message
+			`,
+		},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
