@@ -202,6 +202,10 @@ func valid(opts SchemaOptions, val any) bool {
 		s, ok := val.(string)
 		return ok && s != ""
 	case "multiple comma delimited strings":
+		if _, ok := val.([]any); ok {
+			return true
+		}
+
 		_, ok := val.(string)
 		return ok
 	case "space delimited strings (minimum 1)":
@@ -294,10 +298,24 @@ func validByteSize(val any) bool {
 }
 
 func validSpaceDelimitedString(val any, min int) bool {
-	s, ok := val.(string)
-	if !ok {
-		return false
+	valid := func(val any, min int) bool {
+		s, ok := val.(string)
+		if !ok {
+			return false
+		}
+
+		return len(strings.Fields(s)) >= min
 	}
 
-	return len(strings.Fields(s)) >= min
+	if v, ok := val.([]any); ok {
+		for _, s := range v {
+			if !valid(s, min) {
+				return false
+			}
+		}
+
+		return true
+	}
+
+	return valid(val, min)
 }

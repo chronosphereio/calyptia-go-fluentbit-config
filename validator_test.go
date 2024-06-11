@@ -314,6 +314,27 @@ func TestConfig_Validate(t *testing.T) {
 					timeout     5s
 			`,
 		},
+		{
+			name: "out_splunk_event_field",
+			// out_splunk event_field is: space delimited strings (minimum 2)
+			ini: `
+				[OUTPUT]
+					Name        splunk
+					event_field $source foo
+					event_field $vendor bar
+					event_field $product baz
+			`,
+		},
+		{
+			name: "out_stackdriver_labels",
+			// out_stackdriver labels is: multiple comma delimited strings
+			ini: `
+				[OUTPUT]
+					Name   stackdriver
+					labels foo
+					labels bar
+			`,
+		},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
