@@ -203,6 +203,12 @@ func valid(opts SchemaOptions, val any) bool {
 		return ok && s != ""
 	case "multiple comma delimited strings":
 		if _, ok := val.([]any); ok {
+			for _, v := range val.([]any) {
+				if _, ok := v.(string); !ok {
+					return false
+				}
+			}
+
 			return true
 		}
 
