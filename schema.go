@@ -617,5 +617,64 @@ func (s *Schema) InjectLTSPlugins() {
 				},
 			},
 		},
+	}, SchemaSection{
+		// See https://github.com/chronosphereio/calyptia-core-fluent-bit-plugin-sqldb
+		Type:        "input",
+		Name:        "sqldb",
+		Description: "SQL Database input",
+		Properties: SchemaProperties{
+			Options: []SchemaOptions{
+				{
+					Name:        "driver",
+					Type:        "string",
+					Description: "The SQL driver to use. Allowed values are: postgres, mysql, oracle, sqlserver and sqlite.",
+					Default:     "postgres",
+				},
+				{
+					Name:        "dsn",
+					Type:        "string",
+					Description: "Connection string to the database.",
+				},
+				{
+					Name:        "query",
+					Type:        "string",
+					Description: `SQL query to perform. It supports "@named" arguments. See option columnsForArgs.`,
+				},
+				{
+					Name:        "columnsForArgs",
+					Type:        "string",
+					Description: "Space separated list of columns. If you want to paginate over the data, you can convert the last row into arguments. Example id created_at will create two arguments that you can use in the query: @last_id and @last_created_at.",
+				},
+				{
+					Name:        "timeFrom",
+					Type:        "string",
+					Description: "Column from which extract the log ingestion time. If not set, current time will be used.",
+				},
+				{
+					Name:        "timeFormat",
+					Type:        "string",
+					Description: "Time format to use when timeFrom is set. Besides the standard RFCs time formats to parse strings, it can also parse integers by setting the format to: unix_sec, unix_ms, unix_us, or unix_ns (default for integers).",
+					Default:     "2006-01-02T15:04:05.999999999Z07:00",
+				},
+				{
+					Name:        "fetchInterval",
+					Type:        "string",
+					Description: "Duration between executing each query. Cannot be less than 0.",
+					Default:     "1s",
+				},
+				{
+					Name:        "storageKey",
+					Type:        "string",
+					Description: "Storage key used to store the query arguments to allow restart and resuming. Pass your own key to have more control, or to reset the arguments. The key should be unique and does not need to end with .gob.",
+					Default:     "sqldb_{hash}.gob",
+				},
+				{
+					Name:        "storageDir",
+					Type:        "string",
+					Description: "Storage path where to store data. If default /data/storage does not exists, a temporary directory will be used.",
+					Default:     "/data/storage",
+				},
+			},
+		},
 	})
 }
