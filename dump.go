@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"io"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -23,13 +24,42 @@ func ParseAs(raw string, format Format) (Config, error) {
 	var out Config
 	switch strings.ToLower(string(format)) {
 	case "", "ini", "conf", "classic":
-		return out, out.UnmarshalClassic([]byte(raw))
+		return ParseAsClassic(raw)
 	case "yml", "yaml":
-		return out, yaml.Unmarshal([]byte(raw), &out)
+		return ParseAsYAML(raw)
 	case "json":
-		return out, json.Unmarshal([]byte(raw), &out)
+		return ParseAsJSON(raw)
 	}
 	return out, ErrFormatUnknown
+}
+
+func ParseAsClassic(raw string) (Config, error) {
+	var out Config
+	return out, out.UnmarshalClassic([]byte(raw))
+}
+
+func ParseAsYAML(raw string) (Config, error) {
+	var out Config
+	dec := yaml.NewDecoder(strings.NewReader(raw))
+	dec.KnownFields(true)
+	err := dec.Decode(&out)
+	if errors.Is(err, io.EOF) {
+		return out, nil
+	}
+
+	return out, err
+}
+
+func ParseAsJSON(raw string) (Config, error) {
+	var out Config
+	dec := json.NewDecoder(strings.NewReader(raw))
+	dec.DisallowUnknownFields()
+	err := dec.Decode(&out)
+	if errors.Is(err, io.EOF) {
+		return out, nil
+	}
+
+	return out, err
 }
 
 func (c Config) DumpAs(format Format) (string, error) {
