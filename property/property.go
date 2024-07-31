@@ -1,6 +1,7 @@
 package property
 
 import (
+	"reflect"
 	"strings"
 
 	"golang.org/x/exp/slices"
@@ -92,7 +93,7 @@ func (pp *Properties) Add(key string, value any) {
 
 func (pp Properties) Equal(target Properties) bool {
 	return slices.EqualFunc(pp, target, func(a, b Property) bool {
-		return a.Key == b.Key && a.Value == b.Value
+		return a.Key == b.Key && reflect.DeepEqual(a.Value, b.Value)
 	})
 }
 
