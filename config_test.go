@@ -382,7 +382,7 @@ func TestConfig_Validate_Classic(t *testing.T) {
 	}
 }
 
-func TestConfig_Validate_Yaml(t *testing.T) {
+func TestConfig_Validate_YAML(t *testing.T) {
 	names, err := filepath.Glob("testdata/*.yaml")
 	assert.NoError(t, err)
 
