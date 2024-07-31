@@ -364,3 +364,54 @@ func TestConfig_FindByID(t *testing.T) {
 		}, plugin)
 	})
 }
+
+func TestConfig_Validate_Classic(t *testing.T) {
+	names, err := filepath.Glob("testdata/*.conf")
+	assert.NoError(t, err)
+
+	for _, name := range names {
+		t.Run(makeTestName(name), func(t *testing.T) {
+			classicText, err := os.ReadFile(name)
+			assert.NoError(t, err)
+
+			var classicConf Config
+			err = classicConf.UnmarshalClassic(classicText)
+			assert.NoError(t, err)
+			classicConf.Validate()
+		})
+	}
+}
+
+func TestConfig_Validate_Yaml(t *testing.T) {
+	names, err := filepath.Glob("testdata/*.yaml")
+	assert.NoError(t, err)
+
+	for _, name := range names {
+		t.Run(makeTestName(name), func(t *testing.T) {
+			yamlText, err := os.ReadFile(name)
+			assert.NoError(t, err)
+
+			var yamlConfig Config
+			err = yaml.Unmarshal(yamlText, &yamlConfig)
+			assert.NoError(t, err)
+			yamlConfig.Validate()
+		})
+	}
+}
+
+func TestConfig_Validate_JSON(t *testing.T) {
+	names, err := filepath.Glob("testdata/*.json")
+	assert.NoError(t, err)
+
+	for _, name := range names {
+		t.Run(makeTestName(name), func(t *testing.T) {
+			jsonText, err := os.ReadFile(name)
+			assert.NoError(t, err)
+
+			var jsonConfig Config
+			err = json.Unmarshal(jsonText, &jsonConfig)
+			assert.NoError(t, err)
+			jsonConfig.Validate()
+		})
+	}
+}
