@@ -354,6 +354,16 @@ func TestConfig_Validate(t *testing.T) {
 					query SELECT 'hello from sqldb' AS message
 			`,
 		},
+		{
+			name: "custom_core_property",
+			ini: `
+				[INPUT]
+					Name dummy
+				[OUTPUT]
+					Name s3
+					core.metadata name=foo
+			`,
+		},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {

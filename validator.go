@@ -80,7 +80,7 @@ func ValidateSectionWithSchema(kind SectionKind, props property.Properties, sche
 	}
 
 	for _, p := range props {
-		if isCommonProperty(p.Key) || isCloudVariable(p.Key) || isCloudVariable(p.Value) {
+		if isCommonProperty(p.Key) || isCloudVariable(p.Key) || isCloudVariable(p.Value) || isCoreProperty(p.Key) {
 			continue
 		}
 
@@ -132,6 +132,13 @@ func isCloudVariable(val any) bool {
 
 func areProcessors(key string) bool {
 	return strings.ToLower(key) == "processors"
+}
+
+// isCoreProperty tells whether the property is from Core.
+// Core properties start with `core.` and are ignored.
+// See https://github.com/chronosphereio/calyptia-core-fluent-bit/blob/71795c472bcb1f7e09a7ea121366d5f91df4263f/patches/pwhelan-flb_config-ignore-core-namespaced-properties.patch#L22-L25
+func isCoreProperty(key string) bool {
+	return strings.HasPrefix(key, "core.")
 }
 
 func validateProcessorsSectionMaps(sectionMaps []interface{}) error {
