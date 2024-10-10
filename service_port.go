@@ -19,6 +19,7 @@ var servicePortDefaultsByPlugin = map[string]servicePortDefaults{
 	"syslog":        {Port: 5140, Protocol: networking.ProtocolUDP}, // only if `mode` is not `unix_udp` (default) or `unix_tcp`
 	"tcp":           {Port: 5170, Protocol: networking.ProtocolTCP},
 	"udp":           {Port: 5170, Protocol: networking.ProtocolUDP},
+	"cloudflare":    {Port: 9880, Protocol: networking.ProtocolTCP},
 
 	// Outputs.
 	"prometheus_exporter": {Port: 2021, Protocol: networking.ProtocolTCP},
