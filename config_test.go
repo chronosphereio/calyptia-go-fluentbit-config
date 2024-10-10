@@ -3,6 +3,7 @@ package fluentbitconfig
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -414,4 +415,52 @@ func TestConfig_Validate_JSON(t *testing.T) {
 			jsonConfig.Validate()
 		})
 	}
+}
+
+func Example_configWithProcessors() {
+	conf := Config{
+		Pipeline: Pipeline{
+			Inputs: Plugins{
+				Plugin{
+					Properties: property.Properties{
+						{Key: "name", Value: "dummy"},
+						{Key: "processors", Value: property.Properties{
+							{Key: "logs", Value: Plugins{
+								Plugin{
+									Properties: property.Properties{
+										{Key: "name", Value: "calyptia"},
+										{Key: "actions", Value: property.Properties{
+											{Key: "type", Value: "block_keys"},
+											{Key: "opts", Value: property.Properties{
+												{Key: "regex", Value: "star"},
+												{Key: "regexEngine", Value: "pcre2"},
+											}},
+										}},
+									},
+								},
+							}},
+						}},
+					},
+				},
+			},
+		},
+	}
+	yaml, err := conf.DumpAsYAML()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(yaml)
+	// Output:
+	// pipeline:
+	//     inputs:
+	//         - name: dummy
+	//           processors:
+	//             logs:
+	//                 - name: calyptia
+	//                   actions:
+	//                     type: block_keys
+	//                     opts:
+	//                         regex: star
+	//                         regexEngine: pcre2
 }
