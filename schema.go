@@ -111,7 +111,7 @@ func (s Schema) findSections(kind SectionKind) ([]SchemaSection, bool) {
 
 func (s *Schema) InjectLTSPlugins() {
 	s.Inputs = append(s.Inputs, SchemaSection{
-		// See https://github.com/chronosphereio/calyptia-core-fluent-bit-s3-replay
+		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/go-s3-replay-plugin
 		Type:        "input",
 		Name:        "go-s3-replay-plugin",
 		Description: "Calyptia LTS advanced plugin providing logs replay from s3",
@@ -147,12 +147,12 @@ func (s *Schema) InjectLTSPlugins() {
 			},
 		},
 	}, SchemaSection{
-		// See https://github.com/chronosphereio/calyptia-core-fluent-bit-dummy
+		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/dummy
 		Type:        "input",
 		Name:        "gdummy",
 		Description: "dummy GO!",
 	}, SchemaSection{
-		// See https://github.com/chronosphereio/calyptia-core-fluent-bit-gsuite-reporter
+		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/gsuite-reporter
 		Type:        "input",
 		Name:        "gsuite-reporter",
 		Description: "A Calyptia LTS advanced plugin providing activity streams from Gsuite",
@@ -204,7 +204,7 @@ func (s *Schema) InjectLTSPlugins() {
 			},
 		},
 	}, SchemaSection{
-		// See https://github.com/chronosphereio/calyptia-core-fluent-bit-plugin-http-loader
+		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/http_loader
 		Type:        "input",
 		Name:        "http_loader",
 		Description: "HTTP Loader plugin provides a way to load/dump data from a paginated HTTP endpoint.",
@@ -289,6 +289,16 @@ func (s *Schema) InjectLTSPlugins() {
 					Name:        "auth_cookie_body",
 					Type:        "string",
 					Description: "Cookie based authentication request body.",
+				},
+				{
+					Name:        "auth_digest_username",
+					Type:        "string",
+					Description: "Username for HTTP Digest authentication.",
+				},
+				{
+					Name:        "auth_digest_password",
+					Type:        "string",
+					Description: "Password for HTTP Digest authentication.",
 				},
 				{
 					Name:        "wait",
@@ -387,7 +397,7 @@ func (s *Schema) InjectLTSPlugins() {
 			},
 		},
 	}, SchemaSection{
-		// See https://github.com/chronosphereio/calyptia-core-fluent-bit-azure-event-grid
+		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/azeventgrid
 		Type:        "input",
 		Name:        "azeventgrid",
 		Description: "A Calyptia Core fluent-bit plugin providing input from Azure Event Grid.",
@@ -416,7 +426,7 @@ func (s *Schema) InjectLTSPlugins() {
 			},
 		},
 	}, SchemaSection{
-		// See https://github.com/chronosphereio/calyptia-core-fluent-bit-aws-kinesis-stream-input
+		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/aws_kinesis_stream
 		Type:        "input",
 		Name:        "aws_kinesis_stream",
 		Description: "AWS Kinesis stream input plugin.",
@@ -486,7 +496,7 @@ func (s *Schema) InjectLTSPlugins() {
 			},
 		},
 	}, SchemaSection{
-		// See https://github.com/chronosphereio/calyptia-core-fluent-bit-plugin-input-s3-sqs
+		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/s3_sqs
 		Type:        "input",
 		Name:        "s3_sqs",
 		Description: "Calyptia LTS advanced plugin providing logs replay from sqs events",
@@ -598,7 +608,7 @@ func (s *Schema) InjectLTSPlugins() {
 			},
 		},
 	}, SchemaSection{
-		// See https://github.com/chronosphereio/calyptia-core-fluent-bit-plugin-datagen
+		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/datagen
 		Type:        "input",
 		Name:        "datagen",
 		Description: "Datagen input plugin generates fake logs at a given interval",
@@ -618,7 +628,7 @@ func (s *Schema) InjectLTSPlugins() {
 			},
 		},
 	}, SchemaSection{
-		// See https://github.com/chronosphereio/calyptia-core-fluent-bit-plugin-sqldb
+		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/sqldb
 		Type:        "input",
 		Name:        "sqldb",
 		Description: "SQL Database input",
@@ -673,6 +683,54 @@ func (s *Schema) InjectLTSPlugins() {
 					Type:        "string",
 					Description: "Storage path where to store data. If default /data/storage does not exists, a temporary directory will be used.",
 					Default:     "/data/storage",
+				},
+			},
+		},
+	}, SchemaSection{
+		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/cloudflare
+		Type:        "input",
+		Name:        "cloudflare",
+		Description: "HTTP server input for cloudflare with chunked transfer encoding support",
+		Properties: SchemaProperties{
+			Options: []SchemaOptions{
+				{
+					Name:        "addr",
+					Type:        "string",
+					Description: "Address to listen on.",
+					Default:     ":9880",
+				},
+				{
+					Name:        "resp_headers",
+					Type:        "string",
+					Description: "Response headers to set, separated by new line. Supports templating.",
+					Default:     "Content-Type: application/json",
+				},
+				{
+					Name:        "resp_status_code",
+					Type:        "string",
+					Description: "Response status code to set. Supports templating. Should evaluate to an integer.",
+					Default:     "200",
+				},
+				{
+					Name:        "resp_body",
+					Type:        "string",
+					Description: "Response body to set. Supports templating.",
+					Default:     "{\"status\": \"ok\"}",
+				},
+				{
+					Name:        "time_from",
+					Type:        "string",
+					Description: "Optional time to set. Supports templating with record access. Should evaluate to a RFC3339 formatted string. Defaults to current time.",
+				},
+				{
+					Name:        "cert_file",
+					Type:        "string",
+					Description: "Path to the certificate file to enable TLS.",
+				},
+				{
+					Name:        "key_file",
+					Type:        "string",
+					Description: "Path to the key file to enable TLS.",
 				},
 			},
 		},

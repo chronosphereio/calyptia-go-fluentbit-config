@@ -34,6 +34,8 @@ func TestConfig_ServicePorts(t *testing.T) {
 				name tcp
 			[INPUT]
 				name udp
+			[INPUT]
+				name cloudflare
 			[OUTPUT]
 				name prometheus_exporter
 		`, FormatClassic)
@@ -50,6 +52,7 @@ func TestConfig_ServicePorts(t *testing.T) {
 			{Port: 5140, Protocol: networking.ProtocolUDP, Kind: SectionKindInput, Plugin: &Plugin{ID: "syslog.7", Name: "syslog"}},
 			{Port: 5170, Protocol: networking.ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "tcp.8", Name: "tcp"}},
 			{Port: 5170, Protocol: networking.ProtocolUDP, Kind: SectionKindInput, Plugin: &Plugin{ID: "udp.9", Name: "udp"}},
+			{Port: 9880, Protocol: networking.ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "cloudflare.10", Name: "cloudflare"}},
 			{Port: 2021, Protocol: networking.ProtocolTCP, Kind: SectionKindOutput, Plugin: &Plugin{ID: "prometheus_exporter.0", Name: "prometheus_exporter"}},
 		}, config.ServicePorts())
 	})
