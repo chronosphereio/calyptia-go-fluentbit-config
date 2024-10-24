@@ -595,6 +595,11 @@ func (s *Schema) InjectLTSPlugins() {
 					Description: "The endpoint to use when reading from SQS.",
 				},
 				{
+					Name:        "aws_sqs_enable_imds",
+					Type:        "boolean",
+					Description: "If true, the plugin will use the Instance Metadata Service to retrieve credentials.",
+				},
+				{
 					Name:        "max_line_buffer_size",
 					Type:        "size",
 					Description: "The maximum size of the line buffer, size.",
