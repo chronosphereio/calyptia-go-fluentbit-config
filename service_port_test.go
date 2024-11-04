@@ -1,18 +1,39 @@
 package fluentbitconfig
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
 
 	"github.com/calyptia/go-fluentbit-config/v2/networking"
+	"github.com/calyptia/go-fluentbit-config/v2/property"
 )
 
 func TestConfig_ServicePorts(t *testing.T) {
+	expected := func(port int32, protocol networking.Protocol, kind SectionKind, name string, index int, props ...property.Property) ServicePort {
+		pp := property.Properties{
+			{Key: "name", Value: name},
+		}
+		pp = append(pp, props...)
+		return ServicePort{
+			Port:     port,
+			Protocol: protocol,
+			Kind:     kind,
+			Plugin: &Plugin{
+				ID:         name + "." + strconv.Itoa(index),
+				Name:       name,
+				Properties: pp,
+			},
+		}
+	}
+
 	t.Run("defaults", func(t *testing.T) {
 		config, err := ParseAs(`
 			[SERVICE]
 				http_server on
+			[INPUT]
+				name cloudflare
 			[INPUT]
 				name collectd
 			[INPUT]
@@ -26,34 +47,38 @@ func TestConfig_ServicePorts(t *testing.T) {
 			[INPUT]
 				name opentelemetry
 			[INPUT]
+				name prometheus_remote_write
+			[INPUT]
+				name splunk
+			[INPUT]
 				name statsd
 			[INPUT]
 				name syslog
-				mode udp
 			[INPUT]
 				name tcp
 			[INPUT]
 				name udp
-			[INPUT]
-				name cloudflare
 			[OUTPUT]
 				name prometheus_exporter
 		`, FormatClassic)
 		assert.NoError(t, err)
+
 		assert.Equal(t, ServicePorts{
 			{Port: 2020, Protocol: networking.ProtocolTCP, Kind: SectionKindService},
-			{Port: 25826, Protocol: networking.ProtocolUDP, Kind: SectionKindInput, Plugin: &Plugin{ID: "collectd.0", Name: "collectd"}},
-			{Port: 9200, Protocol: networking.ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "elasticsearch.1", Name: "elasticsearch"}},
-			{Port: 24224, Protocol: networking.ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "forward.2", Name: "forward"}},
-			{Port: 9880, Protocol: networking.ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "http.3", Name: "http"}},
-			{Port: 1883, Protocol: networking.ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "mqtt.4", Name: "mqtt"}},
-			{Port: 4318, Protocol: networking.ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "opentelemetry.5", Name: "opentelemetry"}},
-			{Port: 8125, Protocol: networking.ProtocolUDP, Kind: SectionKindInput, Plugin: &Plugin{ID: "statsd.6", Name: "statsd"}},
-			{Port: 5140, Protocol: networking.ProtocolUDP, Kind: SectionKindInput, Plugin: &Plugin{ID: "syslog.7", Name: "syslog"}},
-			{Port: 5170, Protocol: networking.ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "tcp.8", Name: "tcp"}},
-			{Port: 5170, Protocol: networking.ProtocolUDP, Kind: SectionKindInput, Plugin: &Plugin{ID: "udp.9", Name: "udp"}},
-			{Port: 9880, Protocol: networking.ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "cloudflare.10", Name: "cloudflare"}},
-			{Port: 2021, Protocol: networking.ProtocolTCP, Kind: SectionKindOutput, Plugin: &Plugin{ID: "prometheus_exporter.0", Name: "prometheus_exporter"}},
+			expected(9880, networking.ProtocolTCP, SectionKindInput, "cloudflare", 0),
+			expected(25826, networking.ProtocolUDP, SectionKindInput, "collectd", 1),
+			expected(9200, networking.ProtocolTCP, SectionKindInput, "elasticsearch", 2),
+			expected(24224, networking.ProtocolTCP, SectionKindInput, "forward", 3),
+			expected(9880, networking.ProtocolTCP, SectionKindInput, "http", 4),
+			expected(1883, networking.ProtocolTCP, SectionKindInput, "mqtt", 5),
+			expected(4318, networking.ProtocolTCP, SectionKindInput, "opentelemetry", 6),
+			expected(8080, networking.ProtocolTCP, SectionKindInput, "prometheus_remote_write", 7),
+			expected(8088, networking.ProtocolTCP, SectionKindInput, "splunk", 8),
+			expected(8125, networking.ProtocolUDP, SectionKindInput, "statsd", 9),
+			// expected(5140, networking.ProtocolTCP, SectionKindInput, "syslog", 10), // default syslog without explicit mode tcp or udp is skipped
+			expected(5170, networking.ProtocolTCP, SectionKindInput, "tcp", 11),
+			expected(5170, networking.ProtocolUDP, SectionKindInput, "udp", 12),
+			expected(2021, networking.ProtocolTCP, SectionKindOutput, "prometheus_exporter", 0),
 		}, config.ServicePorts())
 	})
 
@@ -63,54 +88,71 @@ func TestConfig_ServicePorts(t *testing.T) {
 				http_server on
 				http_port 1
 			[INPUT]
-				name collectd
-				port 2
+				name cloudflare
+				addr :2
 			[INPUT]
-				name elasticsearch
+				name collectd
 				port 3
 			[INPUT]
-				name forward
+				name elasticsearch
 				port 4
 			[INPUT]
-				name http
+				name forward
 				port 5
 			[INPUT]
-				name mqtt
+				name http
 				port 6
 			[INPUT]
-				name opentelemetry
+				name mqtt
 				port 7
 			[INPUT]
-				name statsd
+				name opentelemetry
 				port 8
+			[INPUT]
+				name prometheus_remote_write
+				port 9
+			[INPUT]
+				name splunk
+				port 10
+			[INPUT]
+				name statsd
+				port 11
+			[INPUT]
+				name syslog
+				mode tcp
+				port 12
 			[INPUT]
 				name syslog
 				mode udp
-				port 9
+				port 13
 			[INPUT]
 				name tcp
-				port 10
+				port 14
 			[INPUT]
 				name udp
-				port 11
+				port 15
 			[OUTPUT]
 				name prometheus_exporter
-				port 12
+				port 16
 		`, FormatClassic)
 		assert.NoError(t, err)
 		assert.Equal(t, ServicePorts{
 			{Port: 1, Protocol: networking.ProtocolTCP, Kind: SectionKindService},
-			{Port: 2, Protocol: networking.ProtocolUDP, Kind: SectionKindInput, Plugin: &Plugin{ID: "collectd.0", Name: "collectd"}},
-			{Port: 3, Protocol: networking.ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "elasticsearch.1", Name: "elasticsearch"}},
-			{Port: 4, Protocol: networking.ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "forward.2", Name: "forward"}},
-			{Port: 5, Protocol: networking.ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "http.3", Name: "http"}},
-			{Port: 6, Protocol: networking.ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "mqtt.4", Name: "mqtt"}},
-			{Port: 7, Protocol: networking.ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "opentelemetry.5", Name: "opentelemetry"}},
-			{Port: 8, Protocol: networking.ProtocolUDP, Kind: SectionKindInput, Plugin: &Plugin{ID: "statsd.6", Name: "statsd"}},
-			{Port: 9, Protocol: networking.ProtocolUDP, Kind: SectionKindInput, Plugin: &Plugin{ID: "syslog.7", Name: "syslog"}},
-			{Port: 10, Protocol: networking.ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "tcp.8", Name: "tcp"}},
-			{Port: 11, Protocol: networking.ProtocolUDP, Kind: SectionKindInput, Plugin: &Plugin{ID: "udp.9", Name: "udp"}},
-			{Port: 12, Protocol: networking.ProtocolTCP, Kind: SectionKindOutput, Plugin: &Plugin{ID: "prometheus_exporter.0", Name: "prometheus_exporter"}},
+			expected(2, networking.ProtocolTCP, SectionKindInput, "cloudflare", 0, property.Property{Key: "addr", Value: ":2"}),
+			expected(3, networking.ProtocolUDP, SectionKindInput, "collectd", 1, property.Property{Key: "port", Value: int64(3)}),
+			expected(4, networking.ProtocolTCP, SectionKindInput, "elasticsearch", 2, property.Property{Key: "port", Value: int64(4)}),
+			expected(5, networking.ProtocolTCP, SectionKindInput, "forward", 3, property.Property{Key: "port", Value: int64(5)}),
+			expected(6, networking.ProtocolTCP, SectionKindInput, "http", 4, property.Property{Key: "port", Value: int64(6)}),
+			expected(7, networking.ProtocolTCP, SectionKindInput, "mqtt", 5, property.Property{Key: "port", Value: int64(7)}),
+			expected(8, networking.ProtocolTCP, SectionKindInput, "opentelemetry", 6, property.Property{Key: "port", Value: int64(8)}),
+			expected(9, networking.ProtocolTCP, SectionKindInput, "prometheus_remote_write", 7, property.Property{Key: "port", Value: int64(9)}),
+			expected(10, networking.ProtocolTCP, SectionKindInput, "splunk", 8, property.Property{Key: "port", Value: int64(10)}),
+			expected(11, networking.ProtocolUDP, SectionKindInput, "statsd", 9, property.Property{Key: "port", Value: int64(11)}),
+			expected(12, networking.ProtocolTCP, SectionKindInput, "syslog", 10, property.Property{Key: "mode", Value: "tcp"}, property.Property{Key: "port", Value: int64(12)}),
+			expected(13, networking.ProtocolUDP, SectionKindInput, "syslog", 11, property.Property{Key: "mode", Value: "udp"}, property.Property{Key: "port", Value: int64(13)}),
+			expected(14, networking.ProtocolTCP, SectionKindInput, "tcp", 12, property.Property{Key: "port", Value: int64(14)}),
+			expected(15, networking.ProtocolUDP, SectionKindInput, "udp", 13, property.Property{Key: "port", Value: int64(15)}),
+			expected(16, networking.ProtocolTCP, SectionKindOutput, "prometheus_exporter", 0, property.Property{Key: "port", Value: int64(16)}),
 		}, config.ServicePorts())
 	})
 
@@ -137,18 +179,5 @@ func TestConfig_ServicePorts(t *testing.T) {
 		`, FormatClassic)
 		assert.NoError(t, err)
 		assert.Equal(t, nil, config.ServicePorts())
-	})
-
-	t.Run("with_mode", func(t *testing.T) {
-		config, err := ParseAs(`
-			[INPUT]
-				name syslog
-				mode tcp
-				port 1
-		`, FormatClassic)
-		assert.NoError(t, err)
-		assert.Equal(t, ServicePorts{
-			{Port: 1, Protocol: networking.ProtocolTCP, Kind: SectionKindInput, Plugin: &Plugin{ID: "syslog.0", Name: "syslog"}},
-		}, config.ServicePorts())
 	})
 }

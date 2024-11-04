@@ -51,7 +51,7 @@ func stringFromAny(v any) string {
 		if b, err := t.MarshalJSON(); err == nil {
 			return stringFromAny(string(b))
 		}
-	case map[string]any:
+	case map[string]any, []any:
 		var buff bytes.Buffer
 		enc := json.NewEncoder(&buff)
 		enc.SetEscapeHTML(false)
@@ -102,29 +102,57 @@ func fmtFloat[F float32 | float64](f F) string {
 	return s
 }
 
-func intFromAny(v any) (int, bool) {
+func int32FromAny(v any) (int32, bool) {
 	if v == nil {
 		return 0, false
 	}
 
 	switch v := v.(type) {
 	case int:
-		return v, true
+		if int(int32(v)) == v {
+			return int32(v), true
+		}
+	case int8:
+		if int8(int32(v)) == v {
+			return int32(v), true
+		}
+	case int16:
+		if int16(int32(v)) == v {
+			return int32(v), true
+		}
 	case int32:
-		return int(v), true
+		return v, true
 	case int64:
-		if int64(int(v)) == v {
-			return int(v), true
+		if int64(int32(v)) == v {
+			return int32(v), true
+		}
+	case uint:
+		if uint(int32(v)) == v {
+			return int32(v), true
+		}
+	case uint16:
+		if uint16(int32(v)) == v {
+			return int32(v), true
+		}
+	case uint32:
+		if uint32(int32(v)) == v {
+			return int32(v), true
+		}
+	case uint64:
+		if uint64(int32(v)) == v {
+			return int32(v), true
 		}
 	case float32:
-		return int(v), true
+		if float32(int32(v)) == v {
+			return int32(v), true
+		}
 	case float64:
-		if float64(int(v)) == v {
-			return int(v), true
+		if float64(int32(v)) == v {
+			return int32(v), true
 		}
 	case string:
-		if i, err := strconv.Atoi(v); err == nil {
-			return i, true
+		if i, err := strconv.ParseInt(v, 10, 32); err == nil {
+			return int32(i), true
 		}
 	}
 	return 0, false
