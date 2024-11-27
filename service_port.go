@@ -54,6 +54,11 @@ var inputServicePorts = map[string]ServicePortGetter{
 		DefaultPort:     25826,
 		DefaultProtocol: networking.ProtocolUDP,
 	},
+	"csphere_http": {
+		PortFunc:        fromPort,
+		DefaultPort:     443,
+		DefaultProtocol: networking.ProtocolTCP,
+	},
 	"elasticsearch": {
 		PortFunc:        fromPort,
 		DefaultPort:     9200,
