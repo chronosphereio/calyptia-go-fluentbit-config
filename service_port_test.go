@@ -37,6 +37,8 @@ func TestConfig_ServicePorts(t *testing.T) {
 			[INPUT]
 				name collectd
 			[INPUT]
+				name csphere_http
+			[INPUT]
 				name elasticsearch
 			[INPUT]
 				name forward
@@ -67,17 +69,18 @@ func TestConfig_ServicePorts(t *testing.T) {
 			{Port: 2020, Protocol: networking.ProtocolTCP, Kind: SectionKindService},
 			expected(9880, networking.ProtocolTCP, SectionKindInput, "cloudflare", 0),
 			expected(25826, networking.ProtocolUDP, SectionKindInput, "collectd", 1),
-			expected(9200, networking.ProtocolTCP, SectionKindInput, "elasticsearch", 2),
-			expected(24224, networking.ProtocolTCP, SectionKindInput, "forward", 3),
-			expected(9880, networking.ProtocolTCP, SectionKindInput, "http", 4),
-			expected(1883, networking.ProtocolTCP, SectionKindInput, "mqtt", 5),
-			expected(4318, networking.ProtocolTCP, SectionKindInput, "opentelemetry", 6),
-			expected(8080, networking.ProtocolTCP, SectionKindInput, "prometheus_remote_write", 7),
-			expected(8088, networking.ProtocolTCP, SectionKindInput, "splunk", 8),
-			expected(8125, networking.ProtocolUDP, SectionKindInput, "statsd", 9),
-			// expected(5140, networking.ProtocolTCP, SectionKindInput, "syslog", 10), // default syslog without explicit mode tcp or udp is skipped
-			expected(5170, networking.ProtocolTCP, SectionKindInput, "tcp", 11),
-			expected(5170, networking.ProtocolUDP, SectionKindInput, "udp", 12),
+			expected(443, networking.ProtocolTCP, SectionKindInput, "csphere_http", 2),
+			expected(9200, networking.ProtocolTCP, SectionKindInput, "elasticsearch", 3),
+			expected(24224, networking.ProtocolTCP, SectionKindInput, "forward", 4),
+			expected(9880, networking.ProtocolTCP, SectionKindInput, "http", 5),
+			expected(1883, networking.ProtocolTCP, SectionKindInput, "mqtt", 6),
+			expected(4318, networking.ProtocolTCP, SectionKindInput, "opentelemetry", 7),
+			expected(8080, networking.ProtocolTCP, SectionKindInput, "prometheus_remote_write", 8),
+			expected(8088, networking.ProtocolTCP, SectionKindInput, "splunk", 9),
+			expected(8125, networking.ProtocolUDP, SectionKindInput, "statsd", 10),
+			// expected(5140, networking.ProtocolTCP, SectionKindInput, "syslog", 11), // default syslog without explicit mode tcp or udp is skipped
+			expected(5170, networking.ProtocolTCP, SectionKindInput, "tcp", 12),
+			expected(5170, networking.ProtocolUDP, SectionKindInput, "udp", 13),
 			expected(2021, networking.ProtocolTCP, SectionKindOutput, "prometheus_exporter", 0),
 		}, config.ServicePorts())
 	})
@@ -94,65 +97,69 @@ func TestConfig_ServicePorts(t *testing.T) {
 				name collectd
 				port 3
 			[INPUT]
-				name elasticsearch
+				name csphere_http
 				port 4
 			[INPUT]
-				name forward
+				name elasticsearch
 				port 5
 			[INPUT]
-				name http
+				name forward
 				port 6
 			[INPUT]
-				name mqtt
+				name http
 				port 7
 			[INPUT]
-				name opentelemetry
+				name mqtt
 				port 8
 			[INPUT]
-				name prometheus_remote_write
+				name opentelemetry
 				port 9
 			[INPUT]
-				name splunk
+				name prometheus_remote_write
 				port 10
 			[INPUT]
-				name statsd
+				name splunk
 				port 11
 			[INPUT]
-				name syslog
-				mode tcp
+				name statsd
 				port 12
 			[INPUT]
 				name syslog
-				mode udp
+				mode tcp
 				port 13
 			[INPUT]
-				name tcp
+				name syslog
+				mode udp
 				port 14
 			[INPUT]
-				name udp
+				name tcp
 				port 15
+			[INPUT]
+				name udp
+				port 16
 			[OUTPUT]
 				name prometheus_exporter
-				port 16
+				port 17
 		`, FormatClassic)
 		assert.NoError(t, err)
 		assert.Equal(t, ServicePorts{
 			{Port: 1, Protocol: networking.ProtocolTCP, Kind: SectionKindService},
 			expected(2, networking.ProtocolTCP, SectionKindInput, "cloudflare", 0, property.Property{Key: "addr", Value: ":2"}),
 			expected(3, networking.ProtocolUDP, SectionKindInput, "collectd", 1, property.Property{Key: "port", Value: int64(3)}),
-			expected(4, networking.ProtocolTCP, SectionKindInput, "elasticsearch", 2, property.Property{Key: "port", Value: int64(4)}),
-			expected(5, networking.ProtocolTCP, SectionKindInput, "forward", 3, property.Property{Key: "port", Value: int64(5)}),
-			expected(6, networking.ProtocolTCP, SectionKindInput, "http", 4, property.Property{Key: "port", Value: int64(6)}),
-			expected(7, networking.ProtocolTCP, SectionKindInput, "mqtt", 5, property.Property{Key: "port", Value: int64(7)}),
-			expected(8, networking.ProtocolTCP, SectionKindInput, "opentelemetry", 6, property.Property{Key: "port", Value: int64(8)}),
-			expected(9, networking.ProtocolTCP, SectionKindInput, "prometheus_remote_write", 7, property.Property{Key: "port", Value: int64(9)}),
-			expected(10, networking.ProtocolTCP, SectionKindInput, "splunk", 8, property.Property{Key: "port", Value: int64(10)}),
-			expected(11, networking.ProtocolUDP, SectionKindInput, "statsd", 9, property.Property{Key: "port", Value: int64(11)}),
-			expected(12, networking.ProtocolTCP, SectionKindInput, "syslog", 10, property.Property{Key: "mode", Value: "tcp"}, property.Property{Key: "port", Value: int64(12)}),
-			expected(13, networking.ProtocolUDP, SectionKindInput, "syslog", 11, property.Property{Key: "mode", Value: "udp"}, property.Property{Key: "port", Value: int64(13)}),
-			expected(14, networking.ProtocolTCP, SectionKindInput, "tcp", 12, property.Property{Key: "port", Value: int64(14)}),
-			expected(15, networking.ProtocolUDP, SectionKindInput, "udp", 13, property.Property{Key: "port", Value: int64(15)}),
-			expected(16, networking.ProtocolTCP, SectionKindOutput, "prometheus_exporter", 0, property.Property{Key: "port", Value: int64(16)}),
+			expected(4, networking.ProtocolTCP, SectionKindInput, "csphere_http", 2, property.Property{Key: "port", Value: int64(4)}),
+			expected(5, networking.ProtocolTCP, SectionKindInput, "elasticsearch", 3, property.Property{Key: "port", Value: int64(5)}),
+			expected(6, networking.ProtocolTCP, SectionKindInput, "forward", 4, property.Property{Key: "port", Value: int64(6)}),
+			expected(7, networking.ProtocolTCP, SectionKindInput, "http", 5, property.Property{Key: "port", Value: int64(7)}),
+			expected(8, networking.ProtocolTCP, SectionKindInput, "mqtt", 6, property.Property{Key: "port", Value: int64(8)}),
+			expected(9, networking.ProtocolTCP, SectionKindInput, "opentelemetry", 7, property.Property{Key: "port", Value: int64(9)}),
+			expected(10, networking.ProtocolTCP, SectionKindInput, "prometheus_remote_write", 8, property.Property{Key: "port", Value: int64(10)}),
+			expected(11, networking.ProtocolTCP, SectionKindInput, "splunk", 9, property.Property{Key: "port", Value: int64(11)}),
+			expected(12, networking.ProtocolUDP, SectionKindInput, "statsd", 10, property.Property{Key: "port", Value: int64(12)}),
+			expected(13, networking.ProtocolTCP, SectionKindInput, "syslog", 11, property.Property{Key: "mode", Value: "tcp"}, property.Property{Key: "port", Value: int64(13)}),
+			expected(14, networking.ProtocolUDP, SectionKindInput, "syslog", 12, property.Property{Key: "mode", Value: "udp"}, property.Property{Key: "port", Value: int64(14)}),
+			expected(15, networking.ProtocolTCP, SectionKindInput, "tcp", 13, property.Property{Key: "port", Value: int64(15)}),
+			expected(16, networking.ProtocolUDP, SectionKindInput, "udp", 14, property.Property{Key: "port", Value: int64(16)}),
+			expected(17, networking.ProtocolTCP, SectionKindOutput, "prometheus_exporter", 0, property.Property{Key: "port", Value: int64(17)}),
 		}, config.ServicePorts())
 	})
 
