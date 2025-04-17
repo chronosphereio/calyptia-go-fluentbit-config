@@ -30,6 +30,15 @@ func (c Config) ValidateWithSchema(schema Schema) error {
 		return nil
 	}
 
+	validateService := func(properties property.Properties) error {
+		for _, property := range properties {
+			if _, ok := property.Value.(string); !ok {
+				return fmt.Errorf("illegal service setting: %s", property.Key)
+			}
+		}
+		return nil
+	}
+
 	if err := validate(SectionKindCustom, c.Customs); err != nil {
 		return err
 	}
@@ -43,6 +52,10 @@ func (c Config) ValidateWithSchema(schema Schema) error {
 	}
 
 	if err := validate(SectionKindOutput, c.Pipeline.Outputs); err != nil {
+		return err
+	}
+
+	if err := validateService(c.Service); err != nil {
 		return err
 	}
 

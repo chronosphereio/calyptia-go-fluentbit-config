@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
+	"gopkg.in/yaml.v3"
 )
 
 func TestConfig_Validate(t *testing.T) {
@@ -372,6 +373,65 @@ func TestConfig_Validate(t *testing.T) {
 			assert.NoError(t, err)
 
 			err = classicConf.Validate()
+			if tc.want == "" && err == nil {
+				return
+			}
+
+			if tc.want == "" && err != nil {
+				t.Error(err)
+				return
+			}
+
+			if tc.want != "" && err == nil {
+				t.Errorf("expected error:\n%s\ngot: nil\n", tc.want)
+				return
+			}
+
+			if tc.want != err.Error() {
+				t.Errorf("expected error:\n%s\ngot:\n%s\n", tc.want, err.Error())
+				return
+			}
+		})
+	}
+}
+
+func TestConfig_Validate_Schema_YAML(t *testing.T) {
+	tt := []struct {
+		name string
+		yaml string
+		want string
+	}{
+		// fluent-bit does not support using arrays under
+		// the service section under any circumstance.
+		{
+			name: "service_with_arrays",
+			yaml: configLiteral(`
+				service:
+					parsers:
+						- one
+						- two
+			`),
+			want: "illegal service setting: parsers",
+		},
+		// fluent-bit does not support using mappings under
+		// the service section under any circumstance.
+		{
+			name: "service_with_mapping",
+			yaml: configLiteral(`
+				service:
+					headers:
+						one: two
+			`),
+			want: "illegal service setting: headers",
+		},
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			var yamlConf Config
+			err := yaml.Unmarshal([]byte(tc.yaml), &yamlConf)
+			assert.NoError(t, err)
+
+			err = yamlConf.Validate()
 			if tc.want == "" && err == nil {
 				return
 			}
