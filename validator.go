@@ -32,7 +32,13 @@ func (c Config) ValidateWithSchema(schema Schema) error {
 
 	validateService := func(properties property.Properties) error {
 		for _, property := range properties {
-			if _, ok := property.Value.(string); !ok {
+			switch property.Value.(type) {
+			case bool:
+			case int:
+			case int64:
+			case float64:
+			case string:
+			default:
 				return fmt.Errorf("illegal service setting: %s", property.Key)
 			}
 		}
