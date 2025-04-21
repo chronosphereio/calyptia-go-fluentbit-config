@@ -424,6 +424,42 @@ func TestConfig_Validate_Schema_YAML(t *testing.T) {
 			`),
 			want: "illegal service setting: headers",
 		},
+		// it does support booleans
+		{
+			name: "service_with_http_server",
+			yaml: configLiteral(`
+				service:
+					http_server: true
+			`),
+			want: "",
+		},
+		// integers
+		{
+			name: "service_with_http_port",
+			yaml: configLiteral(`
+				service:
+					http_port: 2020
+			`),
+			want: "",
+		},
+		// and strings
+		{
+			name: "service_with_string_setting",
+			yaml: configLiteral(`
+				service:
+					label: FOOBAR
+			`),
+			want: "",
+		},
+		// and floating point
+		{
+			name: "service_with_flush_microseconds",
+			yaml: configLiteral(`
+				service:
+					flush: 0.2
+			`),
+			want: "",
+		},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
