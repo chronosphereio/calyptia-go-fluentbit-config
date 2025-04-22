@@ -411,7 +411,7 @@ func TestConfig_Validate_Schema_YAML(t *testing.T) {
 						- one
 						- two
 			`),
-			want: "illegal service setting: parsers",
+			want: "illegal non-string type for service setting: parsers",
 		},
 		// fluent-bit does not support using mappings under
 		// the service section under any circumstance.
@@ -422,7 +422,7 @@ func TestConfig_Validate_Schema_YAML(t *testing.T) {
 					headers:
 						one: two
 			`),
-			want: "illegal service setting: headers",
+			want: "illegal non-string type for service setting: headers",
 		},
 		// it does support booleans
 		{
