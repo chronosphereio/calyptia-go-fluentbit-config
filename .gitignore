@@ -286,3 +286,7 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,windows,linux,executable,dotenv,git,go,visualstudiocode,vim,goland
+
+# Ignore compiled binaries
+/fluentbit-convert
+/fluentbit-validate
