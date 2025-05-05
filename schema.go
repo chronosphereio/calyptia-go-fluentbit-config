@@ -1,13 +1,17 @@
 package fluentbitconfig
 
 import (
-	_ "embed"
+	"embed"
 	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
+
+	"golang.org/x/mod/semver"
 )
 
+//go:embed schemas/*.json
+var rawSchemas embed.FS
 //go:embed schemas/25.4.1.json
 var rawSchema []byte
 
@@ -23,6 +27,28 @@ var DefaultSchema = func() Schema {
 
 	return s
 }()
+
+func GetSchema(version string) (Schema, error) {
+	var schema Schema
+
+	if !semver.IsValid("v" + version) {
+		return schema, fmt.Errorf("invalid semantic version: %s", version)
+	}
+
+	rawSchema, err := rawSchemas.ReadFile("schemas/" + version + ".json")
+	if err != nil {
+		return schema, err
+	}
+
+	err = json.Unmarshal(rawSchema, &schema)
+	if err != nil {
+		return schema, err
+	}
+
+	schema.InjectLTSPlugins()
+
+	return schema, nil
+}
 
 type Schema struct {
 	FluentBit SchemaFluentBit `json:"fluent-bit"`
