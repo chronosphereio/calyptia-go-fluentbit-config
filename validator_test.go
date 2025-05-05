@@ -489,3 +489,61 @@ func TestConfig_Validate_Schema_YAML(t *testing.T) {
 		})
 	}
 }
+
+func TestConfig_Validate_SchemaWithVersion(t *testing.T) {
+	// Default Schema
+	t.Run("default_schema", func(t *testing.T) {
+		ini:= `
+			[INPUT]
+				Name dummy
+			[OUTPUT]
+				Name s3
+				core.metadata name=foo
+		`
+		var conf Config
+		err := conf.UnmarshalClassic([]byte(ini))
+		assert.NoError(t, err)
+
+		err = conf.ValidateWithSchema(DefaultSchema)
+		assert.NoError(t, err)
+	})
+
+	// Load oldest schema
+	t.Run("oldest_schema", func(t *testing.T) {
+		ini:= `
+			[INPUT]
+				Name dummy
+			[OUTPUT]
+				Name s3
+				core.metadata name=foo
+		`
+		var conf Config
+		err := conf.UnmarshalClassic([]byte(ini))
+		assert.NoError(t, err)
+
+		schema, err := GetSchema("22.7.2")
+		assert.NoError(t, err)
+
+		err = conf.ValidateWithSchema(schema)
+		assert.NoError(t, err)
+	})
+
+	t.Run("some_random_version", func(t *testing.T) {
+		ini:= `
+			[INPUT]
+				Name dummy
+			[OUTPUT]
+				Name s3
+				core.metadata name=foo
+		`
+		var conf Config
+		err := conf.UnmarshalClassic([]byte(ini))
+		assert.NoError(t, err)
+
+		schema, err := GetSchema("25.1.1")
+		assert.NoError(t, err)
+
+		err = conf.ValidateWithSchema(schema)
+		assert.NoError(t, err)
+	})
+}
