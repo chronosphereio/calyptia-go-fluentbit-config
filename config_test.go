@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
-	"gopkg.in/yaml.v3"
+	yaml "github.com/goccy/go-yaml"
 
 	"github.com/calyptia/go-fluentbit-config/v2/property"
 )
@@ -456,11 +456,11 @@ func Example_configWithProcessors() {
 	//     inputs:
 	//         - name: dummy
 	//           processors:
-	//             logs:
-	//                 - name: calyptia
-	//                   actions:
-	//                     type: block_keys
-	//                     opts:
-	//                         regex: star
-	//                         regexEngine: pcre2
+	//               logs:
+	//                   - name: calyptia
+	//                     actions:
+	//                         type: block_keys
+	//                         opts:
+	//                             regex: star
+	//                             regexEngine: pcre2
 }
