@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -41,28 +42,57 @@ func indentJSON(in string) (string, error) {
 	return string(indentedJSON), nil
 }
 
+func usage(progname string) {
+	fmt.Printf("%s <options> [input]\n", progname)
+	pflag.CommandLine.PrintDefaults()
+}
+
 func main() {
 	var outputFormat string
+	var outputFilename string
+	var outfile io.Writer
 
-	pflag.StringVar(&outputFormat, "format", "json", "output format, one of: json, yaml, ini")
+	pflag.StringVarP(&outputFormat, "format", "f", "yaml",
+		"output format, one of: json, yaml, ini")
+	pflag.StringVarP(&outputFilename, "output", "o", "",
+		"output file (optional, default is stdout)")
 	pflag.Parse()
+	args := pflag.Args()
 
-	parts := strings.SplitN(os.Args[1], ".", 2)
+	if pflag.NArg() < 1 {
+		usage(os.Args[0])
+		os.Exit(1)
+	}
 
-	config, err := os.ReadFile(os.Args[1])
+	parts := strings.SplitN(args[0], ".", 2)
+
+	config, err := os.ReadFile(args[0])
 	if err != nil {
-		panic(err)
+		fmt.Printf("ERROR: %s\n", err)
+		os.Exit(1)
 	}
 
 	cfg, err := fluent.ParseAs(string(config),
 		mustGetFormatFromExt(parts[1]))
 	if err != nil {
-		panic(err)
+		fmt.Printf("ERROR: %s\n", err)
+		os.Exit(1)
 	}
 
 	out, err := cfg.DumpAs(mustGetFormatFromExt(outputFormat))
 	if err != nil {
-		panic(fmt.Errorf("parse error: %s", err))
+		fmt.Printf("ERROR: %s\n", err)
+		os.Exit(1)
+	}
+
+	if outputFilename != "" {
+		outfile, err = os.Create(outputFilename)
+		if err != nil {
+			fmt.Printf("ERROR: %s\n", err)
+			os.Exit(1)
+		}
+	} else {
+		outfile = os.Stdout
 	}
 
 	switch mustGetFormatFromExt(outputFormat) {
@@ -71,8 +101,8 @@ func main() {
 		if err != nil {
 			panic(fmt.Errorf("parse error: %s", err))
 		}
-		fmt.Println(indented)
+		fmt.Fprintln(outfile, indented)
 	default:
-		fmt.Println(out)
+		fmt.Fprintln(outfile, out)
 	}
 }
