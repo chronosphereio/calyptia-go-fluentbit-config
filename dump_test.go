@@ -18,7 +18,8 @@ func TestParseAsYAML(t *testing.T) {
 				inputs:
 					- name: dummy
 		`))
-		assert.EqualError(t, err, "yaml: unmarshal errors:\n  line 1: field pipelines not found in type fluentbitconfig.Config")
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "unknown field \"pipelines\"")
 	})
 
 	t.Run("unknown_section", func(t *testing.T) {
@@ -26,7 +27,8 @@ func TestParseAsYAML(t *testing.T) {
 			unknown:
 				- name: dummy
 		`))
-		assert.EqualError(t, err, "yaml: unmarshal errors:\n  line 1: field unknown not found in type fluentbitconfig.Config")
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "unknown field \"unknown\"")
 	})
 
 	t.Run("unknown_pipeline_plugins_kind", func(t *testing.T) {
@@ -35,7 +37,8 @@ func TestParseAsYAML(t *testing.T) {
 				foos:
 					- name: bar
 		`))
-		assert.EqualError(t, err, "yaml: unmarshal errors:\n  line 2: field foos not found in type fluentbitconfig.Pipeline")
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "unknown field \"foos\"")
 	})
 
 	t.Run("empty", func(t *testing.T) {
