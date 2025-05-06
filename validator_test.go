@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
-	"gopkg.in/yaml.v3"
+	yaml "github.com/goccy/go-yaml"
 )
 
 func TestConfig_Validate(t *testing.T) {
@@ -493,7 +493,7 @@ func TestConfig_Validate_Schema_YAML(t *testing.T) {
 func TestConfig_Validate_SchemaWithVersion(t *testing.T) {
 	// Default Schema
 	t.Run("default_schema", func(t *testing.T) {
-		ini:= `
+		ini := `
 			[INPUT]
 				Name dummy
 			[OUTPUT]
@@ -510,7 +510,7 @@ func TestConfig_Validate_SchemaWithVersion(t *testing.T) {
 
 	// Load oldest schema
 	t.Run("oldest_schema", func(t *testing.T) {
-		ini:= `
+		ini := `
 			[INPUT]
 				Name dummy
 			[OUTPUT]
@@ -529,7 +529,7 @@ func TestConfig_Validate_SchemaWithVersion(t *testing.T) {
 	})
 
 	t.Run("some_random_version", func(t *testing.T) {
-		ini:= `
+		ini := `
 			[INPUT]
 				Name dummy
 			[OUTPUT]
