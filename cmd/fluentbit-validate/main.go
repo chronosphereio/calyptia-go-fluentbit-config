@@ -74,12 +74,10 @@ func main() {
 			fmt.Printf("ERROR: %s\n", err)
 			os.Exit(1)
 		}
-		fmt.Println("VALID SCHEMA")
 	} else {
 		if err := cfg.Validate(); err != nil {
 			fmt.Printf("ERROR: %s\n", err)
 			os.Exit(1)
 		}
-		fmt.Println("VALID STRUCTURE")
 	}
 }
