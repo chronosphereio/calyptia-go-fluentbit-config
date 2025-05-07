@@ -32,6 +32,14 @@ func usage(progname string) {
 }
 
 func main() {
+	var schema fluent.Schema = fluent.DefaultSchema
+	var schemaVersion string
+	var checkSchema bool
+
+	pflag.BoolVarP(&checkSchema, "schema", "s", false,
+		"validate the schema of the properties")
+	pflag.StringVarP(&schemaVersion, "schema-version", "v", "",
+		"schema version to valdiate against")
 	pflag.Parse()
 	args := pflag.Args()
 
@@ -43,20 +51,35 @@ func main() {
 	config, err := os.ReadFile(args[0])
 	if err != nil {
 		fmt.Printf("ERROR: %s\n", err)
-		os.Exit(3)
+		os.Exit(4)
 	}
 
 	cfg, err := fluent.ParseAs(string(config),
 		mustGetFormatFromExt(filepath.Ext(args[0])))
 	if err != nil {
 		fmt.Printf("ERROR: %s\n", err)
-		os.Exit(2)
+		os.Exit(3)
 	}
 
-	if err := cfg.Validate(); err != nil {
-		fmt.Printf("ERROR: %s\n", err)
-		os.Exit(1)
+	if schemaVersion != "" {
+		schema, err = fluent.GetSchema(schemaVersion)
+		if err != nil {
+			fmt.Printf("ERROR: %s\n", err)
+			os.Exit(2)
+		}
 	}
 
-	fmt.Println("VALID")
+	if checkSchema {
+		if err := cfg.ValidateWithSchema(schema); err != nil {
+			fmt.Printf("ERROR: %s\n", err)
+			os.Exit(1)
+		}
+		fmt.Println("VALID SCHEMA")
+	} else {
+		if err := cfg.Validate(); err != nil {
+			fmt.Printf("ERROR: %s\n", err)
+			os.Exit(1)
+		}
+		fmt.Println("VALID STRUCTURE")
+	}
 }
