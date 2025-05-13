@@ -10,9 +10,9 @@ import (
 	"golang.org/x/mod/semver"
 )
 
-//go:embed schemas/*.json
+//go:embed schemas/25.4.3.json
 var rawSchemas embed.FS
-//go:embed schemas/25.4.1.json
+//go:embed schemas/25.4.3.json
 var rawSchema []byte
 
 var DefaultSchema = func() Schema {
