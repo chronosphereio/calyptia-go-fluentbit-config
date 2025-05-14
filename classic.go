@@ -201,6 +201,7 @@ func (c Config) MarshalClassic() ([]byte, error) {
 		return nil, err
 	}
 
+	// Note: Parsers cannot be combined with other configuration in classic format.
 	if err := writePlugins("PARSER", c.Parsers); err != nil {
 		return nil, err
 	}
