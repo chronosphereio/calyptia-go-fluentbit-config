@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"golang.org/x/exp/slices"
+	"gopkg.in/yaml.v3"
 
 	"github.com/calyptia/go-fluentbit-config/v2/property"
 )
@@ -15,11 +16,88 @@ type Config struct {
 	Service  property.Properties `json:"service,omitempty" yaml:"service,omitempty"`
 	Customs  Plugins             `json:"customs,omitempty" yaml:"customs,omitempty"`
 	Pipeline Pipeline            `json:"pipeline,omitempty" yaml:"pipeline,omitempty"`
+	Parsers  []Parser            `json:"parsers,omitempty" yaml:"parsers,omitempty"`
+}
+
+type ConfigBool bool
+
+func (cb *ConfigBool) UnmarshalYAML(value *yaml.Node) error {
+	var configBoolStr string
+
+	if err := value.Decode(&configBoolStr); err != nil {
+		return err
+	}
+
+	switch ParserFormat(configBoolStr) {
+	case "on":
+		fallthrough
+	case "On":
+		fallthrough
+	case "ON":
+		fallthrough
+	case "true":
+		*cb = true
+	case "off":
+		fallthrough
+	case "Off":
+		fallthrough
+	case "OFF":
+		fallthrough
+	case "false":
+		*cb = false
+	default:
+		return fmt.Errorf("unknown boolean value: %s", string(configBoolStr))
+	}
+	return nil
+}
+
+type ParserFormat string
+
+const (
+	ParserFormatJson   ParserFormat = "json"
+	ParserFormatRegex  ParserFormat = "regex"
+	ParserFormatLtsv   ParserFormat = "ltsv"
+	ParserFormatLogfmt ParserFormat = "logfmt"
+)
+
+func (pf *ParserFormat) UnmarshalYAML(value *yaml.Node) error {
+	var parserFormatString string
+
+	if err := value.Decode(&parserFormatString); err != nil {
+		return err
+	}
+
+	switch ParserFormat(parserFormatString) {
+	case ParserFormatJson:
+		*pf = ParserFormatJson
+	case ParserFormatRegex:
+		*pf = ParserFormatRegex
+	case ParserFormatLtsv:
+		*pf = ParserFormatLtsv
+	case ParserFormatLogfmt:
+		*pf = ParserFormatLogfmt
+	default:
+		return fmt.Errorf("unknown parser type: %s", string(parserFormatString))
+	}
+	return nil
+}
+
+type Parser struct {
+	Name               string       `json:"name" yaml:"name"`
+	Format             ParserFormat `json:"format" yaml:"format"`
+	Regex              string       `json:"regex,omitempty" yaml:"regex,omitempty"`
+	TimeKey            string       `json:"time_key,omitempty" yaml:"time_key,omitempty"`
+	TimeFormat         string       `json:"time_format,omitempty" yaml:"time_format,omitempty"`
+	TimeOffset         string       `json:"time_offset,omitempty" yaml:"time_offset,omitempty"`
+	TimeKeep           ConfigBool   `json:"time_keep,omitempty" yaml:"time_keep,omitempty"`
+	TimeSystemTimezone ConfigBool   `json:"time_system_timezone,omitempty" yaml:"time_system_timezone,omitempty"`
+	Types              string       `json:"types,omitempty" yaml:"types,omitempty"`
+	SkipEmptyValues    ConfigBool   `json:"skip_empty_values,omitempty" yaml:"skip_empty_values,omitempty"`
+	TimeStrict         ConfigBool   `json:"time_strict,omitempty" yaml:"time_strict,omitempty"`
 }
 
 type Pipeline struct {
 	Inputs  Plugins `json:"inputs,omitempty" yaml:"inputs,omitempty"`
-	Parsers Plugins `json:"parsers,omitempty" yaml:"parsers,omitempty"`
 	Filters Plugins `json:"filters,omitempty" yaml:"filters,omitempty"`
 	Outputs Plugins `json:"outputs,omitempty" yaml:"outputs,omitempty"`
 }
@@ -64,8 +142,6 @@ func (c *Config) AddSection(kind SectionKind, props property.Properties) {
 		c.Customs = append(c.Customs, makePlugin(len(c.Customs)))
 	case SectionKindInput:
 		c.Pipeline.Inputs = append(c.Pipeline.Inputs, makePlugin(len(c.Pipeline.Inputs)))
-	case SectionKindParser:
-		c.Pipeline.Parsers = append(c.Pipeline.Parsers, makePlugin(len(c.Pipeline.Parsers)))
 	case SectionKindFilter:
 		c.Pipeline.Filters = append(c.Pipeline.Filters, makePlugin(len(c.Pipeline.Filters)))
 	case SectionKindOutput:
@@ -91,10 +167,6 @@ func (c Config) Equal(target Config) bool {
 	}
 
 	if !c.Pipeline.Inputs.Equal(target.Pipeline.Inputs) {
-		return false
-	}
-
-	if !c.Pipeline.Parsers.Equal(target.Pipeline.Parsers) {
 		return false
 	}
 
@@ -125,7 +197,6 @@ func (c Config) IDs(namespaced bool) []string {
 
 	set(SectionKindCustom, c.Customs)
 	set(SectionKindInput, c.Pipeline.Inputs)
-	set(SectionKindParser, c.Pipeline.Parsers)
 	set(SectionKindFilter, c.Pipeline.Filters)
 	set(SectionKindOutput, c.Pipeline.Outputs)
 
@@ -149,10 +220,6 @@ func (c Config) FindByID(id string) (Plugin, bool) {
 	}
 
 	if plugin, ok := find(SectionKindInput, c.Pipeline.Inputs, id); ok {
-		return plugin, true
-	}
-
-	if plugin, ok := find(SectionKindParser, c.Pipeline.Parsers, id); ok {
 		return plugin, true
 	}
 

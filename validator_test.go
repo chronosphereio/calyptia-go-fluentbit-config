@@ -460,6 +460,18 @@ func TestConfig_Validate_Schema_YAML(t *testing.T) {
 			`),
 			want: "",
 		},
+		// inline parsers
+		{
+			name: "inline_parser",
+			yaml: configLiteral(`
+				parsers:
+					- name: nginx
+					  format: regex
+					  regex: ".*"
+			`),
+			want: "",
+		},
+
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
