@@ -102,6 +102,45 @@ func Test_Config_Processors(t *testing.T) {
 	}
 }
 
+func Test_Config_Parsers(t *testing.T) {
+	cfg := Config{
+		Pipeline: Pipeline{
+			Inputs: Plugins{{
+				Properties: property.Properties{
+					{Key: "name", Value: "dummy"},
+				},
+			}},
+			Outputs: Plugins{{
+				Properties: property.Properties{
+					{Key: "name", Value: "stdout"},
+				},
+			}},
+		},
+		Parsers: Plugins{{
+			Properties: property.Properties{
+				{Key: "name", Value: "myparser"},
+				{Key: "key_name", Value: "log"},
+				{Key: "format", Value: "regex"},
+				{Key: "regex", Value: "^(?<foo>foo) bar$"},
+			},
+		}},
+	}
+
+	gotYamlText, err := cfg.DumpAsYAML()
+	assert.NoError(t, err)
+	assert.Equal(t, `pipeline:
+    inputs:
+        - name: dummy
+    outputs:
+        - name: stdout
+parsers:
+    - name: myparser
+      key_name: log
+      format: regex
+      regex: ^(?<foo>foo) bar$
+`, gotYamlText)
+}
+
 func makeTestName(fp string) string {
 	s := filepath.Base(fp)
 	s = strings.TrimRight(s, filepath.Ext(s))
