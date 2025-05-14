@@ -181,6 +181,66 @@ func (c Config) MarshalClassic() ([]byte, error) {
 		return nil
 	}
 
+	writeParsers := func(parsers []Parser) error {
+		for _, parser := range parsers {
+			_, err := fmt.Fprintf(&sb, "[PARSER]\n")
+			if err != nil {
+				return err
+			}
+
+			tw := tabwriter.NewWriter(&sb, 0, 4, 1, ' ', 0)
+			if _, err := fmt.Fprintf(tw, "    %s\t%s\n", "Name", parser.Name); err != nil {
+				return err
+			}
+			if _, err := fmt.Fprintf(tw, "    %s\t%s\n", "Format", parser.Format); err != nil {
+				return err
+			}
+			if parser.Format == ParserFormatRegex && parser.Regex != "" {
+				if _, err := fmt.Fprintf(tw, "    %s\t%s\n", "Regex", parser.Regex); err != nil {
+					return err
+				}
+			}
+			if parser.TimeKey != "" {
+				if _, err := fmt.Fprintf(tw, "    %s\t%s\n", "Time_Key", parser.TimeKey); err != nil {
+					return err
+				}
+			}
+			if parser.TimeFormat != "" {
+				if _, err := fmt.Fprintf(tw, "    %s\t%s\n", "Time_Format", parser.TimeFormat); err != nil {
+					return err
+				}
+			}
+			if parser.TimeKeep {
+				if _, err := fmt.Fprintf(tw, "    %s\ttrue\n", "Time_Keep"); err != nil {
+					return err
+				}
+			}
+			if parser.TimeSystemTimezone {
+				if _, err := fmt.Fprintf(tw, "    %s\ttrue\n", "Time_System_Timezone"); err != nil {
+					return err
+				}
+			}
+			if parser.Types != "" {
+				if _, err := fmt.Fprintf(tw, "    %s\t%s\n", "Types", parser.Types); err != nil {
+					return err
+				}
+			}
+			if parser.SkipEmptyValues {
+				if _, err := fmt.Fprintf(tw, "    %s\ttrue\n", "Skip_Empty_Values"); err != nil {
+					return err
+				}
+			}
+			if parser.TimeStrict {
+				if _, err := fmt.Fprintf(tw, "    %s\ttrue\n", "Time_Strict"); err != nil {
+					return err
+				}
+			}
+			return tw.Flush()
+		}
+
+		return nil
+	}
+
 	if err := writeProps("SERVICE", c.Service); err != nil {
 		return nil, err
 	}
@@ -193,7 +253,7 @@ func (c Config) MarshalClassic() ([]byte, error) {
 		return nil, err
 	}
 
-	if err := writePlugins("PARSER", c.Pipeline.Parsers); err != nil {
+	if err := writeParsers(c.Parsers); err != nil {
 		return nil, err
 	}
 
