@@ -15,11 +15,11 @@ type Config struct {
 	Service  property.Properties `json:"service,omitempty" yaml:"service,omitempty"`
 	Customs  Plugins             `json:"customs,omitempty" yaml:"customs,omitempty"`
 	Pipeline Pipeline            `json:"pipeline,omitempty" yaml:"pipeline,omitempty"`
+	Parsers  Plugins             `json:"parsers,omitempty" yaml:"parsers,omitempty"`
 }
 
 type Pipeline struct {
 	Inputs  Plugins `json:"inputs,omitempty" yaml:"inputs,omitempty"`
-	Parsers Plugins `json:"parsers,omitempty" yaml:"parsers,omitempty"`
 	Filters Plugins `json:"filters,omitempty" yaml:"filters,omitempty"`
 	Outputs Plugins `json:"outputs,omitempty" yaml:"outputs,omitempty"`
 }
@@ -64,12 +64,12 @@ func (c *Config) AddSection(kind SectionKind, props property.Properties) {
 		c.Customs = append(c.Customs, makePlugin(len(c.Customs)))
 	case SectionKindInput:
 		c.Pipeline.Inputs = append(c.Pipeline.Inputs, makePlugin(len(c.Pipeline.Inputs)))
-	case SectionKindParser:
-		c.Pipeline.Parsers = append(c.Pipeline.Parsers, makePlugin(len(c.Pipeline.Parsers)))
 	case SectionKindFilter:
 		c.Pipeline.Filters = append(c.Pipeline.Filters, makePlugin(len(c.Pipeline.Filters)))
 	case SectionKindOutput:
 		c.Pipeline.Outputs = append(c.Pipeline.Outputs, makePlugin(len(c.Pipeline.Outputs)))
+	case SectionKindParser:
+		c.Parsers = append(c.Parsers, makePlugin(len(c.Parsers)))
 	}
 }
 
@@ -94,15 +94,15 @@ func (c Config) Equal(target Config) bool {
 		return false
 	}
 
-	if !c.Pipeline.Parsers.Equal(target.Pipeline.Parsers) {
-		return false
-	}
-
 	if !c.Pipeline.Filters.Equal(target.Pipeline.Filters) {
 		return false
 	}
 
 	if !c.Pipeline.Outputs.Equal(target.Pipeline.Outputs) {
+		return false
+	}
+
+	if !c.Parsers.Equal(target.Parsers) {
 		return false
 	}
 
@@ -125,9 +125,9 @@ func (c Config) IDs(namespaced bool) []string {
 
 	set(SectionKindCustom, c.Customs)
 	set(SectionKindInput, c.Pipeline.Inputs)
-	set(SectionKindParser, c.Pipeline.Parsers)
 	set(SectionKindFilter, c.Pipeline.Filters)
 	set(SectionKindOutput, c.Pipeline.Outputs)
+	set(SectionKindParser, c.Parsers)
 
 	return ids
 }
@@ -152,11 +152,11 @@ func (c Config) FindByID(id string) (Plugin, bool) {
 		return plugin, true
 	}
 
-	if plugin, ok := find(SectionKindParser, c.Pipeline.Parsers, id); ok {
+	if plugin, ok := find(SectionKindFilter, c.Pipeline.Filters, id); ok {
 		return plugin, true
 	}
 
-	if plugin, ok := find(SectionKindFilter, c.Pipeline.Filters, id); ok {
+	if plugin, ok := find(SectionKindParser, c.Parsers, id); ok {
 		return plugin, true
 	}
 

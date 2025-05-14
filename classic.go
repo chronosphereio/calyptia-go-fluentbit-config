@@ -193,15 +193,16 @@ func (c Config) MarshalClassic() ([]byte, error) {
 		return nil, err
 	}
 
-	if err := writePlugins("PARSER", c.Pipeline.Parsers); err != nil {
-		return nil, err
-	}
-
 	if err := writePlugins("FILTER", c.Pipeline.Filters); err != nil {
 		return nil, err
 	}
 
 	if err := writePlugins("OUTPUT", c.Pipeline.Outputs); err != nil {
+		return nil, err
+	}
+
+	// Note: Parsers cannot be combined with other configuration in classic format.
+	if err := writePlugins("PARSER", c.Parsers); err != nil {
 		return nil, err
 	}
 

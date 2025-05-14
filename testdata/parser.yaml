@@ -1,5 +1,4 @@
-pipeline:
-    parsers:
-        - name: dummy_test
-          format: regex
-          regex: ^(?<INT>[^ ]+) (?<FLOAT>[^ ]+) (?<BOOL>[^ ]+) (?<STRING>.+)$
+parsers:
+    - name: dummy_test
+      format: regex
+      regex: ^(?<INT>[^ ]+) (?<FLOAT>[^ ]+) (?<BOOL>[^ ]+) (?<STRING>.+)$
