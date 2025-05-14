@@ -21,6 +21,36 @@ type Config struct {
 
 type ConfigBool bool
 
+func (cb *ConfigBool) UnmarshalYAML(value *yaml.Node) error {
+	var configBoolStr string
+
+	if err := value.Decode(&configBoolStr); err != nil {
+		return err
+	}
+
+	switch ParserFormat(configBoolStr) {
+	case "on":
+		fallthrough
+	case "On":
+		fallthrough
+	case "ON":
+		fallthrough
+	case "true":
+		*cb = true
+	case "off":
+		fallthrough
+	case "Off":
+		fallthrough
+	case "OFF":
+		fallthrough
+	case "false":
+		*cb = false
+	default:
+		return fmt.Errorf("unknown boolean value: %s", string(configBoolStr))
+	}
+	return nil
+}
+
 type ParserFormat string
 
 const (
