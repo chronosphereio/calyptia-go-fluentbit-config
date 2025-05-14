@@ -1,0 +1,6 @@
+parsers:
+    - name: test
+      format: regex
+      regex: .*
+      time_key: time
+      time_format: '%d/%b/%Y:%H:%M:%S %z'

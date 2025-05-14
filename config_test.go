@@ -102,6 +102,44 @@ func Test_Config_Processors(t *testing.T) {
 	}
 }
 
+func Test_Config_Inline_Parsers(t *testing.T) {
+	names, err := filepath.Glob("testdata/parsers/*.yaml")
+	assert.NoError(t, err)
+
+	for _, name := range names {
+		t.Run(makeTestName(name), func(t *testing.T) {
+			yamlText, err := os.ReadFile(name)
+			assert.NoError(t, err)
+
+			var yamlConf Config
+			err = yaml.Unmarshal(yamlText, &yamlConf)
+			assert.NoError(t, err)
+
+			jsonText, err := os.ReadFile(strings.Replace(name, ".yaml", ".json", 1))
+			assert.NoError(t, err)
+
+			var jsonConf Config
+			err = json.Unmarshal(jsonText, &jsonConf)
+			assert.NoError(t, err)
+
+			gotYamlText, err := yamlConf.DumpAsYAML()
+			assert.NoError(t, err)
+			assert.Equal(t, string(yamlText), gotYamlText)
+
+			var gotJsonText bytes.Buffer
+			{
+				enc := json.NewEncoder(&gotJsonText)
+				enc.SetEscapeHTML(false)
+				enc.SetIndent("", "    ")
+				err = enc.Encode(yamlConf)
+				assert.NoError(t, err)
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, string(jsonText), gotJsonText.String())
+		})
+	}
+}
+
 func makeTestName(fp string) string {
 	s := filepath.Base(fp)
 	s = strings.TrimRight(s, filepath.Ext(s))

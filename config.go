@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"golang.org/x/exp/slices"
+	"gopkg.in/yaml.v3"
 
 	"github.com/calyptia/go-fluentbit-config/v2/property"
 )
@@ -15,6 +16,54 @@ type Config struct {
 	Service  property.Properties `json:"service,omitempty" yaml:"service,omitempty"`
 	Customs  Plugins             `json:"customs,omitempty" yaml:"customs,omitempty"`
 	Pipeline Pipeline            `json:"pipeline,omitempty" yaml:"pipeline,omitempty"`
+	Parsers  []Parser            `json:"parsers,omitempty" yaml:"parsers,omitempty"`
+}
+
+type ConfigBool bool
+
+type ParserFormat string
+
+const (
+	ParserFormatJson   ParserFormat = "json"
+	ParserFormatRegex  ParserFormat = "regex"
+	ParserFormatLtsv   ParserFormat = "ltsv"
+	ParserFormatLogfmt ParserFormat = "logfmt"
+)
+
+func (pf *ParserFormat) UnmarshalYAML(value *yaml.Node) error {
+	var parserFormatString string
+
+	if err := value.Decode(&parserFormatString); err != nil {
+		return err
+	}
+
+	switch ParserFormat(parserFormatString) {
+	case ParserFormatJson:
+		*pf = ParserFormatJson
+	case ParserFormatRegex:
+		*pf = ParserFormatRegex
+	case ParserFormatLtsv:
+		*pf = ParserFormatLtsv
+	case ParserFormatLogfmt:
+		*pf = ParserFormatLogfmt
+	default:
+		return fmt.Errorf("unknown parser type: %s", string(parserFormatString))
+	}
+	return nil
+}
+
+type Parser struct {
+	Name               string       `json:"name" yaml:"name"`
+	Format             ParserFormat `json:"format" yaml:"format"`
+	Regex              string       `json:"regex,omitempty" yaml:"regex,omitempty"`
+	TimeKey            string       `json:"time_key,omitempty" yaml:"time_key,omitempty"`
+	TimeFormat         string       `json:"time_format,omitempty" yaml:"time_format,omitempty"`
+	TimeOffset         string       `json:"time_offset,omitempty" yaml:"time_offset,omitempty"`
+	TimeKeep           ConfigBool   `json:"time_keep,omitempty" yaml:"time_keep,omitempty"`
+	TimeSystemTimezone ConfigBool   `json:"time_system_timezone,omitempty" yaml:"time_system_timezone,omitempty"`
+	Types              string       `json:"types,omitempty" yaml:"types,omitempty"`
+	SkipEmptyValues    ConfigBool   `json:"skip_empty_values,omitempty" yaml:"skip_empty_values,omitempty"`
+	TimeStrict         ConfigBool   `json:"time_strict,omitempty" yaml:"time_strict,omitempty"`
 }
 
 type Pipeline struct {
