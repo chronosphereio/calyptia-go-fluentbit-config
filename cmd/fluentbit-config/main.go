@@ -15,11 +15,21 @@ func main() {
 	var outputFormat string
 	var outputFilename string
 	var outFile *os.File
+	var schema fluent.Schema = fluent.DefaultSchema
+	var schemaVersion string
+	var checkSchema bool
+	var dryRun bool
 
 	pflag.StringVarP(&outputFormat, "format", "f", "yaml",
 		"output format, one of: json, yaml (yml), ini or conf")
 	pflag.StringVarP(&outputFilename, "output", "o", "",
 		"output file (optional, default is stdout)")
+	pflag.BoolVarP(&checkSchema, "schema", "s", false,
+		"validate the schema of the properties")
+	pflag.StringVarP(&schemaVersion, "schema-version", "v", "",
+		"schema version to valdiate against")
+	pflag.BoolVarP(&dryRun, "dry-run", "n", false,
+		"dry-run without writing to stdout (used for validation)")
 	pflag.Parse()
 	args := pflag.Args()
 
@@ -46,6 +56,37 @@ func main() {
 	if err != nil {
 		fmt.Printf("ERROR: %s\n", err)
 		os.Exit(1)
+	}
+
+	if checkSchema {
+		if schemaVersion != "" {
+			schema, err = fluent.GetSchema(schemaVersion)
+			if err != nil {
+				fmt.Printf("ERROR: %s\n", err)
+				os.Exit(2)
+			}
+		}
+		if err := cfg.ValidateWithSchema(schema); err != nil {
+			fmt.Printf("ERROR: %s\n", err)
+			os.Exit(1)
+		}
+	} else {
+		if err := cfg.Validate(); err != nil {
+			fmt.Printf("ERROR: %s\n", err)
+			os.Exit(1)
+		}
+	}
+
+	if dryRun {
+		if checkSchema {
+			if schemaVersion == "" {
+				fmt.Printf("file %s has valid fluent-bit config syntax\n", args[0])
+			} else {
+				fmt.Printf("file %s has valid fluent-bit config syntax for version %s\n",
+					args[0], schemaVersion)
+			}
+		}
+		return
 	}
 
 	outFormat, err := getFormatFromExt(outputFormat)
