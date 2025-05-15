@@ -14,7 +14,7 @@ import (
 func main() {
 	var outputFormat string
 	var outputFilename string
-	var outfile *os.File
+	var outFile *os.File
 
 	pflag.StringVarP(&outputFormat, "format", "f", "yaml",
 		"output format, one of: json, yaml, ini")
@@ -50,14 +50,14 @@ func main() {
 	}
 
 	if outputFilename != "" {
-		outfile, err = os.Create(outputFilename)
+		outFile, err = os.Create(outputFilename)
 		if err != nil {
 			fmt.Printf("ERROR: %s\n", err)
 			os.Exit(1)
 		}
-		defer outfile.Close()
+		defer outFile.Close()
 	} else {
-		outfile = os.Stdout
+		outFile = os.Stdout
 	}
 
 	switch mustGetFormatFromExt(outputFormat) {
@@ -66,9 +66,9 @@ func main() {
 		if err != nil {
 			panic(fmt.Errorf("parse error: %s", err))
 		}
-		fmt.Fprintln(outfile, indented)
+		fmt.Fprintln(outFile, indented)
 	default:
-		fmt.Fprintln(outfile, out)
+		fmt.Fprintln(outFile, out)
 	}
 }
 
