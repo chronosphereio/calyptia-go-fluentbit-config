@@ -36,14 +36,25 @@ func main() {
 		os.Exit(1)
 	}
 
-	cfg, err := fluent.ParseAs(string(config),
-		mustGetFormatFromExt(ext[1:]))
+	inFormat, err := getFormatFromExt(ext[1:])
 	if err != nil {
 		fmt.Printf("ERROR: %s\n", err)
 		os.Exit(1)
 	}
 
-	out, err := cfg.DumpAs(mustGetFormatFromExt(outputFormat))
+	cfg, err := fluent.ParseAs(string(config), inFormat)
+	if err != nil {
+		fmt.Printf("ERROR: %s\n", err)
+		os.Exit(1)
+	}
+
+	outFormat, err := getFormatFromExt(outputFormat)
+	if err != nil {
+		fmt.Printf("ERROR: %s\n", err)
+		os.Exit(1)
+	}
+
+	out, err := cfg.DumpAs(outFormat)
 	if err != nil {
 		fmt.Printf("ERROR: %s\n", err)
 		os.Exit(1)
@@ -60,11 +71,12 @@ func main() {
 		outFile = os.Stdout
 	}
 
-	switch mustGetFormatFromExt(outputFormat) {
+	switch outFormat {
 	case fluent.FormatJSON:
 		indented, err := indentJSON(out)
 		if err != nil {
-			panic(fmt.Errorf("parse error: %s", err))
+			fmt.Printf("ERROR: parse error: %s\n", err)
+			os.Exit(1)
 		}
 		fmt.Fprintln(outFile, indented)
 	default:
@@ -77,16 +89,16 @@ func usage(progname string) {
 	pflag.CommandLine.PrintDefaults()
 }
 
-func mustGetFormatFromExt(ext string) fluent.Format {
+func getFormatFromExt(ext string) (fluent.Format, error) {
 	switch strings.ToLower(ext) {
 	case "json":
-		return fluent.FormatJSON
+		return fluent.FormatJSON, nil
 	case "ini", "conf":
-		return fluent.FormatClassic
+		return fluent.FormatClassic, nil
 	case "yml", "yaml":
-		return fluent.FormatYAML
+		return fluent.FormatYAML, nil
 	}
-	panic(fmt.Errorf("unknown format extension: %s", ext))
+	return "", fmt.Errorf("unknown format extension: %s", ext)
 }
 
 func indentJSON(in string) (string, error) {
