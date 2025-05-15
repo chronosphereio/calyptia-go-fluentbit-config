@@ -81,13 +81,9 @@ func mustGetFormatFromExt(ext string) fluent.Format {
 	switch strings.ToLower(ext) {
 	case "json":
 		return fluent.FormatJSON
-	case "ini":
-		fallthrough
-	case "conf":
+	case "ini", "conf":
 		return fluent.FormatClassic
-	case "yml":
-		fallthrough
-	case "yaml":
+	case "yml", "yaml":
 		return fluent.FormatYAML
 	}
 	panic(fmt.Errorf("unknown format extension: %s", ext))
