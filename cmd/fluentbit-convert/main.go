@@ -17,7 +17,7 @@ func main() {
 	var outFile *os.File
 
 	pflag.StringVarP(&outputFormat, "format", "f", "yaml",
-		"output format, one of: json, yaml, ini")
+		"output format, one of: json, yaml (yml), ini or conf")
 	pflag.StringVarP(&outputFilename, "output", "o", "",
 		"output file (optional, default is stdout)")
 	pflag.Parse()
