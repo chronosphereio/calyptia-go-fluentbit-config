@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"os"
 	"strings"
 
@@ -14,7 +13,7 @@ import (
 func main() {
 	var outputFormat string
 	var outputFilename string
-	var outfile io.Writer
+	var outfile *os.File
 
 	pflag.StringVarP(&outputFormat, "format", "f", "yaml",
 		"output format, one of: json, yaml, ini")
@@ -55,6 +54,7 @@ func main() {
 			fmt.Printf("ERROR: %s\n", err)
 			os.Exit(1)
 		}
+		defer outfile.Close()
 	} else {
 		outfile = os.Stdout
 	}
