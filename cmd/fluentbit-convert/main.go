@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	fluent "github.com/calyptia/go-fluentbit-config/v2"
@@ -27,7 +28,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	parts := strings.SplitN(args[0], ".", 2)
+	ext := filepath.Ext(args[0])
 
 	config, err := os.ReadFile(args[0])
 	if err != nil {
@@ -36,7 +37,7 @@ func main() {
 	}
 
 	cfg, err := fluent.ParseAs(string(config),
-		mustGetFormatFromExt(parts[1]))
+		mustGetFormatFromExt(ext[1:]))
 	if err != nil {
 		fmt.Printf("ERROR: %s\n", err)
 		os.Exit(1)
