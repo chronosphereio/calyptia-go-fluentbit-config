@@ -94,7 +94,7 @@ func mustGetFormatFromExt(ext string) fluent.Format {
 }
 
 func indentJSON(in string) (string, error) {
-	var obj interface{}
+	var obj any
 	if err := json.Unmarshal([]byte(in), &obj); err != nil {
 		return "", err
 	}
