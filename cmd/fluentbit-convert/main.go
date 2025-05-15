@@ -11,42 +11,6 @@ import (
 	"github.com/spf13/pflag"
 )
 
-func mustGetFormatFromExt(ext string) fluent.Format {
-	switch strings.ToLower(ext) {
-	case "json":
-		return fluent.FormatJSON
-	case "ini":
-		fallthrough
-	case "conf":
-		return fluent.FormatClassic
-	case "yml":
-		fallthrough
-	case "yaml":
-		return fluent.FormatYAML
-	}
-	panic(fmt.Errorf("unknown format extension: %s", ext))
-}
-
-func indentJSON(in string) (string, error) {
-	var obj interface{}
-	if err := json.Unmarshal([]byte(in), &obj); err != nil {
-		return "", err
-	}
-
-	indentedJSON, err := json.MarshalIndent(obj, "", "\t")
-	if err != nil {
-		fmt.Println("Failed to indent JSON:", err)
-		return "", err
-	}
-
-	return string(indentedJSON), nil
-}
-
-func usage(progname string) {
-	fmt.Printf("%s <options> [input]\n", progname)
-	pflag.CommandLine.PrintDefaults()
-}
-
 func main() {
 	var outputFormat string
 	var outputFilename string
@@ -105,4 +69,40 @@ func main() {
 	default:
 		fmt.Fprintln(outfile, out)
 	}
+}
+
+func usage(progname string) {
+	fmt.Printf("%s <options> [input]\n", progname)
+	pflag.CommandLine.PrintDefaults()
+}
+
+func mustGetFormatFromExt(ext string) fluent.Format {
+	switch strings.ToLower(ext) {
+	case "json":
+		return fluent.FormatJSON
+	case "ini":
+		fallthrough
+	case "conf":
+		return fluent.FormatClassic
+	case "yml":
+		fallthrough
+	case "yaml":
+		return fluent.FormatYAML
+	}
+	panic(fmt.Errorf("unknown format extension: %s", ext))
+}
+
+func indentJSON(in string) (string, error) {
+	var obj interface{}
+	if err := json.Unmarshal([]byte(in), &obj); err != nil {
+		return "", err
+	}
+
+	indentedJSON, err := json.MarshalIndent(obj, "", "\t")
+	if err != nil {
+		fmt.Println("Failed to indent JSON:", err)
+		return "", err
+	}
+
+	return string(indentedJSON), nil
 }
