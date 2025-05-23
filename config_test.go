@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/alecthomas/assert/v2"
+	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 
 	"github.com/calyptia/go-fluentbit-config/v2/property"
@@ -17,38 +17,38 @@ import (
 
 func Test_Config(t *testing.T) {
 	names, err := filepath.Glob("testdata/*.conf")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	for _, name := range names {
 		t.Run(makeTestName(name), func(t *testing.T) {
 			classicText, err := os.ReadFile(name)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			var classicConf Config
 			err = classicConf.UnmarshalClassic(classicText)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			yamlText, err := os.ReadFile(strings.Replace(name, ".conf", ".yaml", 1))
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			var yamlConf Config
 			err = yaml.Unmarshal(yamlText, &yamlConf)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			jsonText, err := os.ReadFile(strings.Replace(name, ".conf", ".json", 1))
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			var jsonConf Config
 			err = json.Unmarshal(jsonText, &jsonConf)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			gotClassicText, err := yamlConf.DumpAsClassic()
-			assert.NoError(t, err)
-			assert.Equal(t, string(classicText), gotClassicText)
+			require.NoError(t, err)
+			require.Equal(t, string(classicText), gotClassicText)
 
 			gotYamlText, err := classicConf.DumpAsYAML()
-			assert.NoError(t, err)
-			assert.Equal(t, string(yamlText), gotYamlText)
+			require.NoError(t, err)
+			require.Equal(t, string(yamlText), gotYamlText)
 
 			var gotJsonText bytes.Buffer
 			{
@@ -56,37 +56,37 @@ func Test_Config(t *testing.T) {
 				enc.SetEscapeHTML(false)
 				enc.SetIndent("", "    ")
 				err = enc.Encode(classicConf)
-				assert.NoError(t, err)
+				require.NoError(t, err)
 			}
-			assert.NoError(t, err)
-			assert.Equal(t, string(jsonText), gotJsonText.String())
+			require.NoError(t, err)
+			require.Equal(t, string(jsonText), gotJsonText.String())
 		})
 	}
 }
 
 func Test_Config_Processors(t *testing.T) {
 	names, err := filepath.Glob("testdata/processors/*.yaml")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	for _, name := range names {
 		t.Run(makeTestName(name), func(t *testing.T) {
 			yamlText, err := os.ReadFile(name)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			var yamlConf Config
 			err = yaml.Unmarshal(yamlText, &yamlConf)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			jsonText, err := os.ReadFile(strings.Replace(name, ".yaml", ".json", 1))
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			var jsonConf Config
 			err = json.Unmarshal(jsonText, &jsonConf)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			gotYamlText, err := yamlConf.DumpAsYAML()
-			assert.NoError(t, err)
-			assert.Equal(t, string(yamlText), gotYamlText)
+			require.NoError(t, err)
+			require.Equal(t, string(yamlText), gotYamlText)
 
 			var gotJsonText bytes.Buffer
 			{
@@ -94,10 +94,10 @@ func Test_Config_Processors(t *testing.T) {
 				enc.SetEscapeHTML(false)
 				enc.SetIndent("", "    ")
 				err = enc.Encode(yamlConf)
-				assert.NoError(t, err)
+				require.NoError(t, err)
 			}
-			assert.NoError(t, err)
-			assert.Equal(t, string(jsonText), gotJsonText.String())
+			require.NoError(t, err)
+			require.Equal(t, string(jsonText), gotJsonText.String())
 		})
 	}
 }
@@ -127,8 +127,8 @@ func Test_Config_Parsers(t *testing.T) {
 	}
 
 	gotYamlText, err := cfg.DumpAsYAML()
-	assert.NoError(t, err)
-	assert.Equal(t, `pipeline:
+	require.NoError(t, err)
+	require.Equal(t, `pipeline:
     inputs:
         - name: dummy
     outputs:
@@ -160,7 +160,7 @@ func TestConfig_Equal(t *testing.T) {
 				{Key: "foo", Value: "bar"},
 			},
 		}
-		assert.True(t, a.Equal(b))
+		require.True(t, a.Equal(b))
 	})
 
 	t.Run("not_equal_env", func(t *testing.T) {
@@ -174,7 +174,7 @@ func TestConfig_Equal(t *testing.T) {
 				{Key: "b", Value: "c"},
 			},
 		}
-		assert.False(t, a.Equal(b))
+		require.False(t, a.Equal(b))
 	})
 
 	t.Run("equal_includes", func(t *testing.T) {
@@ -184,7 +184,7 @@ func TestConfig_Equal(t *testing.T) {
 		b := Config{
 			Includes: []string{"foo"},
 		}
-		assert.True(t, a.Equal(b))
+		require.True(t, a.Equal(b))
 	})
 
 	t.Run("not_equal_includes", func(t *testing.T) {
@@ -194,7 +194,7 @@ func TestConfig_Equal(t *testing.T) {
 		b := Config{
 			Includes: []string{"bar"},
 		}
-		assert.False(t, a.Equal(b))
+		require.False(t, a.Equal(b))
 	})
 
 	t.Run("equal_input", func(t *testing.T) {
@@ -218,7 +218,7 @@ func TestConfig_Equal(t *testing.T) {
 				},
 			},
 		}
-		assert.True(t, a.Equal(b))
+		require.True(t, a.Equal(b))
 	})
 
 	t.Run("not_equal_input", func(t *testing.T) {
@@ -242,7 +242,7 @@ func TestConfig_Equal(t *testing.T) {
 				},
 			},
 		}
-		assert.False(t, a.Equal(b))
+		require.False(t, a.Equal(b))
 	})
 
 	t.Run("not_equal_properties_out_of_order", func(t *testing.T) {
@@ -266,7 +266,7 @@ func TestConfig_Equal(t *testing.T) {
 				},
 			},
 		}
-		assert.False(t, a.Equal(b))
+		require.False(t, a.Equal(b))
 	})
 
 	t.Run("not_equal_by_names_out_of_order", func(t *testing.T) {
@@ -294,7 +294,7 @@ func TestConfig_Equal(t *testing.T) {
 				},
 			},
 		}
-		assert.False(t, a.Equal(b))
+		require.False(t, a.Equal(b))
 	})
 }
 
@@ -304,8 +304,8 @@ func TestConfig_IDs(t *testing.T) {
 			[SERVICE]
 				log_level error
 		`, FormatClassic)
-		assert.NoError(t, err)
-		assert.Equal(t, nil, conf.IDs(true))
+		require.NoError(t, err)
+		require.Nil(t, conf.IDs(true))
 	})
 
 	t.Run("ok", func(t *testing.T) {
@@ -319,8 +319,8 @@ func TestConfig_IDs(t *testing.T) {
 				name  stdout
 				match *
 		`, FormatClassic)
-		assert.NoError(t, err)
-		assert.Equal(t, []string{
+		require.NoError(t, err)
+		require.Equal(t, []string{
 			"input:tcp:tcp.0",
 			"output:tcp:tcp.0",
 			"output:stdout:stdout.1",
@@ -338,8 +338,8 @@ func TestConfig_IDs(t *testing.T) {
 				name  tcp
 				match *
 		`, FormatClassic)
-		assert.NoError(t, err)
-		assert.Equal(t, []string{
+		require.NoError(t, err)
+		require.Equal(t, []string{
 			"input:tcp:tcp.0",
 			"output:stdout:stdout.0",
 			"output:tcp:tcp.1",
@@ -357,8 +357,8 @@ func TestConfig_IDs(t *testing.T) {
  				name  stdout
  				match *
  		`, FormatClassic)
-		assert.NoError(t, err)
-		assert.Equal(t, []string{
+		require.NoError(t, err)
+		require.Equal(t, []string{
 			"tcp.0",
 			"tcp.0",
 			"stdout.1",
@@ -376,9 +376,9 @@ func TestConfig_FindByID(t *testing.T) {
 			[INPUT]
 				name  cpu
 		`, FormatClassic)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		_, found := conf.FindByID("input:cpu:cpu.1")
-		assert.False(t, found)
+		require.False(t, found)
 	})
 
 	t.Run("ok", func(t *testing.T) {
@@ -391,10 +391,10 @@ func TestConfig_FindByID(t *testing.T) {
 				name     cpu
 				proptest valuetest
 		`, FormatClassic)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		plugin, found := conf.FindByID("input:cpu:cpu.2")
-		assert.True(t, found)
-		assert.Equal(t, Plugin{
+		require.True(t, found)
+		require.Equal(t, Plugin{
 			ID:   "cpu.2",
 			Name: "cpu",
 			Properties: []property.Property{
@@ -407,16 +407,16 @@ func TestConfig_FindByID(t *testing.T) {
 
 func TestConfig_Validate_Classic(t *testing.T) {
 	names, err := filepath.Glob("testdata/*.conf")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	for _, name := range names {
 		t.Run(makeTestName(name), func(t *testing.T) {
 			classicText, err := os.ReadFile(name)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			var classicConf Config
 			err = classicConf.UnmarshalClassic(classicText)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			classicConf.Validate()
 		})
 	}
@@ -424,16 +424,16 @@ func TestConfig_Validate_Classic(t *testing.T) {
 
 func TestConfig_Validate_YAML(t *testing.T) {
 	names, err := filepath.Glob("testdata/*.yaml")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	for _, name := range names {
 		t.Run(makeTestName(name), func(t *testing.T) {
 			yamlText, err := os.ReadFile(name)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			var yamlConfig Config
 			err = yaml.Unmarshal(yamlText, &yamlConfig)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			yamlConfig.Validate()
 		})
 	}
@@ -441,16 +441,16 @@ func TestConfig_Validate_YAML(t *testing.T) {
 
 func TestConfig_Validate_JSON(t *testing.T) {
 	names, err := filepath.Glob("testdata/*.json")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	for _, name := range names {
 		t.Run(makeTestName(name), func(t *testing.T) {
 			jsonText, err := os.ReadFile(name)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			var jsonConfig Config
 			err = json.Unmarshal(jsonText, &jsonConfig)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			jsonConfig.Validate()
 		})
 	}

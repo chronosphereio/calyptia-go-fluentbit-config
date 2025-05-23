@@ -4,7 +4,7 @@ import (
 	_ "embed"
 	"testing"
 
-	"github.com/alecthomas/assert/v2"
+	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 )
 
@@ -370,7 +370,7 @@ func TestConfig_Validate(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			var classicConf Config
 			err := classicConf.UnmarshalClassic([]byte(tc.ini))
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			err = classicConf.Validate()
 			if tc.want == "" && err == nil {
@@ -465,7 +465,7 @@ func TestConfig_Validate_Schema_YAML(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			var yamlConf Config
 			err := yaml.Unmarshal([]byte(tc.yaml), &yamlConf)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			err = yamlConf.Validate()
 			if tc.want == "" && err == nil {
@@ -493,7 +493,7 @@ func TestConfig_Validate_Schema_YAML(t *testing.T) {
 func TestConfig_Validate_SchemaWithVersion(t *testing.T) {
 	// Default Schema
 	t.Run("default_schema", func(t *testing.T) {
-		ini:= `
+		ini := `
 			[INPUT]
 				Name dummy
 			[OUTPUT]
@@ -502,15 +502,15 @@ func TestConfig_Validate_SchemaWithVersion(t *testing.T) {
 		`
 		var conf Config
 		err := conf.UnmarshalClassic([]byte(ini))
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		err = conf.ValidateWithSchema(DefaultSchema)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	// Load oldest schema
 	t.Run("oldest_schema", func(t *testing.T) {
-		ini:= `
+		ini := `
 			[INPUT]
 				Name dummy
 			[OUTPUT]
@@ -519,17 +519,17 @@ func TestConfig_Validate_SchemaWithVersion(t *testing.T) {
 		`
 		var conf Config
 		err := conf.UnmarshalClassic([]byte(ini))
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		schema, err := GetSchema("22.7.2")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		err = conf.ValidateWithSchema(schema)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("some_random_version", func(t *testing.T) {
-		ini:= `
+		ini := `
 			[INPUT]
 				Name dummy
 			[OUTPUT]
@@ -538,12 +538,12 @@ func TestConfig_Validate_SchemaWithVersion(t *testing.T) {
 		`
 		var conf Config
 		err := conf.UnmarshalClassic([]byte(ini))
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		schema, err := GetSchema("25.1.1")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		err = conf.ValidateWithSchema(schema)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 }

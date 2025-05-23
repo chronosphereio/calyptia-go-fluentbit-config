@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/alecthomas/assert/v2"
+	"github.com/stretchr/testify/require"
 
 	"github.com/calyptia/go-fluentbit-config/v2/networking"
 	"github.com/calyptia/go-fluentbit-config/v2/property"
@@ -63,9 +63,9 @@ func TestConfig_ServicePorts(t *testing.T) {
 			[OUTPUT]
 				name prometheus_exporter
 		`, FormatClassic)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
-		assert.Equal(t, ServicePorts{
+		require.Equal(t, ServicePorts{
 			{Port: 2020, Protocol: networking.ProtocolTCP, Kind: SectionKindService},
 			expected(9880, networking.ProtocolTCP, SectionKindInput, "cloudflare", 0),
 			expected(25826, networking.ProtocolUDP, SectionKindInput, "collectd", 1),
@@ -141,8 +141,8 @@ func TestConfig_ServicePorts(t *testing.T) {
 				name prometheus_exporter
 				port 17
 		`, FormatClassic)
-		assert.NoError(t, err)
-		assert.Equal(t, ServicePorts{
+		require.NoError(t, err)
+		require.Equal(t, ServicePorts{
 			{Port: 1, Protocol: networking.ProtocolTCP, Kind: SectionKindService},
 			expected(2, networking.ProtocolTCP, SectionKindInput, "cloudflare", 0, property.Property{Key: "addr", Value: ":2"}),
 			expected(3, networking.ProtocolUDP, SectionKindInput, "collectd", 1, property.Property{Key: "port", Value: int64(3)}),
@@ -184,7 +184,7 @@ func TestConfig_ServicePorts(t *testing.T) {
 				name does_not_exists
 				port 5
 		`, FormatClassic)
-		assert.NoError(t, err)
-		assert.Equal(t, nil, config.ServicePorts())
+		require.NoError(t, err)
+		require.Nil(t, config.ServicePorts())
 	})
 }
