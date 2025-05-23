@@ -74,11 +74,21 @@ type Plugin struct {
 }
 
 func (p Plugin) MarshalJSON() ([]byte, error) {
-	return p.Properties.MarshalJSON()
+	props, err := allPluginProperties(p, false /* classic */)
+	if err != nil {
+		return nil, fmt.Errorf("plugin %q: %w", p.ID, err)
+	}
+
+	return props.MarshalJSON()
 }
 
 func (p Plugin) MarshalYAML() (any, error) {
-	return p.Properties.MarshalYAML()
+	props, err := allPluginProperties(p, false /* classic */)
+	if err != nil {
+		return nil, fmt.Errorf("plugin %q: %w", p.ID, err)
+	}
+
+	return props.MarshalYAML()
 }
 
 func (p *Plugin) UnmarshalJSON(data []byte) error {

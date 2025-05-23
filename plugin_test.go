@@ -3,7 +3,7 @@ package fluentbitconfig
 import (
 	"testing"
 
-	"github.com/alecthomas/assert/v2"
+	"github.com/stretchr/testify/require"
 
 	"github.com/calyptia/go-fluentbit-config/v2/property"
 )
@@ -18,8 +18,8 @@ func TestPlugins_IDs(t *testing.T) {
 			[INPUT]
 				name  cpu
 		`, FormatClassic)
-		assert.NoError(t, err)
-		assert.Equal(t, []string{
+		require.NoError(t, err)
+		require.Equal(t, []string{
 			"cpu.0",
 			"mem.1",
 			"cpu.2",
@@ -37,9 +37,9 @@ func TestPlugins_FindByID(t *testing.T) {
 			[INPUT]
 				name  cpu
 		`, FormatClassic)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		_, found := conf.Pipeline.Inputs.FindByID("cpu.1")
-		assert.False(t, found)
+		require.False(t, found)
 	})
 
 	t.Run("ok", func(t *testing.T) {
@@ -52,10 +52,10 @@ func TestPlugins_FindByID(t *testing.T) {
 				name     cpu
 				proptest valuetest
 		`, FormatClassic)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		plugin, found := conf.Pipeline.Inputs.FindByID("cpu.2")
-		assert.True(t, found)
-		assert.Equal(t, Plugin{
+		require.True(t, found)
+		require.Equal(t, Plugin{
 			ID:   "cpu.2",
 			Name: "cpu",
 			Properties: []property.Property{

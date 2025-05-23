@@ -3,6 +3,7 @@ package fluentbitconfig
 import (
 	"fmt"
 	"regexp"
+	"slices"
 	"strings"
 	"text/tabwriter"
 	"unicode/utf8"
@@ -173,7 +174,11 @@ func (c Config) MarshalClassic() ([]byte, error) {
 
 	writePlugins := func(kind string, plugins Plugins) error {
 		for _, plugin := range plugins {
-			if err := writeProps(kind, plugin.Properties); err != nil {
+			props, err := allPluginProperties(plugin, true /* classic */)
+			if err != nil {
+				return fmt.Errorf("plugin %q: %w", plugin.ID, err)
+			}
+			if err := writeProps(kind, props); err != nil {
 				return err
 			}
 		}
@@ -220,4 +225,33 @@ func spaceCut(s string) (before, after string, found bool) {
 	}
 
 	return parts[0], parts[1], true
+}
+
+// allPluginProperties returns a copy of the plugin properties with the name property also included.
+func allPluginProperties(plugin Plugin, classic bool) (property.Properties, error) {
+	if plugin.Name == "" {
+		return plugin.Properties, nil
+	}
+
+	nameIdx := slices.IndexFunc(plugin.Properties, func(prop property.Property) bool {
+		return strings.EqualFold(prop.Key, "name")
+	})
+
+	if nameIdx >= 0 && plugin.Properties[nameIdx].Value != plugin.Name {
+		// The name property is already included in the properties.
+		return nil, fmt.Errorf("plugin name %q conflicts with %q property %q",
+			plugin.Name, plugin.Properties[nameIdx].Key, plugin.Properties[nameIdx].Value)
+	}
+	if nameIdx >= 0 {
+		return plugin.Properties, nil
+	}
+
+	nameKey := "name"
+	if classic {
+		nameKey = "Name"
+	}
+
+	allProps := make([]property.Property, 0, len(plugin.Properties)+1)
+	allProps = append(allProps, property.Property{Key: nameKey, Value: plugin.Name})
+	return append(allProps, plugin.Properties...), nil
 }
