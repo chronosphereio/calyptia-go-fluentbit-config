@@ -1,5 +1,5 @@
 service:
     flush: 1
-    daemon: "on"
+    daemon: 'on'
     log_level: error
-    http_server: "on"
+    http_server: 'on'
