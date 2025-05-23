@@ -1,24 +1,30 @@
 package property
 
 import (
+	"maps"
 	"reflect"
+	"slices"
 	"strings"
-
-	"golang.org/x/exp/slices"
 )
 
 // Properties list.
 type Properties []Property
 
+// Property key-value pair.
+type Property struct {
+	Key   string
+	Value any
+}
+
 // AsMap output.
 // It will merge properties with the same key into a slice.
-func (pp Properties) AsMap() map[string]any {
+func (pp *Properties) AsMap() map[string]any {
 	if pp == nil {
 		return nil
 	}
 
 	out := map[string]any{}
-	for _, p := range pp {
+	for _, p := range *pp {
 		if v, ok := out[p.Key]; ok {
 			// If key already exists, we try to convert it to a slice
 			// and append to it.
@@ -36,12 +42,12 @@ func (pp Properties) AsMap() map[string]any {
 }
 
 // Has property key insensitively.
-func (pp Properties) Has(key string) bool {
+func (pp *Properties) Has(key string) bool {
 	if pp == nil {
 		return false
 	}
 
-	for _, p := range pp {
+	for _, p := range *pp {
 		if strings.EqualFold(p.Key, key) {
 			return true
 		}
@@ -51,12 +57,12 @@ func (pp Properties) Has(key string) bool {
 }
 
 // Get property by its key insensitively.
-func (pp Properties) Get(key string) (any, bool) {
+func (pp *Properties) Get(key string) (any, bool) {
 	if pp == nil {
 		return nil, false
 	}
 
-	for _, p := range pp {
+	for _, p := range *pp {
 		if strings.EqualFold(p.Key, key) {
 			return p.Value, true
 		}
@@ -82,7 +88,7 @@ func (pp *Properties) Set(key string, value any) {
 	pp.Add(key, value)
 }
 
-// Add property.
+// Add adds a property to the list.
 func (pp *Properties) Add(key string, value any) {
 	if pp == nil {
 		return
@@ -91,14 +97,28 @@ func (pp *Properties) Add(key string, value any) {
 	*pp = append(*pp, Property{Key: key, Value: value})
 }
 
-func (pp Properties) Equal(target Properties) bool {
-	return slices.EqualFunc(pp, target, func(a, b Property) bool {
+// Equal returns true if pp and target have the same properties in the same order.
+func (pp *Properties) Equal(target Properties) bool {
+	props := Properties{}
+	if pp != nil {
+		props = *pp
+	}
+
+	return slices.EqualFunc(props, target, func(a, b Property) bool {
 		return a.Key == b.Key && reflect.DeepEqual(a.Value, b.Value)
 	})
 }
 
-// Property key-value pair.
-type Property struct {
-	Key   string
-	Value any
+// PropertiesFromMap returns the key-value pairs as Properties, ordered by key.
+func PropertiesFromMap(kvs map[string]string) Properties {
+	if len(kvs) == 0 {
+		return nil
+	}
+
+	props := make(Properties, 0, len(kvs))
+	for _, k := range slices.Sorted(maps.Keys(kvs)) {
+		props = append(props, Property{Key: k, Value: kvs[k]})
+	}
+
+	return props
 }
