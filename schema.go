@@ -12,6 +12,7 @@ import (
 
 //go:embed schemas/*.json
 var rawSchemas embed.FS
+
 //go:embed schemas/25.6.3.json
 var rawSchema []byte
 
@@ -136,7 +137,190 @@ func (s Schema) findSections(kind SectionKind) ([]SchemaSection, bool) {
 }
 
 func (s *Schema) InjectLTSPlugins() {
+	// Alphabatized by their directory name in https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins
 	s.Inputs = append(s.Inputs, SchemaSection{
+		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/aws_kinesis_stream
+		Type:        "input",
+		Name:        "aws_kinesis_stream",
+		Description: "AWS Kinesis stream input plugin.",
+		Properties: SchemaProperties{
+			Options: []SchemaOptions{
+				{
+					Name:        "aws_access_key_id",
+					Type:        "string",
+					Description: "AWS access key ID.",
+				},
+				{
+					Name:        "aws_secret_access_key",
+					Type:        "string",
+					Description: "AWS secret access key.",
+				},
+				{
+					Name:        "aws_region",
+					Type:        "string",
+					Description: "AWS region.",
+				},
+				{
+					Name:        "stream_name",
+					Type:        "string",
+					Description: "AWS Kinesis stream name.",
+				},
+				{
+					Name:        "empty_interval",
+					Type:        "string",
+					Description: "Interval to wait for new records when the stream is empty, string duration.",
+					Default:     "10s",
+				},
+				{
+					Name:        "limit",
+					Type:        "integer",
+					Description: "Maximum number of records to read per request, integer.",
+				},
+				{
+					Name:        "data_dir",
+					Type:        "string",
+					Description: "Directory to store data. It holds a 1MB cache.",
+					Default:     "/data/storage",
+				},
+			},
+		},
+	}, SchemaSection{
+		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/azeventgrid
+		Type:        "input",
+		Name:        "azeventgrid",
+		Description: "A Calyptia Core fluent-bit plugin providing input from Azure Event Grid.",
+		Properties: SchemaProperties{
+			Options: []SchemaOptions{
+				{
+					Name:        "topicName",
+					Type:        "string",
+					Description: "The name of the topic to subscribe to.",
+				},
+				{
+					Name:        "eventSubscriptionName",
+					Type:        "string",
+					Description: "The name of the event subscription to subscribe to.",
+				},
+				{
+					Name:        "endpoint",
+					Type:        "string",
+					Description: "The endpoint domain to use for the subscription.",
+				},
+				{
+					Name:        "key",
+					Type:        "string",
+					Description: "The key to use to authenticate.",
+				},
+			},
+		},
+	}, SchemaSection{
+		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/azure-blob-input
+		Type:        "input",
+		Name:        "azure-blob-input",
+		Description: "Calyptia LTS Azure Blob Storage Input Plugin",
+		Properties: SchemaProperties{
+			Options: []SchemaOptions{
+				{
+					Name:        "account_name",
+					Type:        "string",
+					Description: "Azure Storage Account Name",
+				},
+				{
+					Name:        "connection_string",
+					Type:        "string",
+					Description: "A connection string provides all the necessary information to connect to an Azure Storage account. If provided, it will be used for authentication instead of the default credential-based method.",
+				},
+				{
+					Name:        "container",
+					Type:        "string",
+					Description: "If set, the plugin will only read from this container. Otherwise, it will read from all containers in the account.",
+				},
+				{
+					Name:        "service_url",
+					Type:        "string",
+					Description: "The service URL for the Azure Blob Storage endpoint. If not specified, it defaults to 'https://<account_name>.blob.core.windows.net'.",
+				},
+				{
+					Name:        "tenant_id",
+					Type:        "string",
+					Description: "The Azure Active Directory (AAD) tenant ID to use for authentication. This is used with the 'DefaultAzureCredential' to authenticate requests when a connection string is not provided.",
+				},
+			},
+		},
+	}, SchemaSection{
+		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/cloudflare
+		Type:        "input",
+		Name:        "cloudflare",
+		Description: "HTTP server input for cloudflare with chunked transfer encoding support",
+		Properties: SchemaProperties{
+			Options: []SchemaOptions{
+				{
+					Name:        "addr",
+					Type:        "string",
+					Description: "Address to listen on.",
+					Default:     ":9880",
+				},
+				{
+					Name:        "resp_headers",
+					Type:        "string",
+					Description: "Response headers to set, separated by new line. Supports templating.",
+					Default:     "Content-Type: application/json",
+				},
+				{
+					Name:        "resp_status_code",
+					Type:        "string",
+					Description: "Response status code to set. Supports templating. Should evaluate to an integer.",
+					Default:     "200",
+				},
+				{
+					Name:        "resp_body",
+					Type:        "string",
+					Description: "Response body to set. Supports templating.",
+					Default:     "{\"status\": \"ok\"}",
+				},
+				{
+					Name:        "time_from",
+					Type:        "string",
+					Description: "Optional time to set. Supports templating with record access. Should evaluate to a RFC3339 formatted string. Defaults to current time.",
+				},
+				{
+					Name:        "cert_file",
+					Type:        "string",
+					Description: "Path to the certificate file to enable TLS.",
+				},
+				{
+					Name:        "key_file",
+					Type:        "string",
+					Description: "Path to the key file to enable TLS.",
+				},
+			},
+		},
+	}, SchemaSection{
+		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/datagen
+		Type:        "input",
+		Name:        "datagen",
+		Description: "Datagen input plugin generates fake logs at a given interval",
+		Properties: SchemaProperties{
+			Options: []SchemaOptions{
+				{
+					Name:        "template",
+					Type:        "string",
+					Description: "Golang template that evaluates into a JSON string.",
+				},
+				{
+					Name:        "rate",
+					Type:        "string",
+					Description: "Duration rate at which records are produced.",
+					Default:     "1s",
+				},
+			},
+		},
+	}, SchemaSection{
+		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/dummy
+		Type:        "input",
+		Name:        "gdummy",
+		Description: "dummy GO!",
+	}, SchemaSection{
 		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/go-s3-replay-plugin
 		Type:        "input",
 		Name:        "go-s3-replay-plugin",
@@ -172,11 +356,6 @@ func (s *Schema) InjectLTSPlugins() {
 				},
 			},
 		},
-	}, SchemaSection{
-		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/dummy
-		Type:        "input",
-		Name:        "gdummy",
-		Description: "dummy GO!",
 	}, SchemaSection{
 		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/gsuite-reporter
 		Type:        "input",
@@ -423,115 +602,6 @@ func (s *Schema) InjectLTSPlugins() {
 			},
 		},
 	}, SchemaSection{
-		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/azeventgrid
-		Type:        "input",
-		Name:        "azeventgrid",
-		Description: "A Calyptia Core fluent-bit plugin providing input from Azure Event Grid.",
-		Properties: SchemaProperties{
-			Options: []SchemaOptions{
-				{
-					Name:        "topicName",
-					Type:        "string",
-					Description: "The name of the topic to subscribe to.",
-				},
-				{
-					Name:        "eventSubscriptionName",
-					Type:        "string",
-					Description: "The name of the event subscription to subscribe to.",
-				},
-				{
-					Name:        "endpoint",
-					Type:        "string",
-					Description: "The endpoint domain to use for the subscription.",
-				},
-				{
-					Name:        "key",
-					Type:        "string",
-					Description: "The key to use to authenticate.",
-				},
-			},
-		},
-	}, SchemaSection{
-		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/aws_kinesis_stream
-		Type:        "input",
-		Name:        "aws_kinesis_stream",
-		Description: "AWS Kinesis stream input plugin.",
-		Properties: SchemaProperties{
-			Options: []SchemaOptions{
-				{
-					Name:        "aws_access_key_id",
-					Type:        "string",
-					Description: "AWS access key ID.",
-				},
-				{
-					Name:        "aws_secret_access_key",
-					Type:        "string",
-					Description: "AWS secret access key.",
-				},
-				{
-					Name:        "aws_region",
-					Type:        "string",
-					Description: "AWS region.",
-				},
-				{
-					Name:        "stream_name",
-					Type:        "string",
-					Description: "AWS Kinesis stream name.",
-				},
-				{
-					Name:        "empty_interval",
-					Type:        "string",
-					Description: "Interval to wait for new records when the stream is empty, string duration.",
-					Default:     "10s",
-				},
-				{
-					Name:        "limit",
-					Type:        "integer",
-					Description: "Maximum number of records to read per request, integer.",
-				},
-				{
-					Name:        "data_dir",
-					Type:        "string",
-					Description: "Directory to store data. It holds a 1MB cache.",
-					Default:     "/data/storage",
-				},
-			},
-		},
-	}, SchemaSection{
-		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/azure-blob-input
-		Type:        "input",
-		Name:        "azure-blob-input",
-		Description: "Calyptia LTS Azure Blob Storage Input Plugin",
-		Properties: SchemaProperties{
-			Options: []SchemaOptions{
-				{
-					Name:        "account_name",
-					Type:        "string",
-					Description: "Azure Storage Account Name",
-				},
-				{
-					Name:        "connection_string",
-					Type:        "string",
-					Description: "A connection string provides all the necessary information to connect to an Azure Storage account. If provided, it will be used for authentication instead of the default credential-based method.",
-				},
-				{
-					Name:        "container",
-					Type:        "string",
-					Description: "If set, the plugin will only read from this container. Otherwise, it will read from all containers in the account.",
-				},
-				{
-					Name:        "service_url",
-					Type:        "string",
-					Description: "The service URL for the Azure Blob Storage endpoint. If not specified, it defaults to 'https://<account_name>.blob.core.windows.net'.",
-				},
-				{
-					Name:        "tenant_id",
-					Type:        "string",
-					Description: "The Azure Active Directory (AAD) tenant ID to use for authentication. This is used with the 'DefaultAzureCredential' to authenticate requests when a connection string is not provided.",
-				},
-			},
-		},
-	}, SchemaSection{
 		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/s3_sqs
 		Type:        "input",
 		Name:        "s3_sqs",
@@ -649,26 +719,6 @@ func (s *Schema) InjectLTSPlugins() {
 			},
 		},
 	}, SchemaSection{
-		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/datagen
-		Type:        "input",
-		Name:        "datagen",
-		Description: "Datagen input plugin generates fake logs at a given interval",
-		Properties: SchemaProperties{
-			Options: []SchemaOptions{
-				{
-					Name:        "template",
-					Type:        "string",
-					Description: "Golang template that evaluates into a JSON string.",
-				},
-				{
-					Name:        "rate",
-					Type:        "string",
-					Description: "Duration rate at which records are produced.",
-					Default:     "1s",
-				},
-			},
-		},
-	}, SchemaSection{
 		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/sqldb
 		Type:        "input",
 		Name:        "sqldb",
@@ -727,53 +777,5 @@ func (s *Schema) InjectLTSPlugins() {
 				},
 			},
 		},
-	}, SchemaSection{
-		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/cloudflare
-		Type:        "input",
-		Name:        "cloudflare",
-		Description: "HTTP server input for cloudflare with chunked transfer encoding support",
-		Properties: SchemaProperties{
-			Options: []SchemaOptions{
-				{
-					Name:        "addr",
-					Type:        "string",
-					Description: "Address to listen on.",
-					Default:     ":9880",
-				},
-				{
-					Name:        "resp_headers",
-					Type:        "string",
-					Description: "Response headers to set, separated by new line. Supports templating.",
-					Default:     "Content-Type: application/json",
-				},
-				{
-					Name:        "resp_status_code",
-					Type:        "string",
-					Description: "Response status code to set. Supports templating. Should evaluate to an integer.",
-					Default:     "200",
-				},
-				{
-					Name:        "resp_body",
-					Type:        "string",
-					Description: "Response body to set. Supports templating.",
-					Default:     "{\"status\": \"ok\"}",
-				},
-				{
-					Name:        "time_from",
-					Type:        "string",
-					Description: "Optional time to set. Supports templating with record access. Should evaluate to a RFC3339 formatted string. Defaults to current time.",
-				},
-				{
-					Name:        "cert_file",
-					Type:        "string",
-					Description: "Path to the certificate file to enable TLS.",
-				},
-				{
-					Name:        "key_file",
-					Type:        "string",
-					Description: "Path to the key file to enable TLS.",
-				},
-			},
-		},
-	})
+	}) // Keep these alphabatized instead of adding new sections at the end.
 }
