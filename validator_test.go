@@ -460,6 +460,31 @@ func TestConfig_Validate_Schema_YAML(t *testing.T) {
 			`),
 			want: "",
 		},
+		{
+			name: "input_azure_blob_input_correct",
+			yaml: configLiteral(`
+			pipeline:
+				inputs:
+					- name: azure-blob-input
+					  tag: blob
+					  account_name: test_account
+					  connection_string: "DefaultEndpointsProtocol=http;AccountName=test_account;AccountKey=foo;BlobEndpoint=http://127.0.0.1:10000/test_account;"
+					  container: test_container
+					  service_url: test_service_url
+					  tenant_id: test_tenant_id
+			`),
+			want: "",
+		},
+		{
+			name: "input_azure_blob_input_incorrect_key",
+			yaml: configLiteral(`
+			pipeline:
+				inputs:
+					- name: azure-blob-input
+					  incorrect_key: foo
+			`),
+			want: "input: azure-blob-input: unknown property \"incorrect_key\"",
+		},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {

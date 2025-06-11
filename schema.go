@@ -498,9 +498,9 @@ func (s *Schema) InjectLTSPlugins() {
 			},
 		},
 	}, SchemaSection{
-		// See https://github.com/chronosphereio/calyptia-core-fluent-bit-azure-blob-input
+		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/azure-blob-input
 		Type:        "input",
-		Name:        "flb_core_fluent_bit_azure_blob",
+		Name:        "azure-blob-input",
 		Description: "Calyptia LTS Azure Blob Storage Input Plugin",
 		Properties: SchemaProperties{
 			Options: []SchemaOptions{
@@ -510,14 +510,24 @@ func (s *Schema) InjectLTSPlugins() {
 					Description: "Azure Storage Account Name",
 				},
 				{
+					Name:        "connection_string",
+					Type:        "string",
+					Description: "A connection string provides all the necessary information to connect to an Azure Storage account. If provided, it will be used for authentication instead of the default credential-based method.",
+				},
+				{
 					Name:        "container",
 					Type:        "string",
 					Description: "If set, the plugin will only read from this container. Otherwise, it will read from all containers in the account.",
 				},
 				{
-					Name:        "bucket",
+					Name:        "service_url",
 					Type:        "string",
-					Description: "-",
+					Description: "The service URL for the Azure Blob Storage endpoint. If not specified, it defaults to 'https://<account_name>.blob.core.windows.net'.",
+				},
+				{
+					Name:        "tenant_id",
+					Type:        "string",
+					Description: "The Azure Active Directory (AAD) tenant ID to use for authentication. This is used with the 'DefaultAzureCredential' to authenticate requests when a connection string is not provided.",
 				},
 			},
 		},
