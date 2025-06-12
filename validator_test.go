@@ -461,6 +461,55 @@ func TestConfig_Validate_Schema_YAML(t *testing.T) {
 			want: "",
 		},
 		{
+			name: "input_aws_kinesis_stream_correct",
+			yaml: configLiteral(`
+			pipeline:
+				inputs:
+					- name: aws_kinesis_stream
+					  aws_access_key_id: test
+					  aws_secret_access_key: test
+					  aws_region: test
+					  stream_name: test
+					  empty_interval: 1s
+					  limit: 1
+					  data_dir: /test/test
+			`),
+			want: "",
+		},
+		{
+			name: "input_aws_kinesis_stream_incorrect_key",
+			yaml: configLiteral(`
+			pipeline:
+				inputs:
+					- name: aws_kinesis_stream
+					  incorrect_key: foo
+			`),
+			want: "input: aws_kinesis_stream: unknown property \"incorrect_key\"",
+		},
+		{
+			name: "input_azeventgrid_correct",
+			yaml: configLiteral(`
+			pipeline:
+				inputs:
+					- name: azeventgrid
+					  topicName: test
+					  eventSubscriptionName: test
+					  endpoint: test
+					  key: test
+			`),
+			want: "",
+		},
+		{
+			name: "input_azeventgrid_incorrect_key",
+			yaml: configLiteral(`
+			pipeline:
+				inputs:
+					- name: azeventgrid
+					  incorrect_key: foo
+			`),
+			want: "input: azeventgrid: unknown property \"incorrect_key\"",
+		},
+		{
 			name: "input_azure_blob_input_correct",
 			yaml: configLiteral(`
 			pipeline:
@@ -484,6 +533,296 @@ func TestConfig_Validate_Schema_YAML(t *testing.T) {
 					  incorrect_key: foo
 			`),
 			want: "input: azure-blob-input: unknown property \"incorrect_key\"",
+		},
+		{
+			name: "input_cloudflare_correct",
+			yaml: configLiteral(`
+			pipeline:
+				inputs:
+					- name: cloudflare
+					  addr: test
+					  resp_headers: "User Agent: test"
+					  resp_status_code: 200
+					  resp_body: test
+					  time_from: test
+					  cert_file: /test/cert_file
+					  key_file: /test/key_file
+					  http_user: test
+					  http_passwd: test
+					  cloudflareApiKey: test
+					  cloudflareEmail: test
+					  destination: test
+					  cloudflareAccountId: test
+					  cloudflareZoneId: test
+					  skipOwnershipChallenge: false
+					  baseUrl: http://test
+			`),
+			want: "",
+		},
+		{
+			name: "input_cloudflare_incorrect_key",
+			yaml: configLiteral(`
+			pipeline:
+				inputs:
+					- name: cloudflare
+					  incorrect_key: foo
+			`),
+			want: "input: cloudflare: unknown property \"incorrect_key\"",
+		},
+		{
+			name: "input_datagen_correct",
+			yaml: configLiteral(`
+			pipeline:
+				inputs:
+					- name: datagen
+					  template: test
+					  rate: 1s
+			`),
+			want: "",
+		},
+		{
+			name: "input_datagen_incorrect_key",
+			yaml: configLiteral(`
+			pipeline:
+				inputs:
+					- name: datagen
+					  incorrect_key: foo
+			`),
+			want: "input: datagen: unknown property \"incorrect_key\"",
+		},
+		{
+			name: "input_gdummy_correct",
+			yaml: configLiteral(`
+			pipeline:
+				inputs:
+					- name: gdummy
+			`),
+			want: "",
+		},
+		{
+			name: "input_gdummy_incorrect_key",
+			yaml: configLiteral(`
+			pipeline:
+				inputs:
+					- name: gdummy
+					  incorrect_key: foo
+			`),
+			want: "input: gdummy: unknown property \"incorrect_key\"",
+		},
+		{
+			name: "input_go-s3-replay-plugin_correct",
+			yaml: configLiteral(`
+			pipeline:
+				inputs:
+					- name: go-s3-replay-plugin
+					  aws_access_key: test
+					  aws_secret_key: test
+					  aws_bucket_name: test
+					  aws_bucket_region: test
+					  aws_s3_endpoint: test
+					  aws_s3_role_arn: test
+					  aws_s3_role_session_name: test
+					  aws_s3_role_external_id: test
+					  aws_s3_role_duration: 1s
+					  logs: test
+					  s3_read_concurrency: 1
+					  max_line_buffer_size: 10 MiB
+			`),
+			want: "",
+		},
+		{
+			name: "input_go-s3-replay-plugin_incorrect_key",
+			yaml: configLiteral(`
+			pipeline:
+				inputs:
+					- name: go-s3-replay-plugin
+					  incorrect_key: foo
+			`),
+			want: "input: go-s3-replay-plugin: unknown property \"incorrect_key\"",
+		},
+		{
+			name: "input_gsuite-reporter_correct",
+			yaml: configLiteral(`
+			pipeline:
+				inputs:
+					- name: gsuite-reporter
+					  access_token: test
+					  creds_file: /test/file
+					  subject: test
+					  pull_interval: 1s
+					  data_dir: /test/dir
+					  telemetry: false
+					  application_name: test
+					  user_key: test
+			`),
+			want: "",
+		},
+		{
+			name: "input_gsuite-reporter_incorrect_key",
+			yaml: configLiteral(`
+			pipeline:
+				inputs:
+					- name: gsuite-reporter
+					  incorrect_key: foo
+			`),
+			want: "input: gsuite-reporter: unknown property \"incorrect_key\"",
+		},
+		{
+			name: "input_http_loader_correct",
+			yaml: configLiteral(`
+			pipeline:
+				inputs:
+					- name: http_loader
+					  method: POST
+					  body: test
+					  url: http://test
+					  wait: test
+					  stop: test
+					  header: "User-Agent: test"
+					  proxy: test
+					  tls_cert_file: /test/file
+					  tls_key_file: /test/file
+					  tls_cert: test
+					  tls_key: test
+					  ca_cert_file: /test/file
+					  ca_cert: test
+					  oauth2_token_url: http://test
+					  oauth2_client_id: test
+					  oauth2_client_secret: test
+					  oauth2_scopes: "test1 test2"
+					  oauth2_endpoint_params: test
+					  timeout: 1s
+					  pull_interval: 10s
+					  auth_cookie_url: http://test
+					  auth_cookie_method: POST
+					  auth_cookie_header: "User-Agent: test"
+					  auth_cookie_body: test
+					  auth_cookie_exp: 100s
+					  auth_digest_username: test
+					  auth_digest_password: test
+					  skip: test
+					  out: test
+					  data_dir: /test/dir
+					  data_exp: 10m
+					  retry: test
+					  max_retries: test
+					  store_response_body: test
+			`),
+			want: "",
+		},
+		{
+			name: "input_http_loader_incorrect_key",
+			yaml: configLiteral(`
+			pipeline:
+				inputs:
+					- name: http_loader
+					  incorrect_key: foo
+			`),
+			want: "input: http_loader: unknown property \"incorrect_key\"",
+		},
+		{
+			name: "input_http_scraper_correct",
+			yaml: configLiteral(`
+			pipeline:
+				inputs:
+					- name: http_scraper
+					  method: POST
+					  url: http://test
+					  body: test
+					  headers: "User-Agent: test"
+					  headers_separator: ","
+					  pull_interval: 1s
+					  timeout: 1s
+					  continue_on_error: true
+					  max_response_bytes: 1024
+					  go_template: test
+					  oauth2_client_id: test
+					  oauth2_client_secret: test
+					  oauth2_token_url: http://test
+					  oauth2_scopes_separator: ","
+					  oauth2_scopes: "test1,test2"
+					  oauth2_endpoint_params: test
+			`),
+			want: "",
+		},
+		{
+			name: "input_http_scraper_incorrect_key",
+			yaml: configLiteral(`
+			pipeline:
+				inputs:
+					- name: http_scraper
+					  incorrect_key: foo
+			`),
+			want: "input: http_scraper: unknown property \"incorrect_key\"",
+		},
+		{
+			name: "input_s3_sqs_correct",
+			yaml: configLiteral(`
+			pipeline:
+				inputs:
+					- name: s3_sqs
+					  delete_messages: true
+					  aws_s3_role_arn: test
+					  aws_s3_role_session_name: test
+					  aws_s3_role_external_id: test
+					  aws_s3_role_duration: 1m
+					  aws_sqs_role_arn: test
+					  aws_sqs_role_session_name: test
+					  aws_sqs_role_external_id: test
+					  aws_sqs_role_duration: 1m
+					  aws_access_key: test
+					  aws_secret_key: test
+					  aws_bucket_name: test
+					  aws_bucket_region: test
+					  aws_s3_endpoint: test
+					  match_regexp: test
+					  aws_s3_enable_imds: true
+					  sqs_queue_name: test
+					  sqs_queue_region: test
+					  aws_sqs_endpoint: test
+					  aws_sqs_enable_imds: true
+					  max_line_buffer_size: 10 MB
+					  s3_read_concurrency: 10
+			`),
+			want: "",
+		},
+		{
+			name: "input_s3_sqs_incorrect_key",
+			yaml: configLiteral(`
+			pipeline:
+				inputs:
+					- name: s3_sqs
+					  incorrect_key: foo
+			`),
+			want: "input: s3_sqs: unknown property \"incorrect_key\"",
+		},
+
+		{
+			name: "input_sqldb_correct",
+			yaml: configLiteral(`
+			pipeline:
+				inputs:
+					- name: sqldb
+					  driver: mysql
+					  dsn: test
+					  query: SELECT \"test\" AS test
+					  columnsForArgs: test
+					  timeFrom: test
+					  fetchInterval: 100s
+					  storageKey: test
+					  dataDir: /test/data
+			`),
+			want: "",
+		},
+		{
+			name: "input_sqldb_incorrect_key",
+			yaml: configLiteral(`
+			pipeline:
+				inputs:
+					- name: sqldb
+					  incorrect_key: foo
+			`),
+			want: "input: sqldb: unknown property \"incorrect_key\"",
 		},
 	}
 	for _, tc := range tt {
