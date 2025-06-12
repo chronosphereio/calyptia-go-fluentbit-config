@@ -293,6 +293,51 @@ func (s *Schema) InjectLTSPlugins() {
 					Type:        "string",
 					Description: "Path to the key file to enable TLS.",
 				},
+				{
+					Name:        "http_user",
+					Type:        "string",
+					Description: "Username for HTTP basic authentication.",
+				},
+				{
+					Name:        "http_passwd",
+					Type:        "string",
+					Description: "Password for HTTP basic authentication.",
+				},
+				{
+					Name:        "cloudflareApiKey",
+					Type:        "string",
+					Description: "Cloudflare API key for the ownership challenge.",
+				},
+				{
+					Name:        "cloudflareEmail",
+					Type:        "string",
+					Description: "Cloudflare account email address for the ownership challenge.",
+				},
+				{
+					Name:        "destination",
+					Type:        "string",
+					Description: "HTTP destination for Cloudflare LogPush.",
+				},
+				{
+					Name:        "cloudflareAccountID",
+					Type:        "string",
+					Description: "Cloudflare account ID. Mutually exclusive with cloudflareZoneId.",
+				},
+				{
+					Name:        "cloudflareZoneID",
+					Type:        "string",
+					Description: "Cloudflare zone ID. Mutually exclusive with cloudflareAccountId.",
+				},
+				{
+					Name:        "skipOwnershipChallenge",
+					Type:        "string",
+					Description: "'true' to skip the ownership challenge, 'false' to trigger it.",
+				},
+				{
+					Name:        "baseUrl",
+					Type:        "string",
+					Description: "Base URL to use for the ownership challenge.",
+				},
 			},
 		},
 	}, SchemaSection{
@@ -340,19 +385,49 @@ func (s *Schema) InjectLTSPlugins() {
 					Type: "string",
 				},
 				{
-					Name:        "aws_s3_endpoint",
-					Type:        "string",
-					Description: "Either aws_s3_endpoint or aws_bucket_region has to be provided",
-				},
-				{
 					Name:        "aws_bucket_region",
 					Type:        "string",
 					Description: "Either aws_s3_endpoint or aws_bucket_region has to be provided",
 				},
 				{
+					Name:        "aws_s3_endpoint",
+					Type:        "string",
+					Description: "Either aws_s3_endpoint or aws_bucket_region has to be provided",
+				},
+				{
+					Name:        "aws_s3_role_arn",
+					Type:        "string",
+					Description: "AWS S3 assumed role ARN",
+				},
+				{
+					Name:        "aws_s3_role_session_name",
+					Type:        "string",
+					Description: "AWS S3 assumed role session name",
+				},
+				{
+					Name:        "aws_s3_external_id",
+					Type:        "string",
+					Description: "AWS assumed role external ID",
+				},
+				{
+					Name:        "aws_s3_role_duration",
+					Type:        "string",
+					Description: "AWS S3 role duration",
+				},
+				{
 					Name:        "logs",
 					Type:        "string",
 					Description: "Log pattern",
+				},
+				{
+					Name:        "s3_read_concurrency",
+					Type:        "string",
+					Description: "Maximum number of threads to simultaneously read S3",
+				},
+				{
+					Name:        "max_line_buffer_size",
+					Type:        "string",
+					Description: "Maximum buffer size",
 				},
 			},
 		},
@@ -427,6 +502,18 @@ func (s *Schema) InjectLTSPlugins() {
 					Description: `Request URL. Required. Supports templating.`,
 				},
 				{
+					Name:        "wait",
+					Type:        "string",
+					Description: "Controls the time to wait before starting to collect, string duration. If set, it must be greater or equal than 0s. Supports templating.",
+					Default:     "0s",
+				},
+				{
+					Name:        "stop",
+					Type:        "string",
+					Description: "Controls when to stop collecting, supports templating. Defaults to never stop.",
+					Default:     "false",
+				},
+				{
 					Name:        "header",
 					Type:        "string",
 					Description: "Request headers, string separated by new line character `\n`. Supports templating.",
@@ -436,6 +523,46 @@ func (s *Schema) InjectLTSPlugins() {
 					Name:        "body",
 					Type:        "string",
 					Description: "Request body. Supports templating.",
+				},
+				{
+					Name:        "proxy",
+					Type:        "string",
+					Description: "Proxy URL, allows comma separated list of URLs.",
+				},
+				{
+					Name:        "no_proxy",
+					Type:        "string",
+					Description: "Exclude URLs from proxy, allows comma separated list of URLs.",
+				},
+				{
+					Name:        "tls_cert_file",
+					Type:        "string",
+					Description: "TLS certificate file path.",
+				},
+				{
+					Name:        "tls_key_file",
+					Type:        "string",
+					Description: "TLS key file path.",
+				},
+				{
+					Name:        "tls_cert",
+					Type:        "string",
+					Description: "TLS certificate in PEM format.",
+				},
+				{
+					Name:        "tls_key",
+					Type:        "string",
+					Description: "TLS key in PEM format.",
+				},
+				{
+					Name:        "ca_cert_file",
+					Type:        "string",
+					Description: "CA certificate file path.",
+				},
+				{
+					Name:        "ca_cert",
+					Type:        "string",
+					Description: "CA certificate in PEM format.",
 				},
 				{
 					Name:        "oauth2_token_url",
@@ -496,6 +623,11 @@ func (s *Schema) InjectLTSPlugins() {
 					Description: "Cookie based authentication request body.",
 				},
 				{
+					Name:        "auth_cookie_exp",
+					Type:        "string",
+					Description: "Cookie based authentication expiration.",
+				},
+				{
 					Name:        "auth_digest_username",
 					Type:        "string",
 					Description: "Username for HTTP Digest authentication.",
@@ -506,9 +638,27 @@ func (s *Schema) InjectLTSPlugins() {
 					Description: "Password for HTTP Digest authentication.",
 				},
 				{
-					Name:        "wait",
+					Name:        "skip",
 					Type:        "string",
-					Description: "Controls the time to wait before starting to collect, string duration. If set, it must be greater or equal than 0s. Supports templating.",
+					Description: "Controls when to skip sending records to fluent-bit, supports templating.\nDefaults to ignore error status codes, and empty response body.",
+					Default:     "{{or (ge .Response.StatusCode 400) (empty .Response.Body)}}",
+				},
+				{
+					Name:        "out",
+					Type:        "string",
+					Description: "Controls what to send to fluent-bit, supports templating. Defaults to send the response body.",
+					Default:     "{{toJson .Response.Body}}",
+				},
+				{
+					Name:        "data_dir",
+					Type:        "string",
+					Description: "Controls where to store data, data which is used to resume collecting.\nDefaults to `/data/storage` if exists, or a temporary directory if available, otherwise storage is disabled.",
+					Default:     "/data/storage",
+				},
+				{
+					Name:        "data_exp",
+					Type:        "string",
+					Description: "Controls for how much time data can be used after resume.",
 					Default:     "0s",
 				},
 				{
@@ -524,80 +674,106 @@ func (s *Schema) InjectLTSPlugins() {
 					Default:     "1",
 				},
 				{
-					Name:        "skip",
-					Type:        "string",
-					Description: "Controls when to skip sending records to fluent-bit, supports templating.\nDefaults to ignore error status codes, and empty response body.",
-					Default:     "{{or (ge .Response.StatusCode 400) (empty .Response.Body)}}",
-				},
-				{
-					Name:        "out",
-					Type:        "string",
-					Description: "Controls what to send to fluent-bit, supports templating. Defaults to send the response body.",
-					Default:     "{{toJson .Response.Body}}",
-				},
-				{
-					Name:        "stop",
-					Type:        "string",
-					Description: "Controls when to stop collecting, supports templating. Defaults to never stop.",
-					Default:     "false",
-				},
-				{
-					Name:        "proxy",
-					Type:        "string",
-					Description: "Proxy URL, allows comma separated list of URLs.",
-				},
-				{
-					Name:        "no_proxy",
-					Type:        "string",
-					Description: "Exclude URLs from proxy, allows comma separated list of URLs.",
-				},
-				{
-					Name:        "tls_cert_file",
-					Type:        "string",
-					Description: "TLS certificate file path.",
-				},
-				{
-					Name:        "tls_key_file",
-					Type:        "string",
-					Description: "TLS key file path.",
-				},
-				{
-					Name:        "tls_cert",
-					Type:        "string",
-					Description: "TLS certificate in PEM format.",
-				},
-				{
-					Name:        "tls_key",
-					Type:        "string",
-					Description: "TLS key in PEM format.",
-				},
-				{
-					Name:        "ca_cert_file",
-					Type:        "string",
-					Description: "CA certificate file path.",
-				},
-				{
-					Name:        "ca_cert",
-					Type:        "string",
-					Description: "CA certificate in PEM format.",
-				},
-				{
-					Name:        "data_dir",
-					Type:        "string",
-					Description: "Controls where to store data, data which is used to resume collecting.\nDefaults to `/data/storage` if exists, or a temporary directory if available, otherwise storage is disabled.",
-					Default:     "/data/storage",
-				},
-				{
-					Name:        "data_exp",
-					Type:        "string",
-					Description: "Controls for how much time data can be used after resume.",
-					Default:     "0s",
-				},
-				{
 					Name:        "store_response_body",
 					Type:        "string",
 					Description: "JSON value to store as response body, supports templating.",
 					Default:     "{{toJson .Response.Body}}",
+				},
+			},
+		},
+	}, SchemaSection{
+		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/http_scraper
+		Type:        "input",
+		Name:        "http_scraper",
+		Description: "HTTP Scraper plugin provides a way to scrape data from an HTTP endpoint.",
+		Properties: SchemaProperties{
+			Options: []SchemaOptions{
+				{
+					Name:        "method",
+					Type:        "string",
+					Description: `Request method. Defaults to "GET", or "POST" if ` + "`body`" + " is set.",
+					Default:     "GET",
+				},
+				{
+					Name:        "url",
+					Type:        "string",
+					Description: `Request URL. Required.`,
+				},
+				{
+					Name:        "body",
+					Type:        "string",
+					Description: "Request body. ",
+				},
+				{
+					Name:        "headers",
+					Type:        "string",
+					Description: "Request headers, string separated by `headers_separator`.",
+				},
+				{
+					Name:        "headers_separator",
+					Type:        "string",
+					Description: "Headers separator",
+					Default:     "\r\n",
+				},
+				{
+					Name:        "pull_interval",
+					Type:        "string",
+					Description: "Controls the time between requests, string duration. If set, it must be greater than 0s.",
+					Default:     "30s",
+				},
+				{
+					Name:        "timeout",
+					Type:        "string",
+					Description: "Controls the request timeout, string duration. If set, it must be greater than 0s.",
+					Default:     "10s",
+				},
+				{
+					Name:        "continue_on_error",
+					Type:        "string",
+					Description: "`true` to continue on errors",
+				},
+				{
+					Name:        "max_response_bytes",
+					Type:        "string",
+					Description: "Maximum response size in bytes.",
+					Default:     "15 MB",
+				},
+				{
+					Name:        "go_template",
+					Type:        "string",
+					Description: "Request template.",
+					Default:     "0s",
+				},
+				{
+					Name:        "oauth2_client_id",
+					Type:        "string",
+					Description: "OAuth2 client ID.",
+				},
+				{
+					Name:        "oauth2_client_secret",
+					Type:        "string",
+					Description: "OAuth2 client secret. Sensitive field, prefer using pipeline secrets.",
+				},
+				{
+					Name:        "oauth2_token_url",
+					Type:        "string",
+					Description: "OAuth2 token endpoint at where to exchange a token. Enables OAuth2 using the client-credentials flow.",
+				},
+				{
+					Name:        "oauth2_scopes_separator",
+					Type:        "string",
+					Description: "Separator for `oauth2_scopes`.",
+					Default:     " ",
+				},
+				{
+					Name:        "oauth2_scopes",
+					Type:        "string",
+					Description: "OAuth2 scopes, string, each scope separated by `oauth2_scopes_separator`.",
+				},
+				{
+					Name:        "oauth2_endpoint_params",
+					Type:        "string",
+					Description: "OAuth2 endpoint query parameters.",
 				},
 			},
 		},
@@ -673,6 +849,11 @@ func (s *Schema) InjectLTSPlugins() {
 					Name:        "aws_bucket_region",
 					Type:        "string",
 					Description: "AWS S3 bucket region.",
+				},
+				{
+					Name:        "aws_s3_endpoint",
+					Type:        "string",
+					Description: "AWS S3 endpoint.",
 				},
 				{
 					Name:        "match_regexp",
@@ -770,7 +951,7 @@ func (s *Schema) InjectLTSPlugins() {
 					Default:     "sqldb_{hash}.gob",
 				},
 				{
-					Name:        "storageDir",
+					Name:        "dataDir",
 					Type:        "string",
 					Description: "Storage path where to store data. If default /data/storage does not exists, a temporary directory will be used.",
 					Default:     "/data/storage",
