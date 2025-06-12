@@ -405,7 +405,7 @@ func (s *Schema) InjectLTSPlugins() {
 					Description: "AWS S3 assumed role session name",
 				},
 				{
-					Name:        "aws_s3_external_id",
+					Name:        "aws_s3_role_external_id",
 					Type:        "string",
 					Description: "AWS assumed role external ID",
 				},
