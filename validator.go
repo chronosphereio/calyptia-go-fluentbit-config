@@ -35,11 +35,12 @@ func (c Config) ValidateWithSchema(schema Schema) error {
 			switch property.Value.(type) {
 			case bool:
 			case int:
+			case uint64:
 			case int64:
 			case float64:
 			case string:
 			default:
-				return fmt.Errorf("invalid type (%T) for service setting: %s", 
+				return fmt.Errorf("invalid type (%T) for service setting: %s",
 					property.Value,
 					property.Key)
 			}
