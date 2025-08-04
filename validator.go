@@ -39,7 +39,7 @@ func (c Config) ValidateWithSchema(schema Schema) error {
 			case float64:
 			case string:
 			default:
-				return fmt.Errorf("invalid type (%T) for service setting: %s", 
+				return fmt.Errorf("invalid type (%T) for service setting: %s",
 					property.Value,
 					property.Key)
 			}
@@ -168,7 +168,7 @@ func validateProcessorsSectionMaps(sectionMaps []interface{}) error {
 		for key, val := range section.(map[string]interface{}) {
 			props.Set(key, val)
 		}
-		if err := ValidateSection(SectionKindFilter, props); err != nil {
+		if err := ValidateSection(SectionKindProcessor, props); err != nil {
 			return err
 		}
 
@@ -250,6 +250,10 @@ func valid(opts SchemaOptions, val any) bool {
 		return validSpaceDelimitedString(val, 3)
 	case "space delimited strings (minimum 4)":
 		return validSpaceDelimitedString(val, 4)
+	case "multiple keyvalues":
+		return validArray(val, opts.Options)
+	case "keyvalue":
+		return validKeyValue(val, opts.Options)
 	}
 
 	// valid by default
@@ -352,4 +356,50 @@ func validSpaceDelimitedString(val any, min int) bool {
 	}
 
 	return valid(val, min)
+}
+
+func validArray(val any, options SchemaOptionList) bool {
+	if val == nil {
+		return true
+	}
+
+	keyvalues, ok := val.([]any)
+	if !ok {
+		return false
+	}
+
+	for _, keyvalue := range keyvalues {
+		if !validKeyValue(keyvalue, options) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func validKeyValue(val any, options SchemaOptionList) bool {
+	if val == nil {
+		return true
+	}
+
+	keyval, ok := val.(map[string]any)
+	if !ok {
+		return false
+	}
+
+	if len(options) == 0 {
+		return true
+	}
+
+	for key, val := range keyval {
+		option := options.FindOption(key)
+		if option == nil {
+			return false
+		}
+		if !valid(*option, val) {
+			return false
+		}
+	}
+
+	return true
 }
