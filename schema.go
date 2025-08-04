@@ -52,11 +52,12 @@ func GetSchema(version string) (Schema, error) {
 }
 
 type Schema struct {
-	FluentBit SchemaFluentBit `json:"fluent-bit"`
-	Customs   []SchemaSection `json:"customs"`
-	Inputs    []SchemaSection `json:"inputs"`
-	Filters   []SchemaSection `json:"filters"`
-	Outputs   []SchemaSection `json:"outputs"`
+	FluentBit  SchemaFluentBit `json:"fluent-bit"`
+	Customs    []SchemaSection `json:"customs"`
+	Inputs     []SchemaSection `json:"inputs"`
+	Filters    []SchemaSection `json:"filters"`
+	Outputs    []SchemaSection `json:"outputs"`
+	Processors []SchemaSection `json:"processors"`
 }
 
 type SchemaFluentBit struct {
@@ -101,11 +102,24 @@ func (pp SchemaProperties) all() []SchemaOptions {
 	return out
 }
 
+type SchemaOptionList []SchemaOptions
+
+func (options SchemaOptionList) FindOption(optname string) *SchemaOptions {
+	for idx, option := range options {
+		if strings.EqualFold(optname, option.Name) {
+			return &options[idx]
+		}
+	}
+
+	return nil
+}
+
 type SchemaOptions struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Default     any    `json:"default,omitempty"`
-	Type        string `json:"type"`
+	Name        string           `json:"name"`
+	Description string           `json:"description"`
+	Default     any              `json:"default,omitempty"`
+	Type        string           `json:"type"`
+	Options     SchemaOptionList `json:"options,omitempty"`
 }
 
 func (s Schema) findSection(kind SectionKind, name string) (SchemaSection, bool) {
@@ -133,6 +147,8 @@ func (s Schema) findSections(kind SectionKind) ([]SchemaSection, bool) {
 		return s.Filters, true
 	case SectionKindOutput:
 		return s.Outputs, true
+	case SectionKindProcessor:
+		return s.Processors, true
 	default:
 		return nil, false
 	}
@@ -959,6 +975,68 @@ func (s *Schema) InjectLTSPlugins() {
 					Default:     "/data/storage",
 				},
 			},
+		},
+	}) // Keep these alphabatized instead of adding new sections at the end.
+
+	s.Processors = append(s.Processors, SchemaSection{
+		Type: "processor",
+		Name: "calyptia",
+		Description: "calyptia actions processor",
+		Properties: SchemaProperties{
+			Options: []SchemaOptions{{
+				Name: "actions",
+				Type: "multiple keyvalues",
+				Description: "calyptia actions to effect",
+				Options: SchemaOptionList{
+					{
+						Name: "type",
+						Type: "string",
+						Description: "the type of the action",
+					},
+					{
+						Name: "opts",
+						Type: "keyvalue",
+						Description: "action arguments",
+					},
+					{
+						Name: "condition",
+						Type: "keyvalue",
+						Description: "conditionals for the action to be effected",
+						Options: SchemaOptionList{
+							{
+								Name: "operator",
+								Type: "string",
+								Description: "conditional operator, one of AND/OR",
+							},
+							{
+								Name: "rules",
+								Type: "multiple keyvalue",
+								Options: SchemaOptionList{
+									{
+										Name: "field",
+										Type: "string",
+										Description: "the field to compare",
+									},
+									{
+										Name: "operator",
+										Type: "string",
+										Description: "operator, one of eq, neq, gt, gte, lt, lte, regex, not_regex, in or not_in",
+									},
+									{
+										Name: "value",
+										Description: "the value to compare against",
+									},
+									{
+										Name: "context",
+										Type: "string",
+										Description: "the context to compare in, set to metadata to compare against record metadata",
+									},
+								},
+							},
+						},
+					},
+				},
+			}},
 		},
 	}) // Keep these alphabatized instead of adding new sections at the end.
 }
