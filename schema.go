@@ -979,33 +979,33 @@ func (s *Schema) InjectLTSPlugins() {
 	}) // Keep these alphabatized instead of adding new sections at the end.
 
 	s.Processors = append(s.Processors, SchemaSection{
-		Type: "processor",
-		Name: "calyptia",
+		Type:        "processor",
+		Name:        "calyptia",
 		Description: "calyptia actions processor",
 		Properties: SchemaProperties{
 			Options: []SchemaOptions{{
-				Name: "actions",
-				Type: "multiple keyvalues",
+				Name:        "actions",
+				Type:        "multiple keyvalues",
 				Description: "calyptia actions to effect",
 				Options: SchemaOptionList{
 					{
-						Name: "type",
-						Type: "string",
+						Name:        "type",
+						Type:        "string",
 						Description: "the type of the action",
 					},
 					{
-						Name: "opts",
-						Type: "keyvalue",
+						Name:        "opts",
+						Type:        "keyvalue",
 						Description: "action arguments",
 					},
 					{
-						Name: "condition",
-						Type: "keyvalue",
+						Name:        "condition",
+						Type:        "keyvalue",
 						Description: "conditionals for the action to be effected",
 						Options: SchemaOptionList{
 							{
-								Name: "operator",
-								Type: "string",
+								Name:        "operator",
+								Type:        "string",
 								Description: "conditional operator, one of AND/OR",
 							},
 							{
@@ -1013,22 +1013,22 @@ func (s *Schema) InjectLTSPlugins() {
 								Type: "multiple keyvalue",
 								Options: SchemaOptionList{
 									{
-										Name: "field",
-										Type: "string",
+										Name:        "field",
+										Type:        "string",
 										Description: "the field to compare",
 									},
 									{
-										Name: "operator",
-										Type: "string",
+										Name:        "operator",
+										Type:        "string",
 										Description: "operator, one of eq, neq, gt, gte, lt, lte, regex, not_regex, in or not_in",
 									},
 									{
-										Name: "value",
+										Name:        "value",
 										Description: "the value to compare against",
 									},
 									{
-										Name: "context",
-										Type: "string",
+										Name:        "context",
+										Type:        "string",
 										Description: "the context to compare in, set to metadata to compare against record metadata",
 									},
 								},
