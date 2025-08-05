@@ -146,7 +146,7 @@ func (s Schema) findSections(kind SectionKind) ([]SchemaSection, bool) {
 	case SectionKindOutput:
 		return s.Outputs, true
 	case SectionKindProcessor:
-		return s.Processors, true
+		return append(s.Processors, s.Filters...), true
 	default:
 		return nil, false
 	}
