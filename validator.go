@@ -39,7 +39,7 @@ func (c Config) ValidateWithSchema(schema Schema) error {
 			case float64:
 			case string:
 			default:
-				return fmt.Errorf("invalid type (%T) for service setting: %s", 
+				return fmt.Errorf("invalid type (%T) for service setting: %s",
 					property.Value,
 					property.Key)
 			}
