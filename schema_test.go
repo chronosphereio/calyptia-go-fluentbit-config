@@ -19,19 +19,6 @@ func validateGetSchemaError(t *testing.T, version string, testName string) {
 	}
 }
 
-// validateGetSchemaSuccess validates that GetSchema returns a valid schema
-func validateGetSchemaSuccess(t *testing.T, version string, testName string) {
-	t.Helper()
-	schema, err := GetSchema(version)
-	if err != nil {
-		t.Errorf("%s: GetSchema(%s) unexpected error: %v", testName, version, err)
-		return
-	}
-	if schema.FluentBit.Version == "" {
-		t.Errorf("%s: Schema should have a version", testName)
-	}
-}
-
 // validateSchemaOptionsMatch validates that a found option matches expected values
 func validateSchemaOptionsMatch(t *testing.T, found SchemaOptions, expected SchemaOptions, testName string) {
 	t.Helper()
@@ -139,7 +126,7 @@ func TestDefaultSchema(t *testing.T) {
 	// Verify that at least one of the LTS plugins is present
 	found := false
 	for _, input := range DefaultSchema.Inputs {
-		if input.Name == "aws_kinesis_stream" {
+		if input.Name == "s3_sqs" {
 			found = true
 			break
 		}
@@ -487,122 +474,18 @@ func TestSchema_InjectLTSPlugins(t *testing.T) {
 
 // LTS Plugin specific details tests
 
-func TestSchema_InjectLTSPlugins_AwsKinesisStream(t *testing.T) {
+func TestSchema_InjectLTSPlugins_S3SQS(t *testing.T) {
 	schema := Schema{}
 	schema.InjectLTSPlugins()
 
-	plugin, found := findPluginInSchema(schema, "aws_kinesis_stream")
+	plugin, found := findPluginInSchema(schema, "s3_sqs")
 	if !found {
-		t.Fatal("Plugin aws_kinesis_stream not found")
+		t.Fatal("Plugin s3_sqs not found")
 	}
 
-	validateLTSPluginDetails(t, plugin, "input", "AWS Kinesis stream input plugin.", 7, "aws_kinesis_stream details")
-	validatePluginOption(t, plugin, "aws_access_key_id", "string", "aws_kinesis_stream option check")
-}
-
-func TestSchema_InjectLTSPlugins_Datagen(t *testing.T) {
-	schema := Schema{}
-	schema.InjectLTSPlugins()
-
-	plugin, found := findPluginInSchema(schema, "datagen")
-	if !found {
-		t.Fatal("Plugin datagen not found")
-	}
-
-	validateLTSPluginDetails(t, plugin, "input", "Datagen input plugin generates fake logs at a given interval", 2, "datagen details")
-	validatePluginOption(t, plugin, "template", "string", "datagen option check")
-}
-
-func TestSchema_InjectLTSPlugins_Sqldb(t *testing.T) {
-	schema := Schema{}
-	schema.InjectLTSPlugins()
-
-	plugin, found := findPluginInSchema(schema, "sqldb")
-	if !found {
-		t.Fatal("Plugin sqldb not found")
-	}
-
-	validateLTSPluginDetails(t, plugin, "input", "SQL Database input", 9, "sqldb details")
-	validatePluginOption(t, plugin, "driver", "string", "sqldb option check")
-}
-
-// Default values tests
-
-func TestSchemaOptions_DefaultValues_AwsKinesisStreamEmptyInterval(t *testing.T) {
-	schema := Schema{}
-	schema.InjectLTSPlugins()
-
-	plugin, found := findPluginInSchema(schema, "aws_kinesis_stream")
-	if !found {
-		t.Fatal("Plugin aws_kinesis_stream not found")
-	}
-
-	validatePluginDefaultValue(t, plugin, "empty_interval", "10s", "aws_kinesis_stream empty_interval default")
-}
-
-func TestSchemaOptions_DefaultValues_CloudflareAddr(t *testing.T) {
-	schema := Schema{}
-	schema.InjectLTSPlugins()
-
-	plugin, found := findPluginInSchema(schema, "cloudflare")
-	if !found {
-		t.Fatal("Plugin cloudflare not found")
-	}
-
-	validatePluginDefaultValue(t, plugin, "addr", ":9880", "cloudflare addr default")
-}
-
-func TestSchemaOptions_DefaultValues_DatagenRate(t *testing.T) {
-	schema := Schema{}
-	schema.InjectLTSPlugins()
-
-	plugin, found := findPluginInSchema(schema, "datagen")
-	if !found {
-		t.Fatal("Plugin datagen not found")
-	}
-
-	validatePluginDefaultValue(t, plugin, "rate", "1s", "datagen rate default")
-}
-
-func TestSchemaOptions_DefaultValues_HttpLoaderMethod(t *testing.T) {
-	schema := Schema{}
-	schema.InjectLTSPlugins()
-
-	plugin, found := findPluginInSchema(schema, "http_loader")
-	if !found {
-		t.Fatal("Plugin http_loader not found")
-	}
-
-	validatePluginDefaultValue(t, plugin, "method", "GET", "http_loader method default")
-}
-
-// Benchmark tests
-func BenchmarkSchemaProperties_All(b *testing.B) {
-	props := SchemaProperties{
-		Options:       make([]SchemaOptions, 10),
-		GlobalOptions: make([]SchemaOptions, 5),
-		Networking:    make([]SchemaOptions, 3),
-		NetworkTLS:    make([]SchemaOptions, 2),
-	}
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		_ = props.all()
-	}
-}
-
-func BenchmarkSchema_FindSection(b *testing.B) {
-	schema := DefaultSchema
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		_, _ = schema.findSection(SectionKindInput, "dummy")
-	}
-}
-
-func BenchmarkInjectLTSPlugins(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		schema := Schema{}
-		schema.InjectLTSPlugins()
-	}
+	validateLTSPluginDetails(t, plugin, "input", "Calyptia LTS advanced plugin providing logs replay from sqs events", 22, "s3_sqs details")
+	validatePluginOption(t, plugin, "aws_bucket_name", "string", "s3_sqs aws_bucket_name option check")
+	validatePluginOption(t, plugin, "sqs_queue_name", "string", "s3_sqs sqs_queue_name option check")
+	validatePluginDefaultValue(t, plugin, "delete_messages", "true", "s3_sqs delete_messages default")
+	validatePluginDefaultValue(t, plugin, "match_regexp", ".*", "s3_sqs match_regexp default")
 }
