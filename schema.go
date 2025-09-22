@@ -74,7 +74,8 @@ type SchemaSection struct {
 
 type SchemaProperties struct {
 	Options []SchemaOptions `json:"options"`
-
+	// GlobalOptions only appear on inputs.
+	GlobalOptions []SchemaOptions `json:"global_options"`
 	// Networking is only present in outputs.
 	Networking []SchemaOptions `json:"networking"`
 	// NetworkTLS is only present in outputs.
@@ -94,6 +95,7 @@ func (sec SchemaSection) findOptions(name string) (SchemaOptions, bool) {
 func (pp SchemaProperties) all() []SchemaOptions {
 	var out []SchemaOptions
 	out = append(out, pp.Options...)
+	out = append(out, pp.GlobalOptions...)
 	out = append(out, pp.Networking...)
 	out = append(out, pp.NetworkTLS...)
 	return out
