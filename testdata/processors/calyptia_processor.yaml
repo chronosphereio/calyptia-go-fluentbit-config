@@ -1,0 +1,27 @@
+service:
+    log_level: info
+    http_server: "on"
+    http_listen: 0.0.0.0
+    http_port: 2021
+pipeline:
+    inputs:
+        - name: dummy
+          tag: test-tag
+          processors:
+            logs:
+                - actions:
+                    - condition:
+                        operator: AND
+                        rules:
+                            - field: foo
+                              operator: eq
+                              value: bar
+                      opts:
+                        key: foo
+                        value: bar
+                      type: put
+                  name: calyptia
+    outputs:
+        - name: stdout
+          format: json_lines
+          match: '*'
