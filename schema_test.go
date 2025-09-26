@@ -1,6 +1,7 @@
 package fluentbitconfig
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -100,9 +101,19 @@ func validatePluginDefaultValue(t *testing.T, plugin SchemaSection, optionName s
 	}
 }
 
-// findPluginInSchema finds a plugin by name in the schema inputs
-func findPluginInSchema(schema Schema, pluginName string) (SchemaSection, bool) {
+// findInputPluginInSchema finds a plugin by name in the schema inputs
+func findInputPluginInSchema(schema Schema, pluginName string) (SchemaSection, bool) {
 	for _, input := range schema.Inputs {
+		if input.Name == pluginName {
+			return input, true
+		}
+	}
+	return SchemaSection{}, false
+}
+
+// findProcessorPluginInSchema finds a plugin by name in the schema inputs
+func findProcessorPluginInSchema(schema Schema, pluginName string) (SchemaSection, bool) {
+	for _, input := range schema.Processors {
 		if input.Name == pluginName {
 			return input, true
 		}
@@ -478,7 +489,7 @@ func TestSchema_InjectLTSPlugins_S3SQS(t *testing.T) {
 	schema := Schema{}
 	schema.InjectLTSPlugins()
 
-	plugin, found := findPluginInSchema(schema, "s3_sqs")
+	plugin, found := findInputPluginInSchema(schema, "s3_sqs")
 	if !found {
 		t.Fatal("Plugin s3_sqs not found")
 	}
@@ -488,4 +499,22 @@ func TestSchema_InjectLTSPlugins_S3SQS(t *testing.T) {
 	validatePluginOption(t, plugin, "sqs_queue_name", "string", "s3_sqs sqs_queue_name option check")
 	validatePluginDefaultValue(t, plugin, "delete_messages", "true", "s3_sqs delete_messages default")
 	validatePluginDefaultValue(t, plugin, "match_regexp", ".*", "s3_sqs match_regexp default")
+}
+
+func TestSchema_InjectLTSPlugins_Calyptia(t *testing.T) {
+	schema := Schema{}
+	schema.InjectLTSPlugins()
+
+	plugin, found := findProcessorPluginInSchema(schema, "calyptia")
+	if !found {
+		t.Fatal("Plugin calyptia not found")
+	}
+
+	validateLTSPluginDetails(t, plugin,
+		"processor", "calyptia actions processor", 1, "calyptia processor details")
+	validatePluginOption(t, plugin, "actions", "multiple keyvalues",
+		"calyptia processor actions check")
+
+	actions, _ := plugin.findOptions("actions")
+	fmt.Printf("actions=%+v\n", actions)
 }
