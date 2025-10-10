@@ -21,7 +21,7 @@ func TestParseAsYAML(t *testing.T) {
 				inputs:
 					- name: dummy
 		`))
-		require.EqualError(t, err, "yaml: unmarshal errors:\n  line 1: field pipelines not found in type fluentbitconfig.Config")
+		require.EqualError(t, err, "[1:1] unknown field \"pipelines\"\n>  1 | pipelines:\n       ^\n   2 |     inputs:\n   3 |         - name: dummy")
 	})
 
 	t.Run("unknown_section", func(t *testing.T) {
@@ -29,7 +29,7 @@ func TestParseAsYAML(t *testing.T) {
 			unknown:
 				- name: dummy
 		`))
-		require.EqualError(t, err, "yaml: unmarshal errors:\n  line 1: field unknown not found in type fluentbitconfig.Config")
+		require.EqualError(t, err, "[1:1] unknown field \"unknown\"\n>  1 | unknown:\n       ^\n   2 |     - name: dummy")
 	})
 
 	t.Run("unknown_pipeline_plugins_kind", func(t *testing.T) {
@@ -38,7 +38,7 @@ func TestParseAsYAML(t *testing.T) {
 				foos:
 					- name: bar
 		`))
-		require.EqualError(t, err, "yaml: unmarshal errors:\n  line 2: field foos not found in type fluentbitconfig.Pipeline")
+		require.EqualError(t, err, "[2:5] unknown field \"foos\"\n   1 | pipeline:\n>  2 |     foos:\n           ^\n   3 |         - name: bar")
 	})
 
 	t.Run("empty", func(t *testing.T) {
