@@ -796,6 +796,30 @@ func (s *Schema) InjectLTSPlugins() {
 			},
 		},
 	}, SchemaSection{
+		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/pubsub-input
+		Type:        "input",
+		Name:        "gcp_pubsub",
+		Description: "Google Cloud Pub/Sub input plugin for Cloud Logging LogEntry messages.",
+		Properties: SchemaProperties{
+			Options: []SchemaOptions{
+				{
+					Name:        "project_id",
+					Type:        "string",
+					Description: "GCP project ID. Required when subscription_id is a short name; defaults to GOOGLE_CLOUD_PROJECT when omitted.",
+				},
+				{
+					Name:        "subscription_id",
+					Type:        "string",
+					Description: "Pub/Sub subscription identifier. Accepts short name or full resource path. Required.",
+				},
+				{
+					Name:        "endpoint",
+					Type:        "string",
+					Description: "Optional Pub/Sub emulator endpoint for local testing; do not set for production.",
+				},
+			},
+		},
+	}, SchemaSection{
 		// See https://github.com/chronosphereio/calyptia-core-fluent-bit/tree/main/goplugins/s3_sqs
 		Type:        "input",
 		Name:        "s3_sqs",
