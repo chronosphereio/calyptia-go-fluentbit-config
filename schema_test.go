@@ -457,6 +457,7 @@ func TestSchema_InjectLTSPlugins(t *testing.T) {
 		"azure-blob-input",
 		"cloudflare",
 		"datagen",
+		"gcp_pubsub",
 		"gdummy",
 		"go-s3-replay-plugin",
 		"gsuite-reporter",
@@ -517,4 +518,22 @@ func TestSchema_InjectLTSPlugins_Calyptia(t *testing.T) {
 
 	actions, _ := plugin.findOptions("actions")
 	fmt.Printf("actions=%+v\n", actions)
+}
+
+func TestSchema_InjectLTSPlugins_GCPPubSub(t *testing.T) {
+	schema := Schema{}
+	schema.InjectLTSPlugins()
+
+	plugin, found := findInputPluginInSchema(schema, "gcp_pubsub")
+	if !found {
+		t.Fatal("Plugin gcp_pubsub not found")
+	}
+
+	validateLTSPluginDetails(t, plugin, "input",
+		"Google Cloud Pub/Sub input plugin for Cloud Logging LogEntry messages.", 3,
+		"gcp_pubsub details")
+
+	validatePluginOption(t, plugin, "project_id", "string", "gcp_pubsub project_id option check")
+	validatePluginOption(t, plugin, "subscription_id", "string", "gcp_pubsub subscription_id option check")
+	validatePluginOption(t, plugin, "endpoint", "string", "gcp_pubsub endpoint option check")
 }
