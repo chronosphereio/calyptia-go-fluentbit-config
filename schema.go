@@ -13,7 +13,7 @@ import (
 //go:embed schemas/*.json
 var rawSchemas embed.FS
 
-//go:embed schemas/26.1.2.json
+//go:embed schemas/26.1.3.json
 var rawSchema []byte
 
 var DefaultSchema = func() Schema {
