@@ -1,6 +1,6 @@
 service:
     log_level: info
-    http_server: "on"
+    http_server: 'on'
     http_listen: 0.0.0.0
     http_port: 2021
 pipeline:
@@ -8,28 +8,28 @@ pipeline:
         - name: dummy
           tag: test-tag
           processors:
-            logs:
-                - add: hostname monox
-                  name: modify
-                - call: append_tag
-                  code: |
-                    function append_tag(tag, timestamp, record)
-                       new_record = record
-                       new_record["tag"] = tag
-                       return 1, timestamp, new_record
-                    end
-                  name: lua
+              logs:
+                  - add: hostname monox
+                    name: modify
+                  - call: append_tag
+                    code: |
+                        function append_tag(tag, timestamp, record)
+                           new_record = record
+                           new_record["tag"] = tag
+                           return 1, timestamp, new_record
+                        end
+                    name: lua
     outputs:
         - name: stdout
           format: json_lines
           match: '*'
           processors:
-            logs:
-                - call: add_field
-                  code: |
-                    function add_field(tag, timestamp, record)
-                       new_record = record
-                       new_record["output"] = "new data"
-                       return 1, timestamp, new_record
-                    end
-                  name: lua
+              logs:
+                  - call: add_field
+                    code: |
+                        function add_field(tag, timestamp, record)
+                           new_record = record
+                           new_record["output"] = "new data"
+                           return 1, timestamp, new_record
+                        end
+                    name: lua

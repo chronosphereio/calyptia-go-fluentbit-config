@@ -3,9 +3,9 @@ env:
     BAZ: qux
 service:
     flush: 1
-    daemon: "on"
+    daemon: 'on'
     log_level: error
-    http_server: "on"
+    http_server: 'on'
 customs:
     - name: calyptia
       api_key: secret
@@ -25,8 +25,8 @@ pipeline:
         - name: record_modifier
           match: dummy
           record:
-            - key1 value1
-            - key2 value2
+              - key1 value1
+              - key2 value2
     outputs:
         - name: stdout
           match: '*'

@@ -7,7 +7,7 @@ import (
 	"io"
 	"strings"
 
-	"gopkg.in/yaml.v3"
+	"github.com/goccy/go-yaml"
 )
 
 var ErrFormatUnknown = errors.New("format unknown")
@@ -40,8 +40,7 @@ func ParseAsClassic(raw string) (Config, error) {
 
 func ParseAsYAML(raw string) (Config, error) {
 	var out Config
-	dec := yaml.NewDecoder(strings.NewReader(raw))
-	dec.KnownFields(true)
+	dec := yaml.NewDecoder(strings.NewReader(raw), yaml.Strict())
 	err := dec.Decode(&out)
 	if errors.Is(err, io.EOF) {
 		return out, nil
@@ -84,7 +83,8 @@ func (c Config) DumpAsClassic() (string, error) {
 }
 
 func (c Config) DumpAsYAML() (string, error) {
-	b, err := yaml.Marshal(c)
+	b, err := yaml.MarshalWithOptions(c,
+		yaml.Indent(4), yaml.IndentSequence(true), yaml.UseSingleQuote(true))
 	if err != nil {
 		return "", err
 	}
